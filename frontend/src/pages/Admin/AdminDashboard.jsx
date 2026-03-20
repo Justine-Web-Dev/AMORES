@@ -1,7 +1,7 @@
 import React from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Sidebar from '../../Components/Sidebar/Sidebar'
-import HeaderAdmin from './HeaderAdmin'
+import HeaderAdmin from '../../Components/Header/HeaderAdmin'
 import DashboardOverview from './DashboardOverview'
 import UserManagement from './UserManagement'
 import RejectedApplicant from './RejectedApplicant'
