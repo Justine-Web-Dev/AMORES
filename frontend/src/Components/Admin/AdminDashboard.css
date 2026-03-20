@@ -1,0 +1,252 @@
+.AdminDashboard{
+  background-color: #F9FAFB;
+  height: 100vh;
+  display: flex;
+}
+
+.main-content {
+  margin-left: 280px;
+  padding: 20px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.module-content {
+  font-family: Karla,sans-serif;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+}
+
+.stat-card-container{
+  display: flex;
+  gap: 30px;
+}
+
+
+.stat-card-container .total-users{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.151);
+  height: 70px;
+  border-left: 5px solid #2C2D86;
+  border-radius: 8px;
+  width: 200px;
+}
+ .stat-card-container .total-applicants{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.151);
+  height: 70px;
+  border-left: 5px solid #4A4DB8;
+  border-radius: 8px;
+  width: 200px;
+ }
+
+.module-content h2 {
+  color: #2C2D86;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+.module-content h3{
+  margin-bottom: 20px;
+}
+
+.module-content p {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+/* Statistics Cards */
+.stat-card {
+  font-family: Karla,sans-serif;
+  background: linear-gradient(135deg, #2C2D86, #4A4DB8);
+  color: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 10px 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.stat-card h4 {
+  margin: 0 0 10px 0;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+/* User Management Styles */
+.user-stats {
+  font-family: Karla,sans-serif;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+/* Audit Logs Styles */
+.audit-logs-container {
+  margin-top: 20px;
+}
+
+.logs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.export-btn {
+  background: #2C2D86;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.export-btn:hover {
+  background: #1F1F5A;
+}
+
+.logs-list {
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.log-entry {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 15px;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  background: #f9f9f9;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.log-entry span {
+  font-size: 0.9rem;
+}
+
+.timestamp {
+  color: #666;
+  font-family: monospace;
+}
+
+.action {
+  font-weight: 500;
+  color: #2C2D86;
+}
+
+.user {
+  color: #333;
+}
+
+/* Backup & Restore Styles */
+.backup-restore-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.backup-section, .restore-section {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.backup-btn, .restore-btn {
+  background: #2C2D86;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 10px 10px 10px 0;
+  font-size: 0.9rem;
+}
+
+.backup-btn.secondary {
+  background: #6c757d;
+}
+
+.backup-btn:hover, .restore-btn:hover {
+  opacity: 0.9;
+}
+
+.restore-options {
+  margin: 15px 0;
+}
+
+.restore-options label {
+  display: block;
+  margin: 8px 0;
+  cursor: pointer;
+}
+
+/* System Settings Styles */
+.system-settings-container {
+  margin-top: 20px;
+}
+
+.settings-section {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #e9ecef;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  margin: 15px 0;
+}
+
+.setting-item label {
+  min-width: 200px;
+  font-weight: 500;
+  color: #333;
+}
+
+.setting-item input, .setting-item select {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.save-settings-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 20px;
+}
+
+.save-settings-btn:hover {
+  background: #218838;
+}
