@@ -19,15 +19,19 @@ function SidebarRecruiter() {
   return (
     <div className='Sidebar'>
       <div className="logo-container">
-        <img src={logo} alt="Logo" height={80}/>
+        <img src={logo} alt="Logo" className="h-20 w-auto object-contain" />
         <p className='logo-title'>Application Management and Online Recruitment Evaluation System</p>
       </div>
 
       <nav>
         <ul>
           <li><Link className={`nav-link ${isActive('/PersonnelDashboard') ? 'active' : ''}`} to={"/PersonnelDashboard"}>Dashboard</Link></li>
+
           <li><Link className={`nav-link ${isActive('/PersonnelDashboard/fail-safe-verification') ? 'active' : ''}`} to={"/PersonnelDashboard/fail-safe-verification"}>Fail-safe Verification</Link></li>
+
           <li><Link className={`nav-link ${isActive('/PersonnelDashboard/status-management') ? 'active' : ''}`} to={"/PersonnelDashboard/status-management"}>Status Management</Link></li>
+
+          <li><Link className={`nav-link ${isActive('/PersonnelDashboard/declined-applicants') ? 'active' : ''}`} to={"/PersonnelDashboard/declined-applicants"}>Declined Applicant</Link></li>
         </ul>
       </nav>
 

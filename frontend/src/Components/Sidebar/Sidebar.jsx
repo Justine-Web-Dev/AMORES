@@ -24,15 +24,24 @@ function Sidebar() {
   return (
     <div className='Sidebar'>
       <div className="logo-container">
-        <img src={logo} alt="Logo" height={80}/>
+        <img src={logo} alt="Logo" className="h-20 w-auto object-contain" />
         <p className='logo-title'>Application Management and Online Recruitment Evaluation System</p>
       </div>
 
       <nav>
         <ul>
-          <li><Link className={`nav-link ${isActive('/Dashboard') ? 'active' : ''}`} to={"/Dashboard"}>Dashboard</Link></li>
-          <li><Link className={`nav-link ${isActive('/Dashboard/user-management') ? 'active' : ''}`} to={"/Dashboard/user-management"}>User Management</Link></li>
-          <li><Link className={`nav-link ${isActive('/Dashboard/rejected-applicant') ? 'active' : ''}`} to={"/Dashboard/rejected-applicant"}>Rejected Applicant</Link></li>
+          <li>
+            <Link className={`nav-link ${isActive('/Dashboard') ? 'active' : ''}`} to={"/Dashboard"}>Dashboard</Link>
+          </li>
+
+          <li>
+            <Link className={`nav-link ${isActive('/Dashboard/user-management') ? 'active' : ''}`} to={"/Dashboard/user-management"}>User Management</Link>
+          </li>
+
+          <li>
+            <Link className={`nav-link ${isActive('/Dashboard/declined-applicant') ? 'active' : ''}`} to={"/Dashboard/declined-applicant"}>Declined Applicant</Link>
+          </li>
+
           <li className="system-utilities-dropdown">
 
             <div className="dropdown-header" onClick={toggleSystemUtilities}>

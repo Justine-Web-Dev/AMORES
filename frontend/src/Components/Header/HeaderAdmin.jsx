@@ -12,7 +12,7 @@ function HeaderAdmin() {
 
       <div className='greetings-account'>
         <h4>Welcome, Administrator</h4>
-        <img src={logoAcc} alt="acc logo" height={30}/>
+        <img src={logoAcc} alt="acc logo" className="h-8 w-auto object-contain" />
       </div>
 
     </header>
