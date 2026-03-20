@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
-import logo from '../assets/RRSU1 logo.png'
+import logo from '../../assets/RRSU1 logo.png'
 import './Sidebar.css'
 
 function Sidebar() {

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Routes, Route } from 'react-router-dom'
-import SidebarRecruiter from '../../Sidebar/SidebarRecruiter'
+import SidebarRecruiter from '../../Components/Sidebar/SidebarRecruiter'
 import ApplicantEvaluation from './ApplicantEvaluation'
 import FailSafeVerification from './FailSafeVerification'
 import StatusManagement from './StatusManagement'
