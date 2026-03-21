@@ -14,7 +14,7 @@ function Sidebar() {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    navigate('/');
+    navigate('/LoginUsers');
   };
 
   const isActive = (path) => {
@@ -28,7 +28,7 @@ function Sidebar() {
         <p className='logo-title'>Application Management and Online Recruitment Evaluation System</p>
       </div>
 
-      <nav>
+      <nav className='sidebar'>
         <ul>
           <li>
             <Link className={`nav-link ${isActive('/Dashboard') ? 'active' : ''}`} to={"/Dashboard"}>Dashboard</Link>
@@ -36,6 +36,10 @@ function Sidebar() {
 
           <li>
             <Link className={`nav-link ${isActive('/Dashboard/user-management') ? 'active' : ''}`} to={"/Dashboard/user-management"}>User Management</Link>
+          </li>
+
+          <li>
+            <Link className={`nav-link ${isActive('/Dashboard/applications') ? 'active' : ''}`} to={"/Dashboard/applications"}>Applications</Link>
           </li>
 
           <li>
@@ -51,16 +55,15 @@ function Sidebar() {
 
             {isSystemUtilitiesOpen && (
               <ul className="dropdown-menu">
-                <li><Link className={`nav-link dropdown-item ${isActive('/Dashboard/audit-logs') ? 'active' : ''}`} to={"/Dashboard/audit-logs"}>Audit logs</Link></li>
-                <li><Link className={`nav-link dropdown-item ${isActive('/Dashboard/backup-restore') ? 'active' : ''}`} to={"/Dashboard/backup-restore"}>Backup & Restore</Link></li>
-                <li><Link className={`nav-link dropdown-item ${isActive('/Dashboard/system-settings') ? 'active' : ''}`} to={"/Dashboard/system-settings"}>System Settings</Link></li>
+                <li><Link className={`nav-link dropdown-item ${isActive('/Dashboard/audit-logs') ? 'active' : ''}`} to={"/Dashboard/audit-logs"} onClick={() => setIsSystemUtilitiesOpen(false)}>Audit logs</Link></li>
+                <li><Link className={`nav-link dropdown-item ${isActive('/Dashboard/backup-restore') ? 'active' : ''}`} to={"/Dashboard/backup-restore"} onClick={() => setIsSystemUtilitiesOpen(false)}>Backup & Restore</Link></li>
+                <li><Link className={`nav-link dropdown-item ${isActive('/Dashboard/system-settings') ? 'active' : ''}`} to={"/Dashboard/system-settings"} onClick={() => setIsSystemUtilitiesOpen(false)}>System Settings</Link></li>
               </ul>
             )}
           </li>
         </ul>
+        <button className='logout-btn' onClick={handleLogout}>Logout</button>
       </nav>
-
-      <button className='logout-btn' onClick={handleLogout}>Logout</button>
     </div>
   )
 }

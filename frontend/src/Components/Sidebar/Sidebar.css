@@ -12,7 +12,7 @@
   left: 0;
   top: 0;
   overflow-y: auto;
-  padding-bottom: 80px; /* Add space for logout button */
+  overflow-x: visible;
 }
 
 .logo-container {
@@ -36,19 +36,26 @@
   hyphens: auto;
 }
 
-nav ul {
+.sidebar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar  ul {
   list-style: none;
   padding: 0;
   margin: 0;
+  flex: 1;
 }
 
-nav li {
+.sidebar li {
   margin-bottom: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
-nav li:hover {
+.sidebar li:hover {
   background-color: rgba(44, 45, 134, 0.1);
 }
 
@@ -88,6 +95,8 @@ nav li:hover {
   transition: all 0.3s ease;
   color: #000000;
   font-weight: bold;
+  cursor: pointer;
+  user-select: none;
 }
 
 .dropdown-header:hover {
@@ -106,18 +115,20 @@ nav li:hover {
 .dropdown-menu {
   list-style: none;
   padding: 0;
-  margin: 8px 0 0 20px;
+  margin: 8px 0 0 0;
   background-color: rgba(44, 45, 134, 0.05);
   border-radius: 6px;
   overflow: hidden;
   animation: slideDown 0.3s ease;
+  position: relative;
+  left: 20px;
+  width: calc(100% - 20px);
 }
 
 .dropdown-menu li {
   padding: 0;
   border-bottom: 1px solid rgba(44, 45, 134, 0.1);
   transition: all 0.2s ease;
-  color: #fff;
 }
 
 .dropdown-menu li:last-child {
@@ -144,17 +155,27 @@ nav li:hover {
   font-family: Karla, Arial, Helvetica, sans-serif;
   font-size: 1.1rem;
   height: 35px;
-  width: 90%;
+  width: 100%;
   cursor: pointer;
   border: none;
   background-color: #2C2D86;
   color: #fff;
   border-radius: 3px;
-  position: absolute;
-  bottom: 30px;
+  margin-top: 20px;
   transition: 0.3s;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.24);
 }
 .logout-btn:hover{
   transform: translateY(-5px);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

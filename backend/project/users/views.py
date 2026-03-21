@@ -55,3 +55,23 @@ def login_user(request):
     "username": user.username,
     # you could add additional fields here (is_admin, etc.)
   })
+
+@api_view(['GET','PUT','DELETE'])
+def update_user(request,pk):
+  try:
+    users = User.objects.get(pk=pk)
+  except users.DoNotExist:
+    return Response(status=status.HTTP_404_NOT_FOUND)
+
+  if request.method == 'GET':
+    serializers = UsersSerializers(users)
+    return Response(serializers.data)
+  elif request.method == 'PUT':
+    serializers = UsersSerializers(users,data=request.data)
+    if serializers.is_valid():
+      serializers.save()
+      return Response(serializers.data)
+    return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+  elif request.method == 'DELETE':
+    users.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)

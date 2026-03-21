@@ -7,15 +7,17 @@ import StatusManagement from './StatusManagement'
 import PersonnelOverview from './PersonnelOverview'
 import './PersonnelDashboard.css'
 import DeclinedApplicants from '../DeclinedApplicants'
+import Header from '../../Components/Header/Header'
 
 function PersonnelDashboard() {
   return (
     <div className='PersonnelDashboard'>
       <SidebarRecruiter />
       <div className='main-content'>
+        <Header />
         <Routes>
           <Route path="/" element={<PersonnelOverview />} />
-          <Route path="/applicant-evaluation" element={<ApplicantEvaluation />} />
+          <Route path="/applications" element={<ApplicantEvaluation />} />
           <Route path="/fail-safe-verification" element={<FailSafeVerification />} />
           <Route path="/status-management" element={<StatusManagement />} />
           <Route path="/declined-applicants" element={<DeclinedApplicants />} />

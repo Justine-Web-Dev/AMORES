@@ -32,35 +32,38 @@ function StatusManagement() {
   }
 
   return (
-    <div className='module-content'>
-      <h2>Status Management</h2>
-      <p>Update applicant progress in real time, ensuring accurate tracking throughout all phases of recruitment.</p>
+    <div>
+      <div className='module-content'>
+        <h2>Status Management</h2>
+        <p>Update applicant progress in real time, ensuring accurate tracking throughout all phases of recruitment.</p>
 
-      <div className="status-management-container">
-        <div className="applicant-status-list">
-          {applicants.map(applicant => (
-            <div key={applicant.id} className="status-card">
-              <div className="applicant-info">
-                <h4>{applicant.name}</h4>
-                <div className="progress-bar">
-                  <div className="progress-fill" style={{ width: `${applicant.progress}%` }}></div>
+        <div className="status-management-container">
+          <div className="applicant-status-list">
+            {applicants.map(applicant => (
+              <div key={applicant.id} className="status-card">
+                <div className="applicant-info">
+                  <h4>{applicant.name}</h4>
+                  <div className="progress-bar">
+                    <div className="progress-fill" style={{ width: `${applicant.progress}%` }}></div>
+                  </div>
+                  <p>{applicant.progress}% Complete</p>
                 </div>
-                <p>{applicant.progress}% Complete</p>
+                <div className="status-controls">
+                  <select
+                    value={applicant.status}
+                    onChange={(e) => updateStatus(applicant.id, e.target.value)}
+                    className="status-select"
+                  >
+                    {statusOptions.map(option => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                  <button className="update-btn">Update</button>
+                </div>
               </div>
-              <div className="status-controls">
-                <select
-                  value={applicant.status}
-                  onChange={(e) => updateStatus(applicant.id, e.target.value)}
-                  className="status-select"
-                >
-                  {statusOptions.map(option => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
-                <button className="update-btn">Update</button>
-              </div>
-            </div>
-          ))}
+            ))}
+            
+          </div>
         </div>
       </div>
     </div>

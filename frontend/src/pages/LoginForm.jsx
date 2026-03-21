@@ -29,7 +29,7 @@ function LoginForm() {
 
       if (data.username === "admin") { 
         navigate("/Dashboard");
-      }else if(data.username === "Personnel Recruiter"){
+      }else if(data.username === "Personnel"){
         navigate("/PersonnelDashboard")
       }
 
@@ -46,7 +46,7 @@ function LoginForm() {
           <div className="logo-container">
             <img src={logo} alt="logo RRSU1" height={'80px'} width={'120px'}/>
             <p className='logo-name'>PNP- AMORES</p>
-            <hr />
+            <hr className='border-gray-300'/>
             <div className='title'>
               <h3>Personnel  Login</h3>
               <p>Enter your credentials to access your dashboard.</p>
