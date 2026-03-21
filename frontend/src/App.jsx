@@ -3,7 +3,6 @@ import LoginForm from './pages/LoginForm'
 import { Routes, Route } from 'react-router-dom'
 import AdminDashboard from './pages/Admin/AdminDashboard'
 import PersonnelDashboard from './pages/PersonnelRecruiter/PersonnelDashboard'
-import LandingPage from './pages/Landingpage/LandingPage'
 import LandingpageMain from './pages/Landingpage/LandingpageMain'
 
 function App() {

@@ -7,7 +7,7 @@ function HeaderLanding() {
     <header className='flex justify-between items-center shadow my-header'>
       <div className='flex justify-center items-center w-[250px]'>
         <img src={logo} alt="Logo" className='h-14'/>
-        <h3>AMORES</h3>
+        <h3>PNP-AMORES</h3>
       </div>
 
       <nav className='flex-1 flex h-18 justify-center items-center gap-20 w-full my-nav'>

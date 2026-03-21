@@ -5,7 +5,11 @@ function LandingPage() {
   return (
     <div>
       <HeaderLanding />
-      <h1>landing page</h1>
+      
+      <div>
+        <h1>You Aspire We, Inspire</h1>
+      </div>
+
     </div>
   )
 }
