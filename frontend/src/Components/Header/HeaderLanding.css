@@ -1,0 +1,10 @@
+.apply-btn{
+  transition: 0.3s;
+}
+.apply-btn:hover{
+  transform: translateY(-2px);
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.26);
+}
+.apply-btn:active{
+  opacity: 0.8;
+}
