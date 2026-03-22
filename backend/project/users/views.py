@@ -56,6 +56,7 @@ def login_user(request):
     # you could add additional fields here (is_admin, etc.)
   })
 
+#Update user details
 @api_view(['GET','PUT','DELETE'])
 def update_user(request,pk):
   try:

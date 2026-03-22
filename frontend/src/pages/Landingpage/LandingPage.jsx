@@ -6,7 +6,7 @@ function LandingPage() {
     <div>
       <HeaderLanding />
       <div>
-        <h1>You Aspire We, Inspire</h1>
+        
       </div>
 
     </div>

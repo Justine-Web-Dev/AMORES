@@ -27,7 +27,7 @@ function SidebarRecruiter() {
         <ul>
           <li><Link className={`nav-link ${isActive('/PersonnelDashboard') ? 'active' : ''}`} to={"/PersonnelDashboard"}>Dashboard</Link></li>
 
-          <li><Link className={`nav-link ${isActive('/PersonnelDashboard/fail-safe-verification') ? 'active' : ''}`} to={"/PersonnelDashboard/fail-safe-verification"}>Fail-safe Verification</Link></li>
+          <li><Link className={`nav-link ${isActive('/PersonnelDashboard/fail-safe-verification') ? 'active' : ''}`} to={"/PersonnelDashboard/fail-safe-verification"}>Summarized Applications</Link></li>
 
           <li><Link className={`nav-link ${isActive('/PersonnelDashboard/applications') ? 'active' : ''}`} to={"/PersonnelDashboard/applications"}>Applications</Link></li>
 

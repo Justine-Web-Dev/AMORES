@@ -42,6 +42,8 @@ function Sidebar() {
             <Link className={`nav-link ${isActive('/Dashboard/applications') ? 'active' : ''}`} to={"/Dashboard/applications"}>Applications</Link>
           </li>
 
+          <li><Link className={`nav-link ${isActive('/Dashboard/status-management') ? 'active' : ''}`} to={"/Dashboard/status-management"}>Status Management</Link></li>
+
           <li>
             <Link className={`nav-link ${isActive('/Dashboard/declined-applicant') ? 'active' : ''}`} to={"/Dashboard/declined-applicant"}>Declined Applicant</Link>
           </li>
