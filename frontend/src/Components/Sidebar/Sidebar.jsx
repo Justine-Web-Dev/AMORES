@@ -28,7 +28,7 @@ function Sidebar() {
         <p className='logo-title'>Application Management and Online Recruitment Evaluation System</p>
       </div>
 
-      <nav className='sidebar'>
+      <nav className={`sidebar ${isSystemUtilitiesOpen ? 'dropdown-open' : ''}`}>
         <ul>
           <li>
             <Link className={`nav-link ${isActive('/Dashboard') ? 'active' : ''}`} to={"/Dashboard"}>Dashboard</Link>
@@ -36,6 +36,10 @@ function Sidebar() {
 
           <li>
             <Link className={`nav-link ${isActive('/Dashboard/user-management') ? 'active' : ''}`} to={"/Dashboard/user-management"}>User Management</Link>
+          </li>
+
+          <li>
+            <Link className={`nav-link ${isActive('/Dashboard/failsafe-verification') ? 'active' : ''}`} to={"/Dashboard/failsafe-verification"}>Summarized Applications</Link>
           </li>
 
           <li>

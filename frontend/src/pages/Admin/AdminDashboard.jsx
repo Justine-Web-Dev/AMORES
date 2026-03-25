@@ -11,6 +11,7 @@ import './AdminDashboard.css'
 import DeclinedApplicants from '../DeclinedApplicants'
 import ApplicantEvaluation from '../PersonnelRecruiter/ApplicantEvaluation'
 import StatusManagement from '../PersonnelRecruiter/StatusManagement'
+import FailSafeVerification from '../PersonnelRecruiter/FailSafeVerification'
 
 function AdminDashboard() {
   return (
@@ -27,6 +28,7 @@ function AdminDashboard() {
           <Route path="backup-restore" element={<BackupRestore />} />
           <Route path="system-settings" element={<SystemSettings />} />
           <Route path="status-management" element={<StatusManagement />}/>
+          <Route path='failsafe-verification' element={<FailSafeVerification />}/>
         </Routes>
       </div>
     </div>
