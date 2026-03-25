@@ -8,3 +8,10 @@
 .apply-btn:active{
   opacity: 0.8;
 }
+.my-header{
+  padding: 10px;
+}
+
+.home:hover{
+  color: #2C2D86;
+}

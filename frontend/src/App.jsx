@@ -4,15 +4,17 @@ import { Routes, Route } from 'react-router-dom'
 import AdminDashboard from './pages/Admin/AdminDashboard'
 import PersonnelDashboard from './pages/PersonnelRecruiter/PersonnelDashboard'
 import LandingpageMain from './pages/Landingpage/LandingpageMain'
+import Form from './pages/Form/Form'
 
 function App() {
   return (
     <>
       <Routes>
-        <Route path='/' element={<LandingpageMain />}/>
+        <Route path='/*' element={<LandingpageMain />}/>
         <Route path='/LoginUsers' element={<LoginForm />} />
         <Route path='/Dashboard/*' element={<AdminDashboard />} />
         <Route path='/PersonnelDashboard/*' element={<PersonnelDashboard />} />
+
       </Routes>
     </>
   )

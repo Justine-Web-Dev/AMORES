@@ -1,4 +1,5 @@
 import React from 'react'
+import HeaderLanding from '../../Components/Header/HeaderLanding'
 
 function Form() {
   return (
@@ -46,7 +47,7 @@ function Form() {
           <label htmlFor="">PhilHealth ID#</label>
           <input type="number" placeholder='PhilHealth ID#' required/>
 
-          <label htmlFor="">Heigth eg.(160cm)</label>
+          <label htmlFor="">Heigth e.g. 160cm</label>
           <input type="text" placeholder='Height' required/>
 
           <label htmlFor="">Waiver</label>
@@ -55,7 +56,9 @@ function Form() {
           <label htmlFor="">Tribe Affiliated</label>
           <input type="text" placeholder='Tribe Affiliated' required/>
 
-          <button type="submit">Submit</button>
+          <button 
+          className='border w-[220px] h-10 rounded bg-[#2C2D86] text-white font-bold'
+          type="submit">Submit Application</button>
 
         </form>
     </div>

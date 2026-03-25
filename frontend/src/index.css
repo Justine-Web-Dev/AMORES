@@ -1,23 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single:wght@100..900&family=Bitcount+Single:wght@100..900&family=Comfortaa:wght@300..700&family=Fuzzy+Bubbles:wght@400;700&family=Happy+Monkey&family=Karla:ital,wght@0,200..800;1,200..800&family=Koulen&family=Mozilla+Text:wght@200..700&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Orbitron:wght@400..900&family=Playwrite+AU+QLD:wght@100..400&family=Quicksand:wght@300..700&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Savate:ital,wght@0,200..900;1,200..900&family=Silkscreen:wght@400;700&display=swap');
 
-@import "tailwindcss";
+@import 'tailwindcss';
 
 *{
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-}
-form{
-  display: flex;
-  flex-direction: row-reverse;
-  justify-content: space-between;
-  align-items: center;
-  height: 320px;
-  box-shadow: 0px 0px 8px hsla(0, 0%, 0%, 0.26);
-  border-radius: 8px;
-  padding: 32px;
-}
-hr{
-  width: 100%;
-  margin-bottom: 10px;
 }

@@ -1,15 +1,12 @@
 import React from 'react'
 import HeaderLanding from '../../Components/Header/HeaderLanding'
 
-function LandingPage() {
+function AboutUs() {
   return (
     <div>
-      <div>
-
-      </div>
-
+      <h1>About us</h1>
     </div>
   )
 }
 
-export default LandingPage
+export default AboutUs
