@@ -18,7 +18,7 @@ function SidebarRecruiter() {
 
   return (
     <div className='Sidebar'>
-      <div className="logo-container">
+      <div className="logo-container-side">
         <img src={logo} alt="Logo" className="h-20 w-auto object-contain" />
         <p className='logo-title'>Application Management and Online Recruitment Evaluation System</p>
       </div>

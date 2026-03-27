@@ -42,7 +42,7 @@ function LoginForm() {
 
   return (
     <div className='LoginForm'>
-        <form action="" onSubmit={handleLogin}>
+        <form action="" onSubmit={handleLogin} className='form'>
           <div className="logo-container">
             <img src={logo} alt="logo RRSU1" height={'80px'} width={'120px'}/>
             <p className='logo-name'>PNP- AMORES</p>

@@ -23,8 +23,8 @@ function Sidebar() {
 
   return (
     <div className='Sidebar'>
-      <div className="logo-container">
-        <img src={logo} alt="Logo" className="h-20 w-auto object-contain" />
+      <div className="logo-container-side">
+        <img src={logo} alt="Logo" className="h-20 w-auto" />
         <p className='logo-title'>Application Management and Online Recruitment Evaluation System</p>
       </div>
 

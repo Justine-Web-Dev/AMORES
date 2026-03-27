@@ -1,0 +1,11 @@
+.add-btn-container{
+  margin-bottom: 20px;
+}
+.user-management-container{
+  margin-top: 20px;
+}
+.user-management-container{
+  display: grid;
+  grid-template-columns: 280px 280px 280px;
+  gap: 10px;
+}
