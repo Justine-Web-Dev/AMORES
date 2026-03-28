@@ -1,26 +1,49 @@
 import React from 'react'
+
+import { IoIosClose } from "react-icons/io";
+
 import './AddNewUserForm.css'
 
-function AddNewUserForm() {
+function AddNewUserForm({onClose}) {
   return (
-    <div>
-      <form className='shadow '>
-        <label htmlFor="">Name</label>
-        <input type="text" placeholder='Name'/>
+    <div className='overlay fadeout'>
+      <form className='flex flex-col justify-evenly bg-[#F9FAFB] shadow rounded-[8px] add-new-form'>
 
-        <label htmlFor="">Email</label>
-        <input type="email" placeholder='example@gmail.com'/>
+        <div className='flex '>
+          <div>
+            <h1 className='text-[1.5rem] font-bold'>Add New User</h1>
+            <p>Input the new personnel details and assign a role.</p>
+          </div>
+          <IoIosClose 
+          size={30} 
+          className='cursor-pointer '
+          onClick={onClose}
+          />
+        </div>
 
-        <label htmlFor="">Username</label>
-        <input type="text" placeholder='Username'/>
+        <div className='flex flex-col gap-[5px]'>
+          <label htmlFor="">Name</label>
+          <input type="text" placeholder='Name'/>
 
-        <label htmlFor="">Role</label>
-        <select name="" id="" className='role'>
-          <option value="Recruitment Personnel">Recruitment Personnel</option>
-          <option value="Administrator" disabled>Administrator</option>
-        </select>
+          <label htmlFor="">Email</label>
+          <input type="email" placeholder='example@gmail.com'/>
 
-        <button type='submit' className='bg-[#2C2D86] text-white w-[180px] h-10 rounded shadow cursor-pointer hover:translate-y-[-2px] transition'>Save and Confirm</button>
+          <label htmlFor="">Username</label>
+          <input type="text" placeholder='Username'/>
+
+          <div className='flex flex-col role-container'>
+            <label htmlFor="">Role</label>
+            <select name="" id="" className='role'>
+              <option value="Recruitment Personnel">Recruitment Personnel</option>
+              <option value="Administrator" disabled>Administrator</option>
+            </select>
+           </div>
+        </div>
+
+        <div className='flex justify-end'>
+          <button type='submit' className='bg-[#2C2D86] text-white w-[180px] h-10 rounded shadow cursor-pointer hover:translate-y-[-2px] transition'>Save and Confirm</button>
+        </div>
+
 
       </form>
     </div>

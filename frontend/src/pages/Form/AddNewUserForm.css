@@ -1,10 +1,45 @@
 .role{
-  height: 30px;
-  width: 260px;
+  height: 35px;
   margin-top: 10px;
   padding-left: 10px;
   box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.411);
   border: none;
   border-radius: 4px;
   outline: none;
+}
+.role-container{
+  margin-bottom: 25px;
+}
+.overlay{
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.144);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: fadeIn 0.3s ease-in-out;
+}
+.add-new-form{
+  padding: 15px;
+}
+
+@keyframes fadeIn{
+  from{
+    opacity: 0;
+  }
+  to{
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut{
+  from{
+    opacity: 1;
+  }
+  to{
+    opacity: 0;
+  }
 }

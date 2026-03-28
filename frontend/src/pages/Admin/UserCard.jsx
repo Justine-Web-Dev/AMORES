@@ -13,7 +13,7 @@ function UserCard({users}) {
 
       <div className='flex flex-col w-full items-center justify-center gap-2'>
         <button className='bg-[#2C2D86] w-[90%] h-[30px] rounded text-white cursor-pointer'>Edit</button>
-        <button className='bg-gray-400 w-[90%] h-[30px] rounded cursor-pointer'>Archive</button>
+        <button className='bg-gray-300 w-[90%] h-[30px] rounded cursor-pointer'>Archive</button>
       </div>
 
     </div>

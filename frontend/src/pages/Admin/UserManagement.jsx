@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react'
 
+import { IoIosAddCircleOutline } from "react-icons/io";
+
 import './UserManagement.css'
 
 import { api } from '../../../api/api'
@@ -8,6 +10,7 @@ import AddNewUserForm from '../Form/AddNewUserForm'
 
 function UserManagement() {
 const [users,setUsers] = useState([])
+const [toggleModal,setToggleModal] = useState(false)
 
   useEffect(()=>{
     const fetchUsers = async () => {
@@ -19,6 +22,7 @@ const [users,setUsers] = useState([])
     fetchUsers()
   },[])
 
+
   return (
     <div className='module-content'>
       <div className='flex justify-between items-center add-btn-container'>
@@ -26,7 +30,12 @@ const [users,setUsers] = useState([])
           <h2>User Management</h2>
           <p>Manage system users, roles, and permissions.</p>
         </div>
-         <button className='w-[180px] h-[40px] bg-[#2C2D86] text-white rounded cursor-pointer hover:-translate-y-[2px] hover:shadow-lg transition'>Add New User</button>
+         <button 
+         onClick={()=> setToggleModal(true)}
+          className='flex justify-evenly items-center w-[150px] h-[40px] bg-[#2C2D86] text-white rounded cursor-pointer hover:-translate-y-[2px] hover:shadow-lg transition'>
+            <IoIosAddCircleOutline size={20}/>
+             Add New User
+          </button>
       </div>
 
       <hr className='border-gray-300'/>
@@ -37,10 +46,9 @@ const [users,setUsers] = useState([])
               <UserCard  users={user} key={user.id}/>
             )))
           }
-            
       </div>
 
-      <AddNewUserForm />
+        {toggleModal && <AddNewUserForm onClose={()=> setToggleModal(false)}/>}
     </div>
   )
 }
