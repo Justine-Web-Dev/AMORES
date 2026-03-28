@@ -2,10 +2,15 @@
   height: 35px;
   margin-top: 10px;
   padding-left: 10px;
-  box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.411);
-  border: none;
+  box-shadow: inset 0px 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid #ddd;
   border-radius: 4px;
   outline: none;
+  
+}
+.role:focus{
+    border:2px solid #8486e9;
+      box-shadow: 0 0 0 3px rgba(132, 134, 233, 0.2);
 }
 .role-container{
   margin-bottom: 25px;
