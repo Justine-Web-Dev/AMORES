@@ -46,6 +46,7 @@ function AddNewUserForm({onClose,user}) {
       const { password, ...updateData } = formData;
 
       const response = await api.put(`users/update_user/${user.id}/`, updateData);
+      alert("Updated")
       console.log("Updated", response.data);
     } else {
       const response = await api.post("users/register_user/", formData);
