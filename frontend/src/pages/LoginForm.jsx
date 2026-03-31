@@ -3,8 +3,6 @@ import './LoginForm.css'
 import {useNavigate} from 'react-router-dom'
 import { api } from '../../api/api'
 
-
-
 import logo from '../assets/RRSU1 logo.png'
 import LoginSuccessModal from '../Modals/LoginSuccessModal'
 
