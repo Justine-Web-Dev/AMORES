@@ -8,6 +8,6 @@ class UsersSerializers(serializers.ModelSerializer):
 
 class ApplicantInfosSerializers(serializers.ModelSerializer):
   class Meta:
-    models = Applicant_infos
+    model = Applicant_infos
     fields = '__all__'
 

@@ -1,50 +1,23 @@
 import React, { useState } from 'react'
-import DetailedEvaluation from './DetailedEvaluation'
-import Header from '../../Components/Header/Header'
+import { api } from '../../../api/api'
+import { useEffect } from 'react'
 
 function ApplicantEvaluation() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('All')
   const [sortBy, setSortBy] = useState('name')
-  const [selectedApplicant, setSelectedApplicant] = useState(null)
-  const [showEvaluationModal, setShowEvaluationModal] = useState(false)
 
-  // Mock data for applicants
-  const applicants = [
-    { id: 1, name: 'John Smith', position: 'Senior Software Developer', status: 'Under Review', score: 85, dateApplied: '2024-03-15' },
-    { id: 2, name: 'Jane Doe', position: 'Product Manager', status: 'Interviewed', score: 92, dateApplied: '2024-03-10' },
-    { id: 3, name: 'Bob Johnson', position: 'UI/UX Designer', status: 'Rejected', score: 78, dateApplied: '2024-03-20' },
-    { id: 4, name: 'Alice Brown', position: 'Data Analyst', status: 'Shortlisted', score: 88, dateApplied: '2024-03-12' },
-  ]
+ const [applicantInfo,setApplicantInfo] = useState([])
 
-  const filteredApplicants = applicants
-    .filter(applicant =>
-      applicant.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (statusFilter === 'All' || applicant.status === statusFilter)
-    )
-    .sort((a, b) => {
-      if (sortBy === 'name') return a.name.localeCompare(b.name)
-      if (sortBy === 'date') return new Date(a.dateApplied) - new Date(b.dateApplied)
-      if (sortBy === 'score') return b.score - a.score
-      return 0
-    })
+  useEffect(()=>{
+    const fetchInfo = async () =>{
+      const response = await api.get("users/get_applicant_info")
+      setApplicantInfo(response.data)
+      console.log(response.data)
+    }
+    fetchInfo()
+  },[])
 
-  const handleEvaluate = (applicant) => {
-    setSelectedApplicant(applicant)
-    setShowEvaluationModal(true)
-  }
-
-  const handleCloseEvaluation = () => {
-    setShowEvaluationModal(false)
-    setSelectedApplicant(null)
-  }
-
-  const handleSaveEvaluation = (applicantId, evaluation) => {
-    // Here you would typically send the evaluation to your backend
-    console.log('Saving evaluation for applicant', applicantId, evaluation)
-    // For now, we'll just log it. In a real app, you'd update the applicant's status and score
-    alert(`Evaluation saved for ${selectedApplicant.name}!`)
-  }
 
   return (
     <div>
@@ -73,31 +46,10 @@ function ApplicantEvaluation() {
           </select>
         </div>
 
-        <div className="applicant-list">
-          {filteredApplicants.map(applicant => (
-            <div key={applicant.id} className="applicant-card">
-              <div className="applicant-info">
-                <h3>{applicant.name}</h3>
-                <p>Position: {applicant.position}</p>
-                <p>Date Applied: {new Date(applicant.dateApplied).toLocaleDateString()}</p>
-                <p>Status: <span className={`status-${applicant.status.toLowerCase().replace(' ', '-')}`}>{applicant.status}</span></p>
-                <p>Score: {applicant.score}/100</p>
-              </div>
-              <div className="applicant-actions">
-                <button className="evaluate-btn" onClick={() => handleEvaluate(applicant)}>Evaluate</button>
-                <button className="view-details-btn">View Details</button>
-              </div>
-            </div>
-          ))}
+        <div className='h-[200px] border'>
+          
         </div>
 
-        {showEvaluationModal && selectedApplicant && (
-          <DetailedEvaluation
-            applicant={selectedApplicant}
-            onClose={handleCloseEvaluation}
-            onSave={handleSaveEvaluation}
-          />
-        )}
       </div>
     </div>
   )

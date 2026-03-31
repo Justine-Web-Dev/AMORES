@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from .serializers import UsersSerializers
-from .models import User
+from .serializers import UsersSerializers,ApplicantInfosSerializers
+from .models import User,Applicant_infos
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -76,3 +76,18 @@ def update_user(request,pk):
   elif request.method == 'DELETE':
     users.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
+  
+@api_view(['GET'])
+def get_applicant_form(request):
+  infos = Applicant_infos.objects.all()
+  serializers = ApplicantInfosSerializers(infos,many=True)
+  return Response(serializers.data)
+
+@api_view(['POST'])
+def register_applicant_form(request):
+  serializers = ApplicantInfosSerializers(data=request.data)
+
+  if serializers.is_valid():
+    serializers.save()
+    return Response(serializers.data, status=status.HTTP_201_CREATED)
+  return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
