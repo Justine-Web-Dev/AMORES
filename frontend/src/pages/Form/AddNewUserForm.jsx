@@ -19,7 +19,7 @@ function AddNewUserForm({onClose,user}) {
       setFormData({
         name: user.name || "",
         username: user.username || "",
-        password: "", // don't prefill password
+        password: "",
         role: user.role || "Recruiter"
       })
     } else {
