@@ -11,16 +11,22 @@ import AddNewUserForm from '../Form/AddNewUserForm'
 function UserManagement() {
 const [users,setUsers] = useState([])
 const [toggleModal,setToggleModal] = useState(false)
+const [selectedUser,setSelectedUser] = useState(null)
 
   useEffect(()=>{
-    const fetchUsers = async () => {
+    fetchUsers()
+  },[])
+
+   const fetchUsers = async () => {
       const response = await api.get("users/get_user")
       setUsers(response.data)
       console.log(response.data)
     }
 
-    fetchUsers()
-  },[])
+  const handleEdit = (user) =>{
+    setSelectedUser(user)
+    setToggleModal(true)
+  }
 
 
   return (
@@ -31,7 +37,10 @@ const [toggleModal,setToggleModal] = useState(false)
           <p>Manage system users, roles, and permissions.</p>
         </div>
          <button 
-         onClick={()=> setToggleModal(true)}
+         onClick={()=> {
+          setSelectedUser(null)
+          setToggleModal(true)
+         }}
           className='flex justify-evenly items-center w-[150px] h-[40px] bg-[#2C2D86] text-white rounded cursor-pointer hover:-translate-y-[2px] hover:shadow-lg transition'>
             <IoIosAddCircleOutline size={20}/>
              Add New User
@@ -43,12 +52,19 @@ const [toggleModal,setToggleModal] = useState(false)
       <div className="user-management-container">
           {
             users.map(user => ((
-              <UserCard  users={user} key={user.id}/>
+              <UserCard  
+              users={user} 
+              key={user.id}
+              onEdit={handleEdit}
+              />
             )))
           }
       </div>
 
-        {toggleModal && <AddNewUserForm onClose={()=> setToggleModal(false)}/>}
+        {toggleModal && <AddNewUserForm onClose={()=>{
+          setToggleModal(false)
+          setSelectedUser(null)
+        }} user={selectedUser}/>}
     </div>
   )
 }

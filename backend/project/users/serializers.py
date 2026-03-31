@@ -4,7 +4,10 @@ from .models import User,Applicant_infos
 class UsersSerializers(serializers.ModelSerializer):
   class Meta:
     model = User
-    fields = "__all__"
+    fields = ['id', 'name', 'username', 'password', 'role']
+    extra_kwargs = {
+            'password': {'write_only': True, 'required': False}
+        }
 
 class ApplicantInfosSerializers(serializers.ModelSerializer):
   class Meta:

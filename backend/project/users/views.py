@@ -61,7 +61,7 @@ def login_user(request):
 def update_user(request,pk):
   try:
     users = User.objects.get(pk=pk)
-  except users.DoNotExist:
+  except User.DoNotExist:
     return Response(status=status.HTTP_404_NOT_FOUND)
 
   if request.method == 'GET':

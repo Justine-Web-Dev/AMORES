@@ -1,11 +1,12 @@
-import React, { useState } from 'react'
+import React, { useState,useEffect } from 'react'
 
 import { IoIosClose } from "react-icons/io"
 import './AddNewUserForm.css'
 
 import { api } from '../../../api/api'
 
-function AddNewUserForm({onClose}) {
+function AddNewUserForm({onClose,user}) {
+
   const [formData,setFormData] = useState({
     name:"",
     username: "",
@@ -13,47 +14,59 @@ function AddNewUserForm({onClose}) {
     role: "Recruiter"
   })
 
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || "",
+        username: user.username || "",
+        password: "", // don't prefill password
+        role: user.role || "Recruiter"
+      })
+    } else {
+      setFormData({
+        name: "",
+        username: "",
+        password: "",
+        role: "Recruiter"
+      })
+    }
+  }, [user])
+
   const handleChange = (e) =>{
     setFormData({
       ...formData, [e.target.name]: e.target.value
     })
   }
 
-  const handleSubmit = async (e) =>{
-    e.preventDefault()
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    try{
-      const response = await api.post(
-      "users/register_user/",
-        formData
-    )
+  try {
+    if (user) {
+      const { password, ...updateData } = formData;
 
-    console.log("Success", response.data)
-
-    setFormData({
-      name: "",
-      username: "",
-      password: "",
-    })
-    onClose()
-
-    }catch(error){
-       console.error("Error:", error.response?.data || error.message);
+      const response = await api.put(`users/update_user/${user.id}/`, updateData);
+      console.log("Updated", response.data);
+    } else {
+      const response = await api.post("users/register_user/", formData);
+      console.log("Success", response.data);
     }
-
-    
+    onClose();
+  } catch (error) {
+    console.error("Error:", error.response?.data || error.message);
   }
+};
 
   return (
     <div className='overlay fadeout'>
       <form 
       onSubmit={handleSubmit}
-      className='flex flex-col justify-evenly bg-[#F9FAFB] shadow rounded-[8px] add-new-form'>
+      className='flex flex-col justify-evenly w-[450px] bg-[#F9FAFB] shadow rounded-[8px] add-new-form'>
 
-        <div className='flex '>
+        <div className='flex justify-between'>
           <div>
-            <h1 className='text-[1.5rem] font-bold'>Add New User</h1>
-            <p>Input the new personnel details and assign a role.</p>
+            <h1 className='text-[1.5rem] font-bold'>{user ? "Edit User" : "Add New User"}</h1>
+            <p>{user ? "Update the personnel details": "Input the new personnel details and assign a role."}</p>
           </div>
           <IoIosClose 
           size={30} 
@@ -82,7 +95,8 @@ function AddNewUserForm({onClose}) {
           name='password'
           value={formData.password}
           onChange={handleChange}
-          placeholder='Enter you password'/>
+          placeholder={user ? 'Leave blank to keep current' : 'Enter password'}
+          required={!user}/>
 
           <div className='flex flex-col role-container'>
             <label htmlFor="">Role</label>
@@ -97,9 +111,8 @@ function AddNewUserForm({onClose}) {
         </div>
 
         <div className='flex justify-end'>
-          <button type='submit' className='bg-[#2C2D86] text-white w-[180px] h-10 rounded shadow cursor-pointer hover:translate-y-[-2px] transition'>Save and Confirm</button>
+          <button type='submit' className='bg-[#2C2D86] text-white w-[180px] h-10 rounded shadow cursor-pointer hover:translate-y-[-2px] transition'>{user ? "Update User" : "Save and Confirm"}</button>
         </div>
-
 
       </form>
     </div>
