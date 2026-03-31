@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { api } from '../../../api/api'
 import { useEffect } from 'react'
+import './ApplicantEval.css'
+
 
 function ApplicantEvaluation() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -8,6 +10,7 @@ function ApplicantEvaluation() {
   const [sortBy, setSortBy] = useState('name')
 
  const [applicantInfo,setApplicantInfo] = useState([])
+ const [open,setOpen] = useState(null)
 
   useEffect(()=>{
     const fetchInfo = async () =>{
@@ -18,6 +21,9 @@ function ApplicantEvaluation() {
     fetchInfo()
   },[])
 
+  const toggleMenu = (id) =>{
+    setOpen(open === id ? null : id)
+  }
 
   return (
     <div>
@@ -46,9 +52,66 @@ function ApplicantEvaluation() {
           </select>
         </div>
 
-        <div className='h-[200px] border'>
-          
-        </div>
+        <div className="shadow sm:rounded-lg border border-gray-200">
+          <table className="w-full text-sm text-center text-gray-500">
+            <thead className="text-xs text-gray-700 uppercase bg-gray-100 ">
+              <tr>
+                <th scope="col" className="th">Name</th>
+                <th scope="col" className="th text-center">Age</th>
+                <th scope="col" className="th">Program</th>
+                <th scope="col" className="th">Name of School</th>
+                <th scope="col" className="th whitespace-nowrap">Date Graduated</th>
+                <th scope="col" className="th text-center">Height</th>
+                <th scope="col" className="th text-center">Applied On</th>
+                <th scope="col" className="th"></th>
+              </tr>
+            </thead>
+
+            <tbody className="divide-y divide-gray-200 bg-white">
+              {
+                applicantInfo.map((applicant) =>(
+                  <tr key={applicant.id} className="hover:bg-gray-50 transition-colors text-center">
+                    <td>{applicant.firstname} {applicant.lastname} {applicant.middle_initial}</td>
+                    <td>{applicant.age}</td>
+                    <td>{applicant.program}</td>
+                    <td>{applicant.name_of_school}</td>
+                    <td>{applicant.date_graduated}</td>
+                    <td>{applicant.height}</td>
+                    <td>{applicant.created_at}</td>
+                    <td className="px-4 py-4 text-center relative">
+                      <div className="flex justify-center items-center">
+                        <button 
+                        onClick={()=> toggleMenu(applicant.id)}
+                          className="flex items-center justify-center w-9 h-9 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all duration-200 active:scale-95"
+                          title="More Options"
+                        >
+                          <span className="text-xl font-bold tracking-widest leading-none pb-2">...</span>
+                        </button>
+                      </div>
+
+                        {
+                          open === applicant.id && (
+                            <div className="absolute right-10 w-30 bg-white shadow rounded actions">
+                              <ul className="flex justify-start flex-col text-[14px] gap-[5px]">
+                                <h1 className='font-bold text-black'>Actions</h1>
+                                <button className=" h-[30px] cursor-pointer view-details-btn-action">
+                                  View Details
+                                </button>
+                                <button className="h-[30px] cursor-pointer update-status-btn-action">
+                                  Update Status
+                                </button>
+                              </ul>
+                            </div>
+                            )
+                        }
+                    </td>
+                  </tr>
+                ))
+              }
+
+            </tbody>
+          </table>
+          </div>
 
       </div>
     </div>
