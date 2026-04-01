@@ -1,11 +1,11 @@
 import React from 'react'
-import HeaderLanding from '../../Components/Header/HeaderLanding'
+import './LandingPageCss.css'
 
 function LandingPage() {
   return (
-    <div>
+    <div className='bg-gray-100 home-landing-page'>
       <div>
-
+        Home
       </div>
 
     </div>

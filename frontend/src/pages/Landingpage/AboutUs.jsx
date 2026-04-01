@@ -1,9 +1,7 @@
 import React from 'react'
-import HeaderLanding from '../../Components/Header/HeaderLanding'
-
 function AboutUs() {
   return (
-    <div>
+    <div className='min-h-screen bg-gray-100 about-us-container'>
       <h1>About us</h1>
     </div>
   )
