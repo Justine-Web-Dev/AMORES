@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import './FormCss.css'
 import {api} from '../../../api/api'
+import SubmitApplicationModal from '../../Modals/SubmitApplicationModal'
 
 function Form() {
   const [formData,setFormData] = useState({
@@ -43,7 +44,7 @@ function Form() {
   }
 
   return (
-    <div className='form-application-container p-4'>
+    <div className='form-application-container bg-gray-100'>
       <form className='my-form max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-sm' onSubmit={handleSubmit}>
         <h1 className='text-[24px] font-semibold title-application-form mb-6'>Application Form</h1>
         
@@ -188,6 +189,7 @@ function Form() {
 
         </div>
       </form>
+
     </div>
   )
 }
