@@ -1,0 +1,19 @@
+.form-application-container{
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 80px;
+}
+.my-form{
+  padding: 20px;
+  width: 700px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.123);
+  border-radius: 4px;
+}
+.name-credentials{
+  padding: 10px;
+}
+.title-application-form{
+  margin-bottom: 20px;
+}

@@ -1,66 +1,91 @@
 import React from 'react'
-import HeaderLanding from '../../Components/Header/HeaderLanding'
+import './FormCss.css'
 
 function Form() {
   return (
-    <div>
-        <form action="">
-          <label htmlFor="">Lastname</label>
-          <input type="text" placeholder='Lastname' required/>
+    <div className='form-application-container'>
+      <form className='my-form'>
+        <h1 className='text-[24px] font-semibold title-application-form'>Application Form</h1>
+        <div className="grid grid-cols-3 gap-4">
+         
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-gray-600">Lastname</label>
+            <input className="border rounded px-3 py-2 text-sm w-full" type="text" placeholder="Lastname" required />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-gray-600">Firstname</label>
+            <input className="border rounded px-3 py-2 text-sm w-full" type="text" placeholder="Firstname" required />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-gray-600">Middle name</label>
+            <input className="border rounded px-3 py-2 text-sm w-full" type="text" placeholder="M.N." required />
+          </div>
 
-          <label htmlFor="">Firstname</label>
-          <input type="text" placeholder='Firstname' required/>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-gray-600">Age</label>
+            <input className="border rounded px-3 py-2 text-sm w-full" type="number" placeholder="Age" required />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-gray-600">Qualifier</label>
+            <input className="border rounded px-3 py-2 text-sm w-full" type="text" placeholder="Qualifier" required />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-gray-600">CP #</label>
+            <input className="border rounded px-3 py-2 text-sm w-full" type="number" placeholder="CP #" required />
+          </div>
 
-          <label htmlFor="">Middle Name</label>
-          <input type="text" placeholder='M.N' required/>
+          <div className='flex flex-col gap-1 sm:col-span-3'>
+            <label className='text-sm text-gray-600'>Email</label>
+            <input type="email" placeholder='email@gmail.com'/>
+          </div>
 
-          <label htmlFor="">Age</label>
-          <input type="number" placeholder='Age' required/>
+          <div className="flex flex-col gap-1 col-span-2">
+            <label className="text-sm text-gray-600">Course</label>
+            <input className="border rounded px-3 py-2 text-sm w-full" type="text" placeholder="Course" required />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-gray-600">Date graduated</label>
+            <input className="border rounded px-3 py-2 text-sm w-full" type="date" required />
+          </div>
 
-          <label htmlFor="">Qualifier</label>
-          <input type="text" placeholder='Qualifier' required/>
+          <div className="flex flex-col gap-1 col-span-2">
+            <label className="text-sm text-gray-600">Name of school</label>
+            <input className="border rounded px-3 py-2 text-sm w-full" type="text" placeholder="Name of school" required />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-gray-600">Latin honor</label>
+            <input className="border rounded px-3 py-2 text-sm w-full" type="text" placeholder="Latin honor" />
+          </div>
 
-          <label htmlFor="">CP #</label>
-          <input type="number" placeholder='CP #' required/>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-gray-600">Pag-ibig #</label>
+            <input className="border rounded px-3 py-2 text-sm w-full" type="number" placeholder="Pag-ibig #" required />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-gray-600">PhilHealth ID #</label>
+            <input className="border rounded px-3 py-2 text-sm w-full" type="number" placeholder="PhilHealth ID #" required />
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-gray-600">Height (e.g. 160cm)</label>
+            <input className="border rounded px-3 py-2 text-sm w-full" type="text" placeholder="Height" required />
+          </div>
 
-          <label htmlFor="">Course</label>
-          <input type="text" placeholder='Course' required/>
+          <div className="flex flex-col gap-1 col-span-3">
+            <label className="text-sm text-gray-600">Tribe affiliated</label>
+            <input className="border rounded px-3 py-2 text-sm w-full" type="text" placeholder="Tribe affiliated" required />
+          </div>
 
-          <label htmlFor="">Date Graduated</label>
-          <input type="date" placeholder='Date Graduated' required/>
+          <div className="col-span-3 flex justify-end">
+            <button
+              className="w-[220px] h-10 rounded bg-[#2C2D86] text-white font-bold text-sm"
+              type="submit"
+            >
+              Submit Application
+            </button>
+          </div>
 
-          <label htmlFor="">Name of School</label>
-          <input type="text" placeholder='Name of School' required/>
-
-          <label htmlFor="">Latin Honor</label>
-          <input type="text" placeholder='Latin Honor'/>
-          
-          <label htmlFor="">Eligibility (PRC,CSC,NAP,PD907)</label>
-          <input type="text" placeholder='Eligibility' required/>
-
-          <label htmlFor="">Eligibility Rating</label>
-          <input type="text" placeholder='Eligibility Rating'/>
-
-          <label htmlFor="">Pag-ibig #</label>
-          <input type="number" placeholder='Pag-ibig #' required/>
-
-          <label htmlFor="">PhilHealth ID#</label>
-          <input type="number" placeholder='PhilHealth ID#' required/>
-
-          <label htmlFor="">Heigth e.g. 160cm</label>
-          <input type="text" placeholder='Height' required/>
-
-          <label htmlFor="">Waiver</label>
-          <input type="text" placeholder='Waiver'/>
-
-          <label htmlFor="">Tribe Affiliated</label>
-          <input type="text" placeholder='Tribe Affiliated' required/>
-
-          <button 
-          className='border w-[220px] h-10 rounded bg-[#2C2D86] text-white font-bold'
-          type="submit">Submit Application</button>
-
-        </form>
+        </div>
+      </form>
     </div>
   )
 }

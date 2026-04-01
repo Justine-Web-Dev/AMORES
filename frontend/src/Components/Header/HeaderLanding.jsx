@@ -9,7 +9,7 @@ function HeaderLanding() {
     const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="shadow w-full my-header">
+    <header className="fixed top-0 left-0 right-0 bg-[#fff] shadow w-full my-header">
       {/* Top bar */}
       <div className="flex justify-around items-center px-6 py-3">
         {/* Logo + Name */}
