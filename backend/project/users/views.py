@@ -76,7 +76,8 @@ def update_user(request,pk):
   elif request.method == 'DELETE':
     users.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
-  
+
+#applicant applications
 @api_view(['GET'])
 def get_applicant_form(request):
   infos = Applicant_infos.objects.all()

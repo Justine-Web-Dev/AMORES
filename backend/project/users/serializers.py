@@ -1,6 +1,25 @@
 from rest_framework import serializers
 from .models import User,Applicant_infos
+from django.utils.dateparse import parse_datetime, parse_date
 
+class FlexibleDateField(serializers.DateField):
+    def to_internal_value(self, data):
+        if not data:
+            return None
+        # If it's already a datetime string from JS (ISO format)
+        if isinstance(data, str) and 'T' in data:
+            dt = parse_datetime(data)
+            return dt.date() if dt else None
+        return super().to_internal_value(data)
+
+    # This handles the GET (Outgoing data / Serializers.data)
+    def to_representation(self, value):
+        if not value:
+            return None
+        # If the DB gave us a datetime object, force it to just a date string
+        if hasattr(value, 'date'):
+            return value.date().isoformat()
+        return super().to_representation(value)
 class UsersSerializers(serializers.ModelSerializer):
   class Meta:
     model = User
@@ -10,6 +29,9 @@ class UsersSerializers(serializers.ModelSerializer):
         }
 
 class ApplicantInfosSerializers(serializers.ModelSerializer):
+  date_graduated = FlexibleDateField()
+  created_at = serializers.DateField(read_only=True)
+
   class Meta:
     model = Applicant_infos
     fields = '__all__'

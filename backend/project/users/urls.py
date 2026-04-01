@@ -11,5 +11,4 @@ urlpatterns = [
   #Applicants
     path("get_applicant_info/",get_applicant_form,name='get_applicant_form'),
     path("register_applicant_info/", register_applicant_form,name='register_applicant_form'),
-    
 ]

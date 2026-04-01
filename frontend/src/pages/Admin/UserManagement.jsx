@@ -26,8 +26,7 @@ const [selectedUser,setSelectedUser] = useState(null)
     setSelectedUser(user)
     setToggleModal(true)
   }
-
-
+  
   return (
     <div className='module-content'>
       <div className='flex justify-between items-center add-btn-container'>
