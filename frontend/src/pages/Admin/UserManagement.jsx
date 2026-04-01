@@ -14,14 +14,13 @@ const [toggleModal,setToggleModal] = useState(false)
 const [selectedUser,setSelectedUser] = useState(null)
 
   useEffect(()=>{
-    fetchUsers()
-  },[])
-
    const fetchUsers = async () => {
       const response = await api.get("users/get_user")
       setUsers(response.data)
       console.log(response.data)
     }
+    fetchUsers()
+  },[])
 
   const handleEdit = (user) =>{
     setSelectedUser(user)
