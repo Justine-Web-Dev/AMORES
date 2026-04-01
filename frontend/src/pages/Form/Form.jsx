@@ -20,7 +20,6 @@ function Form() {
     try {
       const payload = {
         ...formData,
-        // Ensure all names match Django fields exactly
         middle_name: formData.middle_name,
         name_of_school: formData.name_of_school,
         pag_ibig_number: formData.pag_ibig_number,
@@ -30,8 +29,8 @@ function Form() {
       }
 
       const response = await api.post("users/register_applicant_info/", payload)
-      console.log("Application Submitted successfully", response.data)
-      // optional: show toast / success message
+      alert("Application Submitted successfully")
+      console.log(response.data)
       setFormData({
         lastname: '', firstname: '', middle_name: '', age: '',
         cp_number: '', program: '', name_of_school: '',
@@ -50,7 +49,6 @@ function Form() {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           
-          {/* Name Section */}
           <div className="flex flex-col gap-1">
             <label className="text-sm text-gray-600">Lastname</label>
             <input
@@ -74,7 +72,6 @@ function Form() {
               onChange={handleChange} className="border rounded px-3 py-2 text-sm w-full" type="text" placeholder="M.N." required />
           </div>
 
-          {/* Info Section */}
           <div className="flex flex-col gap-1">
             <label className="text-sm text-gray-600">Age</label>
             <input
@@ -102,7 +99,6 @@ function Form() {
               className="border rounded px-3 py-2 text-sm w-full" type="text" placeholder="Program" required />
           </div>
 
-          {/* School Info - Spans 2 cols on desktop, full on mobile */}
           <div className="flex flex-col gap-1 md:col-span-2">
             <label className="text-sm text-gray-600">Name of school</label>
             <input 
@@ -121,7 +117,6 @@ function Form() {
               className="border rounded px-3 py-2 text-sm w-full" type="date" required />
           </div>
 
-          {/* Email - Spans 2 cols on desktop */}
           <div className='flex flex-col gap-1 md:col-span-2'>
             <label className='text-sm text-gray-600'>Email</label>
             <input 
@@ -144,7 +139,7 @@ function Form() {
               className="border rounded px-3 py-2 text-sm w-full" type="text" placeholder="Latin honor" />
           </div>
 
-          {/* IDs Section */}
+         
           <div className="flex flex-col gap-1">
             <label className="text-sm text-gray-600">Pag-ibig #</label>
             <input 
@@ -171,7 +166,7 @@ function Form() {
               className="border rounded px-3 py-2 text-sm w-full" type="text" placeholder="Height" required />
           </div>
 
-          {/* Tribe - Full width on desktop */}
+          
           <div className="flex flex-col gap-1 md:col-span-3">
             <label className="text-sm text-gray-600">Tribe affiliated</label>
             <input 
@@ -181,7 +176,7 @@ function Form() {
               className="border rounded px-3 py-2 text-sm w-full" type="text" placeholder="Tribe affiliated" required />
           </div>
 
-          {/* Submit Button - Centers on mobile, right-aligned on desktop */}
+          
           <div className="md:col-span-3 flex justify-center md:justify-end mt-4">
             <button
               className="w-full md:w-[220px] h-10 rounded bg-[#2C2D86] text-white font-bold text-sm cursor-pointer hover:bg-[#3a3b9e] transition-colors"

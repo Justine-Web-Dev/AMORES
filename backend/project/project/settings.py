@@ -58,9 +58,15 @@ ROOT_URLCONF = 'project.urls'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "http://127.0.0.1:8000",
+    "http://127.0.0.1:5173",
+    "http://192.168.100.148:5173",
 ]
 
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.100.148']
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://192.168.100.148:5173", # Trust the frontend IP for data submission
+]
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
