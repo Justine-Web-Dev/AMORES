@@ -1,9 +1,10 @@
 from django.shortcuts import render
-from .serializers import UsersSerializers,ApplicantInfosSerializers
-from .models import User,Applicant_infos
-from rest_framework.decorators import api_view
+from .serializers import UsersSerializers,ApplicantInfosSerializers,ApplicantDocumentSerializer
+from .models import User,Applicant_infos,ApplicantDocument
+from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.parsers import MultiPartParser, FormParser
 
 import jwt
 import datetime
@@ -105,6 +106,7 @@ def register_applicant_form(request):
     instance = serializer.save() 
     # Crucial: return the tracking_code in the JSON response
     return Response({
+              "id": instance.id,
               "tracking_code": instance.tracking_code, 
               "message": "Success"
   }, status=status.HTTP_201_CREATED)
@@ -132,3 +134,28 @@ def track_application_status(request):
   
   except Applicant_infos.DoesNotExist:
     return Response({"error": "Invalid tracking code. Please check and try again."}, status=status.HTTP_404_NOT_FOUND)
+  
+@api_view(['POST'])
+@parser_classes([MultiPartParser, FormParser])
+def upload_document(request):
+    # Pass the request in context so the serializer can generate full URLs for the file
+    serializer = ApplicantDocumentSerializer(data=request.data, context={'request': request})
+    
+    if serializer.is_valid():
+        # Check if the applicant already uploaded this specific type (Optional but recommended)
+        applicant_id = request.data.get('applicant')
+        doc_type = request.data.get('document_type')
+        
+        # Example logic: delete the old one if they are re-uploading
+        # ApplicantDocument.objects.filter(applicant_id=applicant_id, document_type=doc_type).delete()
+        
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def get_applicant_documents(request, applicant_id):
+    documents = ApplicantDocument.objects.filter(applicant_id=applicant_id)
+    serializer = ApplicantDocumentSerializer(documents, many=True, context={'request': request})
+    return Response(serializer.data)

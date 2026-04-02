@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import register_user,login_user, get_user,update_user, get_applicant_form,register_applicant_form, track_status,track_application_status
+from .views import register_user,login_user, get_user,update_user, get_applicant_form,register_applicant_form, track_status,track_application_status, upload_document,get_applicant_documents
 
 urlpatterns = [
   #Login Users
@@ -13,6 +13,11 @@ urlpatterns = [
     path("register_applicant_info/", register_applicant_form,name='register_applicant_form'),
     path("track_status/<str:code>/", track_status,name='track_status'),
 
-    #Track the applicant code
+  #Applicant document
+    path("upload-document/",upload_document, name="upload_document"),
+    path("view-applicant-document/<int:applicant_id>/",get_applicant_documents, name="get_applicant_documents"),
+
+  #Track the applicant code
     path('track-status/', track_application_status, name='track_application_status'),
+
 ]

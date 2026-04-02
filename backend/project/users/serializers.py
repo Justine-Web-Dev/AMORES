@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User,Applicant_infos
+from .models import User,Applicant_infos,ApplicantDocument
 from django.utils.dateparse import parse_datetime, parse_date
 
 class FlexibleDateField(serializers.DateField):
@@ -36,4 +36,22 @@ class ApplicantInfosSerializers(serializers.ModelSerializer):
     model = Applicant_infos
     fields = '__all__'
     read_only_fields = ['tracking_code', 'created_at', 'status']
+
+class ApplicantDocumentSerializer(serializers.ModelSerializer):
+   # We include the ID of the applicant to link the file to their profile
+    applicant = serializers.PrimaryKeyRelatedField(queryset=Applicant_infos.objects.all())
+
+    # This identifies the file URL so the frontend can display it
+    file_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ApplicantDocument
+        fields = ['id', 'applicant', 'document_type', 'file', 'uploaded_at', 'file_url']
+        read_only_fields = ['uploaded_at']
+
+    def get_file_url(self, obj):
+        request = self.context.get('request')
+        if obj.file and request:
+            return request.build_absolute_uri(obj.file.url)
+        return None
 

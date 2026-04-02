@@ -70,3 +70,26 @@ class Applicant_infos(models.Model):
   
   def  __str__ (self):
     return f"{self.firstname} {self.lastname} ({self.tracking_code})"
+  
+class ApplicantDocument(models.Model):
+  # This links the document to a specific applicant
+    applicant = models.ForeignKey(
+        'Applicant_infos', 
+        on_delete=models.CASCADE, 
+        related_name='documents'
+    )
+
+   # Using your specific list from the image
+    DOCUMENT_TYPES = [
+        ('PSA', 'PSA Birth Certificate'),
+        ('ELIGIBILITY', 'Eligibilities'),
+        ('SCHOLASTIC', 'Scholastic Records (Diploma/OTR)'),
+        ('CLEARANCE', 'Clearances'),
+    ]
+
+    document_type = models.CharField(max_length=20, choices=DOCUMENT_TYPES)
+    file = models.ImageField(upload_to='applicant_docs/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.document_type} for {self.applicant.lastname}"

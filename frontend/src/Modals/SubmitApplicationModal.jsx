@@ -4,13 +4,13 @@ import './SubmitApplicationCss.css'
 
 import { FiCheckCircle } from "react-icons/fi";
 
-function SubmitApplicationModal() {
+function SubmitApplicationModal({ trackingCode: trackingCodeProp }) {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const { trackingCode } = location.state || { trackingCode: "N/A" };
+  const trackingCode = trackingCodeProp || location.state?.trackingCode || "N/A";
 
-  const handleBackToHome = () =>{
+  const handleBackToHome = () => {
     navigate('/')
   }
   return (

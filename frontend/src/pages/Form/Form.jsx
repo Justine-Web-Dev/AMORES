@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './FormCss.css'
-import {api} from '../../../api/api'
-import SubmitApplicationModal from '../../Modals/SubmitApplicationModal'
 
 function Form() {
   const navigate = useNavigate()
@@ -17,35 +15,10 @@ function Form() {
     setFormData({...formData, [e.target.name]:e.target.value})
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault()
-
-    try {
-      const payload = {
-        ...formData,
-        middle_name: formData.middle_name,
-        name_of_school: formData.name_of_school,
-        pag_ibig_number: formData.pag_ibig_number,
-        phil_health_id_num: formData.phil_health_id_num,
-        tribe_affiliated: formData.tribe_affiliated,
-        date_graduated: formData.date_graduated ? new Date(formData.date_graduated).toISOString().split('T')[0] : null,
-      }
-
-      const response = await api.post("users/register_applicant_info/", payload)
-
-      const code = response.data.tracking_code;
-      navigate('/success-submit', { state: { trackingCode: code }});
-
-      console.log(response.data)
-      setFormData({
-        lastname: '', firstname: '', middle_name: '', age: '',
-        cp_number: '', program: '', name_of_school: '',
-        date_graduated: '', email: '', latin_honor: '',
-        pag_ibig_number: '', phil_health_id_num: '', height: '', tribe_affiliated: ''
-      })
-    } catch (error) {
-      console.error("There was an error!", error?.response?.data || error.message)
-    }
+    // Navigate to document submission with form data
+    navigate('/document-submission', { state: { formData } })
   }
 
   return (
@@ -188,7 +161,7 @@ function Form() {
               className="w-full md:w-[220px] h-10 rounded bg-[#2C2D86] text-white font-bold text-sm cursor-pointer hover:bg-[#3a3b9e] transition-colors"
               type="submit"
             >
-              Submit Application
+              Next Step
             </button>
           </div>
 
