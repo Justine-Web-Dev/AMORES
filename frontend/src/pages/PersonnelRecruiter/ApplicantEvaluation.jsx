@@ -12,13 +12,19 @@ function ApplicantEvaluation() {
  const [applicantInfo,setApplicantInfo] = useState([])
  const [open,setOpen] = useState(null)
 
-  useEffect(()=>{
-    const fetchInfo = async () =>{
+  const fetchInfo = async () =>{
       const response = await api.get("users/get_applicant_info")
       setApplicantInfo(response.data)
       console.log(response.data)
     }
+
+  useEffect(()=>{
     fetchInfo()
+    const interval = setInterval(()=>{
+      fetchInfo()
+    },5000)
+
+    return () => clearInterval(interval)
   },[])
 
   const toggleMenu = (id) =>{
