@@ -1,11 +1,14 @@
 import React from 'react'
-import { useNavigate } from 'react-router';
+import { useNavigate,useLocation } from 'react-router-dom';
 import './SubmitApplicationCss.css'
 
 import { FiCheckCircle } from "react-icons/fi";
 
-function SubmitApplicationModal({onClose,codeValue}) {
+function SubmitApplicationModal() {
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const { trackingCode } = location.state || { trackingCode: "N/A" };
 
   const handleBackToHome = () =>{
     navigate('/')
@@ -37,7 +40,7 @@ function SubmitApplicationModal({onClose,codeValue}) {
     {/* Code Display */}
     <div className='h-[60px] sm:h-[70px] flex justify-center items-center rounded-lg code-container'>
       <p className='text-xl sm:text-2xl font-bold code-text'>
-        {codeValue}
+        {trackingCode}
       </p>
     </div>
 

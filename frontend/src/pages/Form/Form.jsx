@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './FormCss.css'
 import {api} from '../../../api/api'
 import SubmitApplicationModal from '../../Modals/SubmitApplicationModal'
 
 function Form() {
-  const [generateCode,setGenerateCode] = useState('')
-  const [isModalOpen,setIsModalOpen] = useState(false)
+  const navigate = useNavigate()
   const [formData,setFormData] = useState({
     lastname: '', firstname: '', middle_name: '', age: '',
     cp_number: '', program: '', name_of_school: '',
@@ -32,10 +32,10 @@ function Form() {
       }
 
       const response = await api.post("users/register_applicant_info/", payload)
-      
-      setGenerateCode(response.data.tracking_code)
 
-      setIsModalOpen(true)
+      const code = response.data.tracking_code;
+      navigate('/success-submit', { state: { trackingCode: code }});
+
       console.log(response.data)
       setFormData({
         lastname: '', firstname: '', middle_name: '', age: '',
@@ -194,11 +194,6 @@ function Form() {
 
         </div>
       </form>
-
-      {isModalOpen && <SubmitApplicationModal
-      codeValue={generateCode}
-      onClose={()=>setIsModalOpen(false)}
-      />}
 
     </div>
   )

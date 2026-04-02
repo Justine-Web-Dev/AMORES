@@ -15,7 +15,7 @@ function App() {
         <Route path='/LoginUsers' element={<LoginForm />} />
         <Route path='/Dashboard/*' element={<AdminDashboard />} />
         <Route path='/PersonnelDashboard/*' element={<PersonnelDashboard />} />
-        <Route path='/submitted-application' element={<SubmitApplicationModal />} />
+        <Route path='/success-submit' element={<SubmitApplicationModal />} />
 
       </Routes>
     </>

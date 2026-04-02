@@ -3,7 +3,7 @@ import { useState } from 'react';
 
 import logo from '../../assets/RRSU1 logo.png'
 import '../Header/Headerlanding.css'
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 function HeaderLanding() {
     const [menuOpen, setMenuOpen] = useState(false);
