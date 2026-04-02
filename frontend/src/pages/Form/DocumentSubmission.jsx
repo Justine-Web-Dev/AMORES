@@ -26,6 +26,8 @@ function DocumentSubmission() {
     }))
   }
 
+  const isDocumentFormValid = documents.psa && documents.eligibility && documents.scholastic && documents.clearances
+
   const handleSubmit = async (event) => {
     event.preventDefault()
     setError('')
@@ -107,70 +109,70 @@ function DocumentSubmission() {
 
   return (
     <div className="document-submit-container">
-  <div className="document-card">
-    
-    <h1 className="title">Document Submission</h1>
-    <p className="subtitle">Please upload the required documents</p>
+      <div className="document-card">
+        
+        <h1 className="title">Document Submission</h1>
+        <p className="subtitle">Please upload the required documents</p>
 
-    {error && <div className="error-message" style={{ color: 'red', padding: '10px', marginBottom: '15px', backgroundColor: '#ffe6e6', borderRadius: '4px' }}>{error}</div>}
+        {error && <div className="error-message" style={{ color: 'red', padding: '10px', marginBottom: '15px', backgroundColor: '#ffe6e6', borderRadius: '4px' }}>{error}</div>}
 
-    <form onSubmit={handleSubmit} className="doc-form">
+        <form onSubmit={handleSubmit} className="doc-form">
 
-      {/* PSA */}
-      <div className="form-group">
-        <label>PSA (Birth Certificate)</label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => handleFileChange(e, 'psa')}
-          disabled={loading}
-        />
-        {documents.psa && <p className="file-name">{documents.psa.name}</p>}
+          {/* PSA */}
+          <div className="form-group">
+            <label>PSA (Birth Certificate)</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleFileChange(e, 'psa')}
+              disabled={loading}
+            />
+            {documents.psa && <p className="file-name">{documents.psa.name}</p>}
+          </div>
+
+          {/* Eligibility */}
+          <div className="form-group">
+            <label>Eligibility Documents</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleFileChange(e, 'eligibility')}
+              disabled={loading}
+            />
+            {documents.eligibility && <p className="file-name">{documents.eligibility.name}</p>}
+          </div>
+
+          {/* Scholastic */}
+          <div className="form-group">
+            <label>Scholastic Records</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleFileChange(e, 'scholastic')}
+              disabled={loading}
+            />
+            {documents.scholastic && <p className="file-name">{documents.scholastic.name}</p>}
+          </div>
+
+          {/* Clearances */}
+          <div className="form-group">
+            <label>Clearances</label>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleFileChange(e, 'clearances')}
+              disabled={loading}
+            />
+            {documents.clearances && <p className="file-name">{documents.clearances.name}</p>}
+          </div>
+
+          <button type="submit" className="submit-btn" disabled={loading || !isDocumentFormValid}>
+            {loading ? 'Submitting...' : 'Submit Application'}
+          </button>
+        </form>
+
       </div>
-
-      {/* Eligibility */}
-      <div className="form-group">
-        <label>Eligibility Documents</label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => handleFileChange(e, 'eligibility')}
-          disabled={loading}
-        />
-        {documents.eligibility && <p className="file-name">{documents.eligibility.name}</p>}
-      </div>
-
-      {/* Scholastic */}
-      <div className="form-group">
-        <label>Scholastic Records</label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => handleFileChange(e, 'scholastic')}
-          disabled={loading}
-        />
-        {documents.scholastic && <p className="file-name">{documents.scholastic.name}</p>}
-      </div>
-
-      {/* Clearances */}
-      <div className="form-group">
-        <label>Clearances</label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => handleFileChange(e, 'clearances')}
-          disabled={loading}
-        />
-        {documents.clearances && <p className="file-name">{documents.clearances.name}</p>}
-      </div>
-
-      <button type="submit" className="submit-btn" disabled={loading}>
-        {loading ? 'Submitting...' : 'Submit Application'}
-      </button>
-    </form>
-
-  </div>
-</div>
+    </div>
   )
 }
 

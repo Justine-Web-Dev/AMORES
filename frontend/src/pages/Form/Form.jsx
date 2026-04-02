@@ -21,6 +21,17 @@ function Form() {
     navigate('/document-submission', { state: { formData } })
   }
 
+  const requiredFields = [
+    'lastname', 'firstname', 'middle_name', 'age', 'cp_number',
+    'program', 'name_of_school', 'date_graduated', 'email',
+    'pag_ibig_number', 'phil_health_id_num', 'height', 'tribe_affiliated'
+  ]
+
+  const isFormValid = requiredFields.every((key) => {
+    const value = formData[key]
+    return value !== null && value !== undefined && value.toString().trim() !== ''
+  })
+
   return (
     <div className='form-application-container bg-gray-100'>
       <form className='my-form max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-sm' onSubmit={handleSubmit}>
@@ -158,8 +169,9 @@ function Form() {
           
           <div className="md:col-span-3 flex justify-center md:justify-end mt-4">
             <button
-              className="w-full md:w-[220px] h-10 rounded bg-[#2C2D86] text-white font-bold text-sm cursor-pointer hover:bg-[#3a3b9e] transition-colors"
+              className="w-full md:w-[220px] h-10 rounded bg-[#2C2D86] text-white font-bold text-sm cursor-pointer hover:bg-[#3a3b9e] transition-colors submit-application-btn"
               type="submit"
+              disabled={!isFormValid}
             >
               Next Step
             </button>

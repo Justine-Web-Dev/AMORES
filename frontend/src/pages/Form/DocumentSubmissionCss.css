@@ -4,21 +4,23 @@
   justify-content: center;
   align-items: center;
   background-color: #f3f4f6;
-  padding: 20px;
+  padding: 15px;
 }
 
+/* Card */
 .document-card {
   width: 100%;
   max-width: 500px;
   background: #ffffff;
-  padding: 25px;
+  padding: 20px;
   border-radius: 12px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
+/* Titles */
 .title {
   text-align: center;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: bold;
   margin-bottom: 5px;
 }
@@ -27,8 +29,10 @@
   text-align: center;
   color: #6b7280;
   margin-bottom: 20px;
+  font-size: 14px;
 }
 
+/* Form */
 .doc-form {
   display: flex;
   flex-direction: column;
@@ -43,16 +47,20 @@
 .form-group label {
   font-weight: 600;
   margin-bottom: 5px;
+  font-size: 14px;
 }
 
+/* File input */
 .form-group input[type="file"] {
+  width: 100%;
   padding: 8px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   cursor: pointer;
+  font-size: 13px;
 }
 
-/* File button styling */
+/* File button */
 .form-group input[type="file"]::file-selector-button {
   margin-right: 10px;
   padding: 5px 10px;
@@ -61,6 +69,7 @@
   background-color: #dbeafe;
   color: #1d4ed8;
   cursor: pointer;
+  font-size: 12px;
 }
 
 .form-group input[type="file"]::file-selector-button:hover {
@@ -71,20 +80,79 @@
   font-size: 12px;
   color: green;
   margin-top: 5px;
+  word-break: break-all; /* prevents overflow */
 }
 
+/* Button */
 .submit-btn {
   margin-top: 10px;
   padding: 12px;
-  background-color: #2563eb;
+  background-color: #2C2D86;
   color: #fff;
   border: none;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   transition: 0.2s ease;
+  font-size: 14px;
 }
 
 .submit-btn:hover {
-  background-color: #1d4ed8;
+  opacity: 0.9;
+  box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.377);
+  transform: translateY(-2px);
+}
+
+.submit-btn:disabled,
+.submit-btn[disabled] {
+  background-color: #a5b4fc;
+  cursor: not-allowed;
+  opacity: 0.7;
+  box-shadow: none;
+  transform: none;
+}
+
+/* 📱 Mobile (small screens) */
+@media (max-width: 480px) {
+  .document-card {
+    padding: 15px;
+    border-radius: 10px;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+  }
+
+  .submit-btn {
+    padding: 10px;
+    font-size: 13px;
+  }
+}
+
+/* 📲 Tablet */
+@media (min-width: 481px) and (max-width: 768px) {
+  .document-card {
+    max-width: 90%;
+    padding: 20px;
+  }
+}
+
+/* 💻 Large screens */
+@media (min-width: 1024px) {
+  .document-card {
+    max-width: 550px;
+    margin-top: 80px;
+  }
+
+  .title {
+    font-size: 26px;
+  }
+
+  .subtitle {
+    font-size: 15px;
+  }
 }
