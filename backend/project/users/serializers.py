@@ -35,4 +35,5 @@ class ApplicantInfosSerializers(serializers.ModelSerializer):
   class Meta:
     model = Applicant_infos
     fields = '__all__'
+    read_only_fields = ['tracking_code', 'created_at', 'status']
 

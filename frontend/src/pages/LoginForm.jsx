@@ -34,7 +34,7 @@ function LoginForm() {
     setPassword("");
 
   setTimeout(() => {
-    if (data.username === "admin") {
+    if (data.username === "Admin") {
       navigate("/Dashboard")
     } else {
       navigate("/PersonnelDashboard")

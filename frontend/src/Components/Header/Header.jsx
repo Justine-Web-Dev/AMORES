@@ -35,7 +35,7 @@ if (token) {
   }
 }
 
-const isAdmin = username === "admin";
+const isAdmin = username === "Admin";
 
   return (
     <header className='Header'>

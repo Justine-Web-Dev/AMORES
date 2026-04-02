@@ -4,6 +4,8 @@ import {api} from '../../../api/api'
 import SubmitApplicationModal from '../../Modals/SubmitApplicationModal'
 
 function Form() {
+  const [generateCode,setGenerateCode] = useState('')
+  const [isModalOpen,setIsModalOpen] = useState(false)
   const [formData,setFormData] = useState({
     lastname: '', firstname: '', middle_name: '', age: '',
     cp_number: '', program: '', name_of_school: '',
@@ -30,7 +32,10 @@ function Form() {
       }
 
       const response = await api.post("users/register_applicant_info/", payload)
-      alert("Application Submitted successfully")
+      
+      setGenerateCode(response.data.tracking_code)
+
+      setIsModalOpen(true)
       console.log(response.data)
       setFormData({
         lastname: '', firstname: '', middle_name: '', age: '',
@@ -189,6 +194,11 @@ function Form() {
 
         </div>
       </form>
+
+      {isModalOpen && <SubmitApplicationModal
+      codeValue={generateCode}
+      onClose={()=>setIsModalOpen(false)}
+      />}
 
     </div>
   )

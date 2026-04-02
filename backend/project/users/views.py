@@ -84,11 +84,28 @@ def get_applicant_form(request):
   serializers = ApplicantInfosSerializers(infos,many=True)
   return Response(serializers.data)
 
+@api_view(['GET'])
+def track_status(request, code):
+    try:
+        # We look up the applicant by the unique tracking code
+        applicant = Applicant_infos.objects.get(tracking_code=code.upper())
+        serializers = ApplicantInfosSerializers(applicant)
+        return Response({
+            "status": applicant.status,
+            "name": f"{applicant.firstname} {applicant.lastname}",
+            "program": applicant.program
+        }, status=status.HTTP_200_OK)
+    except Applicant_infos.DoesNotExist:
+        return Response({"error": "Application not found"}, status=status.HTTP_404_NOT_FOUND)
+
 @api_view(['POST'])
 def register_applicant_form(request):
-  serializers = ApplicantInfosSerializers(data=request.data)
-
-  if serializers.is_valid():
-    serializers.save()
-    return Response(serializers.data, status=status.HTTP_201_CREATED)
-  return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+ serializer = ApplicantInfosSerializers(data=request.data)
+ if serializer.is_valid():
+    instance = serializer.save() 
+    # Crucial: return the tracking_code in the JSON response
+    return Response({
+              "tracking_code": instance.tracking_code, 
+              "message": "Success"
+  }, status=status.HTTP_201_CREATED)
+ return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
