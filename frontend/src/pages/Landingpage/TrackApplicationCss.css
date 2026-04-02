@@ -26,11 +26,51 @@
   white-space: nowrap;
 }
 
-.check-status-btn:hover {
-  background-color: #1e1f5e;
+.track-application-input {
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
 }
-@media (min-width: 768px) {
-  .track-container {
-    padding: 40px;
+
+.track-application-input:focus {
+  outline: none;
+  border-color: #2C2D86;
+  box-shadow: 0 0 0 3px rgba(44, 45, 134, 0.1);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+.status-text{
+  padding: 3px 6px;
+}
+.app-details{
+  margin-top: 0.5rem;
+  padding: 1.5rem;
+  border:1px solid rgba(128, 128, 128, 0.281) ;
+  background-color: #2c2d861e;
+}
+.title-app-details{
+  margin-bottom: 0.5rem;
+}
+.input-track-container{
+  padding-bottom: 20px;
+  border-color: rgba(128, 128, 128, 0.24);
+}
+.error-msg{
+  padding: 1rem;
 }

@@ -109,3 +109,26 @@ def register_applicant_form(request):
               "message": "Success"
   }, status=status.HTTP_201_CREATED)
  return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def track_application_status(request):
+  code = request.query_params.get('code',None)
+
+  if not code:
+    return Response({"error": "Tracking code is required"}, status=status.HTTP_400_BAD_REQUEST)
+  
+  try:
+    # Search for the applicant using your specific tracking_code field
+    applicant = Applicant_infos.objects.get(tracking_code=code)
+
+    # Return only safe, non-sensitive data
+    return Response({
+        "tracking_code": applicant.tracking_code,
+        "full_name": f"{applicant.firstname} {applicant.lastname}",
+        "status": applicant.status,
+        "program": applicant.program,
+        "date_applied": applicant.created_at
+    }, status=status.HTTP_200_OK)
+  
+  except Applicant_infos.DoesNotExist:
+    return Response({"error": "Invalid tracking code. Please check and try again."}, status=status.HTTP_404_NOT_FOUND)
