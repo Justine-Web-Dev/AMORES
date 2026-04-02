@@ -1,4 +1,36 @@
-.track-application-container{
-  min-height: 100vh;
-  margin-top: 75px;
+.track-application-container {
+  height: 100vh; 
+  width: 100vw;
+  overflow: hidden; 
+  display: flex;
+  align-items: center; 
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.track-container {
+  padding: 20px;
+  border: 1px solid rgba(128, 128, 128, 0.308);
+  width: 100%;
+  max-width: 650px;
+  background-color: white; /* Ensures it stands out against the gray bg */
+  box-sizing: border-box;
+  border-radius: 8px;
+}
+
+.check-status-btn {
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.check-status-btn:hover {
+  background-color: #1e1f5e;
+}
+@media (min-width: 768px) {
+  .track-container {
+    padding: 40px;
+  }
 }
