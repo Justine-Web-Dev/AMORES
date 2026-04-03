@@ -1,18 +1,33 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './FormCss.css'
 
 function Form() {
   const navigate = useNavigate()
-  const [formData,setFormData] = useState({
+  const [formData, setFormData] = useState({
     lastname: '', firstname: '', middle_name: '', age: '',
     cp_number: '', program: '', name_of_school: '',
     date_graduated: '', email: '', latin_honor: '',
     pag_ibig_number: '', phil_health_id_num: '', height: '', tribe_affiliated: ''
-  }) 
+  })
 
-  const handleChange = (e) =>{
-    setFormData({...formData, [e.target.name]:e.target.value})
+  // Load saved form data from localStorage on mount
+  useEffect(() => {
+    const savedFormData = localStorage.getItem('applicationFormData')
+    if (savedFormData) {
+      try {
+        setFormData(JSON.parse(savedFormData))
+      } catch (err) {
+        console.error("Error loading saved form data:", err)
+      }
+    }
+  }, [])
+
+  const handleChange = (e) => {
+    const updatedData = { ...formData, [e.target.name]: e.target.value }
+    setFormData(updatedData)
+    // Auto-save to localStorage
+    localStorage.setItem('applicationFormData', JSON.stringify(updatedData))
   }
 
   const handleSubmit = (e) => {
@@ -33,11 +48,11 @@ function Form() {
   })
 
   return (
-    <div className='form-application-container bg-gray-100'>
-      <form className='my-form max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-sm' onSubmit={handleSubmit}>
-        <h1 className='text-[24px] font-semibold title-application-form mb-6'>Application Form</h1>
+    <div className='form-application-container bg-gray-100 min-h-screen py-6 px-4 md:py-10'>
+      <form className='my-form max-w-4xl mx-auto bg-white p-4 md:p-6 rounded-lg shadow-sm' onSubmit={handleSubmit}>
+        <h1 className='text-2xl md:text-[24px] font-semibold title-application-form mb-6'>Application Form</h1>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
           
           <div className="flex flex-col gap-1">
             <label className="text-sm text-gray-600">Lastname</label>

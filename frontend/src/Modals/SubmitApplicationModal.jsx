@@ -13,6 +13,9 @@ function SubmitApplicationModal({ trackingCode: trackingCodeProp }) {
   const handleBackToHome = () => {
     navigate('/')
   }
+  const directTrackApplication = () =>{
+    navigate('/track-application')
+  }
   return (
   <div className='bg-gray-100 Submit-application-container'>
   <div className='flex flex-col items-center gap-6 bg-white max-w-[600px] submit-app-modal'>
@@ -46,7 +49,9 @@ function SubmitApplicationModal({ trackingCode: trackingCodeProp }) {
 
     {/* Buttons: Stacked on mobile, row on small screens up */}
     <div className='flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-2'>
-      <button className='bg-[#2C2D86] text-white track-btn w-full sm:w-auto'>
+      <button 
+      onClick={directTrackApplication}
+      className='bg-[#2C2D86] text-white track-btn w-full sm:w-auto'>
         Track Application
       </button>
       <button

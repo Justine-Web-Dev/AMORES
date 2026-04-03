@@ -1,12 +1,16 @@
 import React, { useState } from 'react'
-import { useLocation,useNavigate } from 'react-router-dom'
-import './DocumentSubmissionCss.css'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { HiArrowNarrowLeft } from "react-icons/hi";
+import './DocumentSubmissionCss.css' // Your external CSS
 import { api } from '../../../api/api'
 
 function DocumentSubmission() {
   const location = useLocation()
   const navigate = useNavigate()
-  const formData = location.state?.formData || {}
+
+  const [formData] = useState(
+    location.state?.formData || JSON.parse(localStorage.getItem('applicationFormData')) || {}
+  )
 
   const [documents, setDocuments] = useState({
     psa: null,
@@ -20,28 +24,29 @@ function DocumentSubmission() {
 
   const handleFileChange = (event, documentType) => {
     const file = event.target.files[0]
-    setDocuments(prev => ({
-      ...prev,
-      [documentType]: file
-    }))
+    if (file) {
+      setDocuments(prev => ({
+        ...prev,
+        [documentType]: file
+      }))
+    }
   }
 
   const isDocumentFormValid = documents.psa && documents.eligibility && documents.scholastic && documents.clearances
+
+  const handleBack = () => {
+    navigate(-1)
+  }
 
   const handleSubmit = async (event) => {
     event.preventDefault()
     setError('')
     setLoading(true)
-    
+
     try {
-      // First, register applicant info
+      // 1. Register applicant info
       const payload = {
         ...formData,
-        middle_name: formData.middle_name,
-        name_of_school: formData.name_of_school,
-        pag_ibig_number: formData.pag_ibig_number,
-        phil_health_id_num: formData.phil_health_id_num,
-        tribe_affiliated: formData.tribe_affiliated,
         date_graduated: formData.date_graduated ? new Date(formData.date_graduated).toISOString().split('T')[0] : null,
       }
 
@@ -49,64 +54,42 @@ function DocumentSubmission() {
       const applicantId = response.data.id;
       const code = response.data.tracking_code;
 
-      // Upload documents - each document needs a separate request
+      // 2. Prepare document uploads
       const uploadPromises = []
+      const docTypes = [
+        { key: 'psa', label: 'PSA' },
+        { key: 'eligibility', label: 'ELIGIBILITY' },
+        { key: 'scholastic', label: 'SCHOLASTIC' },
+        { key: 'clearances', label: 'CLEARANCE' }
+      ]
 
-      if (documents.psa) {
-        const formData = new FormData()
-        formData.append('applicant', applicantId)
-        formData.append('document_type', 'PSA')
-        formData.append('file', documents.psa)
-        uploadPromises.push(api.post("users/upload-document/", formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        }))
-      }
+      docTypes.forEach(doc => {
+        if (documents[doc.key]) {
+          const docFormData = new FormData()
+          docFormData.append('applicant', applicantId)
+          docFormData.append('document_type', doc.label)
+          docFormData.append('file', documents[doc.key])
+          
+          uploadPromises.push(api.post("users/upload-document/", docFormData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+          }))
+        }
+      })
 
-      if (documents.eligibility) {
-        const formData = new FormData()
-        formData.append('applicant', applicantId)
-        formData.append('document_type', 'ELIGIBILITY')
-        formData.append('file', documents.eligibility)
-        uploadPromises.push(api.post("users/upload-document/", formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        }))
-      }
-
-      if (documents.scholastic) {
-        const formData = new FormData()
-        formData.append('applicant', applicantId)
-        formData.append('document_type', 'SCHOLASTIC')
-        formData.append('file', documents.scholastic)
-        uploadPromises.push(api.post("users/upload-document/", formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        }))
-      }
-
-      if (documents.clearances) {
-        const formData = new FormData()
-        formData.append('applicant', applicantId)
-        formData.append('document_type', 'CLEARANCE')
-        formData.append('file', documents.clearances)
-        uploadPromises.push(api.post("users/upload-document/", formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        }))
-      }
-
-      // Wait for all document uploads to complete
       if (uploadPromises.length > 0) {
         await Promise.all(uploadPromises)
       }
 
+      localStorage.removeItem('applicationFormData')
+      localStorage.removeItem('applicationDocumentNames')
+
       navigate('/success-submit', { state: { trackingCode: code } })
-    } catch (error) {
+    } catch (err) {
       const errorMessage =
-        error?.response?.data?.error ||
-        error?.response?.data?.detail ||
-        error?.response?.data?.message ||
-        error.message ||
+        err?.response?.data?.error ||
+        err?.response?.data?.detail ||
         "An error occurred while submitting your application"
       setError(errorMessage)
-      console.error("Error submitting application:", error)
     } finally {
       setLoading(false)
     }
@@ -115,14 +98,25 @@ function DocumentSubmission() {
   return (
     <div className="document-submit-container">
       <div className="document-card">
-        
-        <h1 className="title">Document Submission</h1>
-        <p className="subtitle">Please upload the required documents</p>
+        {/* Back Button */}
+        <button
+          onClick={handleBack}
+          className='flex items-center gap-2 cursor-pointer mb-4 text-gray-600 hover:text-blue-800 transition-colors'
+        >
+          <HiArrowNarrowLeft size={20} />
+          <span className="text-sm font-medium">Back</span>
+        </button>
 
-        {error && <div className="error-message" style={{ color: 'red', padding: '10px', marginBottom: '15px', backgroundColor: '#ffe6e6', borderRadius: '4px' }}>{error}</div>}
+        <h1 className="title">Document Submission</h1>
+        <p className="subtitle">Please upload the required documents in image format.</p>
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-md text-xs text-center">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="doc-form">
-
           {/* PSA */}
           <div className="form-group">
             <label>PSA (Birth Certificate)</label>
@@ -132,7 +126,7 @@ function DocumentSubmission() {
               onChange={(e) => handleFileChange(e, 'psa')}
               disabled={loading}
             />
-            {documents.psa && <p className="file-name">{documents.psa.name}</p>}
+            {documents.psa && <p className="file-name">✓ {documents.psa.name}</p>}
           </div>
 
           {/* Eligibility */}
@@ -144,7 +138,7 @@ function DocumentSubmission() {
               onChange={(e) => handleFileChange(e, 'eligibility')}
               disabled={loading}
             />
-            {documents.eligibility && <p className="file-name">{documents.eligibility.name}</p>}
+            {documents.eligibility && <p className="file-name">✓ {documents.eligibility.name}</p>}
           </div>
 
           {/* Scholastic */}
@@ -156,7 +150,7 @@ function DocumentSubmission() {
               onChange={(e) => handleFileChange(e, 'scholastic')}
               disabled={loading}
             />
-            {documents.scholastic && <p className="file-name">{documents.scholastic.name}</p>}
+            {documents.scholastic && <p className="file-name">✓ {documents.scholastic.name}</p>}
           </div>
 
           {/* Clearances */}
@@ -168,14 +162,17 @@ function DocumentSubmission() {
               onChange={(e) => handleFileChange(e, 'clearances')}
               disabled={loading}
             />
-            {documents.clearances && <p className="file-name">{documents.clearances.name}</p>}
+            {documents.clearances && <p className="file-name">✓ {documents.clearances.name}</p>}
           </div>
 
-          <button type="submit" className="submit-btn" disabled={loading || !isDocumentFormValid}>
+          <button
+            type="submit"
+            className="submit-btn"
+            disabled={loading || !isDocumentFormValid}
+          >
             {loading ? 'Submitting...' : 'Submit Application'}
           </button>
         </form>
-
       </div>
     </div>
   )

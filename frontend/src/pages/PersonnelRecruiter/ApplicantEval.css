@@ -15,6 +15,7 @@
   }
 }
 .view-details-btn-action{
+  padding: 8px 12px;
   transition: 0.3s;
 }
 .view-details-btn-action:hover{
@@ -35,4 +36,10 @@
 .status-label{
   padding: 4px 8px;
   border-radius: 4px;
+}
+.action-title{
+  padding-bottom: 0.5rem;
+}
+.col-8{
+  padding: 2.5rem 0;
 }

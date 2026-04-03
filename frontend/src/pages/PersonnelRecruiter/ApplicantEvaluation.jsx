@@ -114,59 +114,59 @@ function ApplicantEvaluation() {
             </thead>
 
             <tbody className="divide-y divide-gray-200 bg-white">
-  {filteredAndSorted.length > 0 ? (
-    filteredAndSorted.map((applicant) => (
-      <tr key={applicant.id} className="hover:bg-gray-50 transition-colors text-center">
-        <td>{applicant.firstname} {applicant.lastname} {applicant.middle_initial}</td>
-        <td>{applicant.age}</td>
-        <td>{applicant.program}</td>
-        <td>{applicant.name_of_school}</td>
-        <td>{applicant.date_graduated}</td>
-        <td>
-          <span className={`status-label px-2 py-1 rounded-full text-xs font-semibold ${statusColors[applicant.status] || "bg-gray-100 text-gray-600"}`}>
-            {applicant.status}
-          </span>
-        </td>
-        <td>{applicant.created_at}</td>
-        <td className="px-4 py-4 text-center relative">
-          <div className="flex justify-center items-center">
-            <button 
-              onClick={() => toggleMenu(applicant.id)}
-              className="flex items-center justify-center w-9 h-9 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all duration-200 active:scale-95"
-              title="More Options"
-            >
-              <span className="text-xl font-bold tracking-widest leading-none pb-2">...</span>
-            </button>
-          </div>
+              {filteredAndSorted.length > 0 ? (
+                filteredAndSorted.map((applicant) => (
+                  <tr key={applicant.id} className="hover:bg-gray-50 transition-colors text-center">
+                    <td>{applicant.firstname} {applicant.lastname} {applicant.middle_initial}</td>
+                    <td>{applicant.age}</td>
+                    <td>{applicant.program}</td>
+                    <td>{applicant.name_of_school}</td>
+                    <td>{applicant.date_graduated}</td>
+                    <td>
+                      <span className={`status-label px-2 py-1 rounded-full text-xs font-semibold ${statusColors[applicant.status] || "bg-gray-100 text-gray-600"}`}>
+                        {applicant.status}
+                      </span>
+                    </td>
+                    <td>{applicant.created_at}</td>
+                    <td className="px-4 py-4 text-center relative">
+                      <div className="flex justify-center items-center">
+                        <button 
+                          onClick={() => toggleMenu(applicant.id)}
+                          className="flex items-center justify-center w-9 h-9 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all duration-200 active:scale-95"
+                          title="More Options"
+                        >
+                          <span className="text-xl font-bold tracking-widest leading-none pb-2">...</span>
+                        </button>
+                      </div>
 
-          {open === applicant.id && (
-            <div className="absolute right-10 z-10 w-40 bg-white shadow-lg border border-gray-100 rounded-md p-2 actions">
-              <ul className="flex flex-col text-[14px] gap-[5px]">
-                <h1 className='font-bold text-black border-b pb-1 mb-1'>Actions</h1>
-                <button 
-                  onClick={() => navigate(`../view-details/${applicant.id}`)}
-                  className="text-left px-2 py-1 hover:bg-blue-50 hover:text-blue-600 rounded transition-colors cursor-pointer">
-                  View Details
-                </button>
-                <button 
-                  onClick={() => navigate(`../view-details/${applicant.id}`)}
-                  className="text-left px-2 py-1 hover:bg-blue-50 hover:text-blue-600 rounded transition-colors cursor-pointer">
-                  Update Status
-                </button>
-              </ul>
-            </div>
-          )}
-        </td>
-      </tr>
-    ))
-  ) : (
-    <tr>
-      <td colSpan="8" className="py-10 text-gray-500 italic">
-        No applicants match your search or filter criteria.
-      </td>
-    </tr>
-  )}
-</tbody>
+                      {open === applicant.id && (
+                        <div className="absolute right-10 z-10 w-40 bg-white shadow-lg border border-gray-100 rounded-md actions">
+                          <ul className="flex flex-col text-[14px] gap-[5px]">
+                            <h1 className='font-bold text-black border-b pb-1 border-gray-200 action-title'>Actions</h1>
+                            <button 
+                              onClick={() => navigate(`../view-details/${applicant.id}`)}
+                              className="text-left px-2 py-1 cursor-pointer view-details-btn-action">
+                              View Details
+                            </button>
+                            <button 
+                              onClick={() => navigate(`../view-details/${applicant.id}`)}
+                              className="text-left  cursor-pointer view-details-btn-action">
+                              Update Status
+                            </button>
+                          </ul>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="8" className="py-10 text-gray-500 italic col-8">
+                    No applicants registered
+                  </td>
+                </tr>
+              )}
+            </tbody>
           </table>
           </div>
 

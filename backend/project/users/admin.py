@@ -8,7 +8,7 @@ class UserAdmin(admin.ModelAdmin):
 admin.site.register(User, UserAdmin)
 
 class ApplicantAdmin(admin.ModelAdmin):
-  list_display = ("firstname","lastname","program","latin_honor","email","tribe_affiliated","date_graduated","created_at","tracking_code","status")
+  list_display = ("firstname","lastname","program","latin_honor","name_of_school","email","tribe_affiliated","date_graduated","created_at","tracking_code","status")
   search_fields = ("firstname","lastname","tracking_code","email")
   list_filter = ("status","program","date_graduated")
 
