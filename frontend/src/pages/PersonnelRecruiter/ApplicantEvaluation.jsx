@@ -44,6 +44,33 @@ function ApplicantEvaluation() {
     setOpen(open === id ? null : id)
   }
 
+
+  const filteredAndSorted = applicantInfo
+  .filter((applicant) => {
+    // 1. Filter by Search Term (Name)
+    const fullName = `${applicant.firstname} ${applicant.lastname} ${applicant.middle_initial || ''}`.toLowerCase();
+    const matchesSearch = fullName.includes(searchTerm.toLowerCase());
+
+    // 2. Filter by Status Dropdown
+    const matchesStatus = statusFilter === 'All' || applicant.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  })
+  .sort((a, b) => {
+    // 3. Sorting Logic
+    if (sortBy === 'name') {
+      const nameA = `${a.firstname} ${a.lastname}`.toLowerCase();
+      const nameB = `${b.firstname} ${b.lastname}`.toLowerCase();
+      return nameA.localeCompare(nameB);
+    } else if (sortBy === 'date') {
+      // Sorts by newest date first (descending)
+      const dateA = new Date(a.created_at);
+      const dateB = new Date(b.created_at);
+      return dateB - dateA;
+    }
+    return 0;
+  });
+
   return (
     <div>
       <div className='module-content'>
@@ -60,9 +87,9 @@ function ApplicantEvaluation() {
           />
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
             <option value="All">All Statuses</option>
-            <option value="Under Review">Under Review</option>
             <option value="New Applicant">New Applicant</option>
-            <option value="Accepeted">Accepeted</option>
+            <option value="Under Review">Under Review</option>
+            <option value="Accepted">Accepted</option>
             <option value="Rejected">Rejected</option>
           </select>
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="sort-select">
@@ -87,52 +114,59 @@ function ApplicantEvaluation() {
             </thead>
 
             <tbody className="divide-y divide-gray-200 bg-white">
-              {
-                applicantInfo.map((applicant) =>(
-                  <tr key={applicant.id} className="hover:bg-gray-50 transition-colors text-center">
-                    <td>{applicant.firstname} {applicant.lastname} {applicant.middle_initial}</td>
-                    <td>{applicant.age}</td>
-                    <td>{applicant.program}</td>
-                    <td>{applicant.name_of_school}</td>
-                    <td>{applicant.date_graduated}</td>
-                    <td><span className={`status-label ${statusColors[applicant.status]}`}>{applicant.status}</span></td>
-                    <td>{applicant.created_at}</td>
-                    <td className="px-4 py-4 text-center relative">
-                      <div className="flex justify-center items-center">
-                        <button 
-                        onClick={()=> toggleMenu(applicant.id)}
-                          className="flex items-center justify-center w-9 h-9 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all duration-200 active:scale-95"
-                          title="More Options"
-                        >
-                          <span className="text-xl font-bold tracking-widest leading-none pb-2">...</span>
-                        </button>
-                      </div>
+  {filteredAndSorted.length > 0 ? (
+    filteredAndSorted.map((applicant) => (
+      <tr key={applicant.id} className="hover:bg-gray-50 transition-colors text-center">
+        <td>{applicant.firstname} {applicant.lastname} {applicant.middle_initial}</td>
+        <td>{applicant.age}</td>
+        <td>{applicant.program}</td>
+        <td>{applicant.name_of_school}</td>
+        <td>{applicant.date_graduated}</td>
+        <td>
+          <span className={`status-label px-2 py-1 rounded-full text-xs font-semibold ${statusColors[applicant.status] || "bg-gray-100 text-gray-600"}`}>
+            {applicant.status}
+          </span>
+        </td>
+        <td>{applicant.created_at}</td>
+        <td className="px-4 py-4 text-center relative">
+          <div className="flex justify-center items-center">
+            <button 
+              onClick={() => toggleMenu(applicant.id)}
+              className="flex items-center justify-center w-9 h-9 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all duration-200 active:scale-95"
+              title="More Options"
+            >
+              <span className="text-xl font-bold tracking-widest leading-none pb-2">...</span>
+            </button>
+          </div>
 
-                        {
-                          open === applicant.id && (
-                            <div className="absolute right-10 w-30 bg-white shadow rounded actions">
-                              <ul className="flex justify-start flex-col text-[14px] gap-[5px]">
-                                <h1 className='font-bold text-black'>Actions</h1>
-                                <button 
-                                onClick={() => navigate(`../view-details/${applicant.id}`)}
-                                className=" h-[30px] cursor-pointer view-details-btn-action">
-                                  View Details
-                                </button>
-                                <button 
-                                onClick={() => navigate(`../view-details/${applicant.id}`)}
-                                className="h-[30px] cursor-pointer update-status-btn-action">
-                                  Update Status
-                                </button>
-                              </ul>
-                            </div>
-                            )
-                        }
-                    </td>
-                  </tr>
-                ))
-              }
-
-            </tbody>
+          {open === applicant.id && (
+            <div className="absolute right-10 z-10 w-40 bg-white shadow-lg border border-gray-100 rounded-md p-2 actions">
+              <ul className="flex flex-col text-[14px] gap-[5px]">
+                <h1 className='font-bold text-black border-b pb-1 mb-1'>Actions</h1>
+                <button 
+                  onClick={() => navigate(`../view-details/${applicant.id}`)}
+                  className="text-left px-2 py-1 hover:bg-blue-50 hover:text-blue-600 rounded transition-colors cursor-pointer">
+                  View Details
+                </button>
+                <button 
+                  onClick={() => navigate(`../view-details/${applicant.id}`)}
+                  className="text-left px-2 py-1 hover:bg-blue-50 hover:text-blue-600 rounded transition-colors cursor-pointer">
+                  Update Status
+                </button>
+              </ul>
+            </div>
+          )}
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td colSpan="8" className="py-10 text-gray-500 italic">
+        No applicants match your search or filter criteria.
+      </td>
+    </tr>
+  )}
+</tbody>
           </table>
           </div>
 
