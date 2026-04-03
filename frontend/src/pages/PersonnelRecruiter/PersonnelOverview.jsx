@@ -22,7 +22,7 @@ function PersonnelOverview() {
           </div>
 
           <div className="stat-card">
-            <h4>Pending Evaluations</h4>
+            <h4>New Applicant</h4>
             <span className="stat-number"></span>
           </div>
         </div>
