@@ -99,7 +99,12 @@ function DocumentSubmission() {
 
       navigate('/success-submit', { state: { trackingCode: code } })
     } catch (error) {
-      const errorMessage = error?.response?.data?.detail || error?.response?.data?.message || error.message || "An error occurred while submitting your application"
+      const errorMessage =
+        error?.response?.data?.error ||
+        error?.response?.data?.detail ||
+        error?.response?.data?.message ||
+        error.message ||
+        "An error occurred while submitting your application"
       setError(errorMessage)
       console.error("Error submitting application:", error)
     } finally {

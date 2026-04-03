@@ -11,6 +11,13 @@ function ApplicantEvaluation() {
   const [sortBy, setSortBy] = useState('name')
   const navigate = useNavigate()
 
+  const statusColors = {
+    "New Applicant": "bg-blue-100 text-blue-600",
+    "Under Review": "bg-yellow-100 text-yellow-600",
+    "Accepted": "bg-green-100 text-green-600",
+    "Rejected": "bg-red-100 text-red-600",
+};
+
  const [applicantInfo,setApplicantInfo] = useState([])
  const [open,setOpen] = useState(null)
 
@@ -54,8 +61,8 @@ function ApplicantEvaluation() {
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
             <option value="All">All Statuses</option>
             <option value="Under Review">Under Review</option>
-            <option value="Shortlisted">Shortlisted</option>
-            <option value="Interviewed">Interviewed</option>
+            <option value="New Applicant">New Applicant</option>
+            <option value="Accepeted">Accepeted</option>
             <option value="Rejected">Rejected</option>
           </select>
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="sort-select">
@@ -88,7 +95,7 @@ function ApplicantEvaluation() {
                     <td>{applicant.program}</td>
                     <td>{applicant.name_of_school}</td>
                     <td>{applicant.date_graduated}</td>
-                    <td><span className='bg-yellow-300 rounded font-semibold status-text'>{applicant.status}</span></td>
+                    <td><span className={`status-label ${statusColors[applicant.status]}`}>{applicant.status}</span></td>
                     <td>{applicant.created_at}</td>
                     <td className="px-4 py-4 text-center relative">
                       <div className="flex justify-center items-center">

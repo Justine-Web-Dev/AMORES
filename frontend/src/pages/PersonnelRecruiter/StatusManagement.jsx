@@ -9,7 +9,7 @@ function StatusManagement({applicantId, currentStatus, onUpdate}) {
   const handleUpdate = async () =>{
     setIsUpdating(true)
     try{
-       const response = await api.put(`users/update_status/${applicantId}`,{
+       const response = await api.put(`users/update_status/${applicantId}/`,{
       status: selectedStatus
     })
     console.log(response.data)

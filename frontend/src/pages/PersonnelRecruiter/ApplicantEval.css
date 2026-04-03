@@ -32,3 +32,7 @@
 .status-text{
   padding-inline: 4px;
 }
+.status-label{
+  padding: 4px 8px;
+  border-radius: 4px;
+}

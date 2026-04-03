@@ -111,18 +111,45 @@ def track_status(request, code):
 
 @api_view(['POST'])
 def register_applicant_form(request):
- serializer = ApplicantInfosSerializers(data=request.data)
- if serializer.is_valid():
-    instance = serializer.save() 
-    # Crucial: return the tracking_code in the JSON response
-    return Response({
-              "id": instance.id,
-              "tracking_code": instance.tracking_code, 
-              "message": "Success"
-  }, status=status.HTTP_201_CREATED)
- return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # Prevent duplicate applicant submissions by email, CP number, Pag-IBIG, or PhilHealth ID
+    email = request.data.get('email', '').strip().lower()
+    cp_number = request.data.get('cp_number', '').strip()
+    pag_ibig_number = request.data.get('pag_ibig_number', '').strip()
+    phil_health_id_num = request.data.get('phil_health_id_num', '').strip()
 
-@api_view(['PATCH'])
+    if not email or not cp_number or not pag_ibig_number or not phil_health_id_num:
+        return Response({"error": "Email, CP number, Pag-IBIG number, and PhilHealth ID are required for validation."}, status=status.HTTP_400_BAD_REQUEST)
+
+    duplicate_by_email = Applicant_infos.objects.filter(email__iexact=email).exists()
+    duplicate_by_cp = Applicant_infos.objects.filter(cp_number=cp_number).exists()
+    duplicate_by_pag_ibig = Applicant_infos.objects.filter(pag_ibig_number=pag_ibig_number).exists()
+    duplicate_by_phil_health = Applicant_infos.objects.filter(phil_health_id_num=phil_health_id_num).exists()
+
+    if duplicate_by_email or duplicate_by_cp or duplicate_by_pag_ibig or duplicate_by_phil_health:
+        message_parts = []
+        if duplicate_by_email:
+            message_parts.append('email')
+        if duplicate_by_cp:
+            message_parts.append('CP number')
+        if duplicate_by_pag_ibig:
+            message_parts.append('Pag-IBIG number')
+        if duplicate_by_phil_health:
+            message_parts.append('PhilHealth ID')
+
+        message = 'Applicant with this ' + ' and '.join(message_parts) + ' already exists.'
+        return Response({"error": message}, status=status.HTTP_409_CONFLICT)
+
+    serializer = ApplicantInfosSerializers(data=request.data)
+    if serializer.is_valid():
+       instance = serializer.save() 
+       return Response({
+                 "id": instance.id,
+                 "tracking_code": instance.tracking_code, 
+                 "message": "Success"
+       }, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PUT'])
 def update_applicant_status(request, pk):
     try:
         applicant = Applicant_infos.objects.get(pk=pk)
@@ -143,6 +170,7 @@ def update_applicant_status(request, pk):
     except Applicant_infos.DoesNotExist:
         return Response({"error": "Applicant not found"}, status=status.HTTP_404_NOT_FOUND)
 
+#tracking the applicants status
 @api_view(['GET'])
 def track_application_status(request):
   code = request.query_params.get('code',None)
@@ -166,6 +194,7 @@ def track_application_status(request):
   except Applicant_infos.DoesNotExist:
     return Response({"error": "Invalid tracking code. Please check and try again."}, status=status.HTTP_404_NOT_FOUND)
   
+#upload an image
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser])
 def upload_document(request):

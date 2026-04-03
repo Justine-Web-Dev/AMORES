@@ -18,6 +18,13 @@ function ViewDetails() {
   const [loading,setLoading] = useState(true)
   const navigate = useNavigate()
 
+    const statusColors = {
+      "New Applicant": "inline-block mt-2 px-3 py-1 text-xs bg-blue-100 text-blue-600 rounded-full font-semibold ",
+      "Under Review": "inline-block mt-2 px-3 py-1 text-xs text-yellow-600 rounded-full font-semibold  bg-yellow-100",
+      "Accepted": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold  bg-green-100 text-green-600",
+      "Rejected": "inline-block mt-2 px-3 py-1 text-xs text-red-600 rounded-full font-semibold  bg-red-100",
+    };
+
     const fetchApplicantDetails = async () =>{
       try{
         const response = await api.get(`users/get_single_applicant_info/${id}`)
@@ -38,7 +45,7 @@ function ViewDetails() {
     }
 
 
-    if (loading) return <div className="p-10 text-center">Loading Applicant Details...</div>
+    if (loading) return <div className="p-10 text-center loading-applicant-details">Loading Applicant Details...</div>
     if (!applicant) return <div className="p-10 text-center">Applicant not found.</div>
 
   return (
@@ -58,7 +65,7 @@ function ViewDetails() {
               <p className="text-sm text-gray-500">Reference Code: {applicant.tracking_code}</p>
 
 
-              <span className="inline-block mt-2 px-3 py-1 text-xs bg-blue-100 text-blue-600 rounded-full font-semibold status-detail-text">
+              <span className={`${statusColors[applicant.status]} status-detail-text`}>
                 {applicant.status}
               </span>
             </div>
