@@ -59,9 +59,9 @@ class Applicant_infos(models.Model):
     )
   status = models.CharField(
         max_length=20, 
-        default='Pending',
+        default='New Applicant',
         choices=[
-            ('Pending', 'Pending'),
+            ('New Applicant', 'New Applicant'),
             ('Under Review', 'Under Review'),
             ('Accepted', 'Accepted'),
             ('Rejected', 'Rejected')

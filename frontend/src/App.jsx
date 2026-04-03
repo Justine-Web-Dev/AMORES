@@ -6,6 +6,7 @@ import PersonnelDashboard from './pages/PersonnelRecruiter/PersonnelDashboard'
 import LandingpageMain from './pages/Landingpage/LandingpageMain'
 import TrackApplication from './pages/Landingpage/TrackApplication'
 import SubmitApplicationModal from './Modals/SubmitApplicationModal'
+import ViewDetails from './pages/ViewDetails'
 
 function App() {
   return (
@@ -16,7 +17,6 @@ function App() {
         <Route path='/Dashboard/*' element={<AdminDashboard />} />
         <Route path='/PersonnelDashboard/*' element={<PersonnelDashboard />} />
         <Route path='/success-submit' element={<SubmitApplicationModal />} />
-
       </Routes>
     </>
   )

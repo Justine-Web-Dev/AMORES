@@ -7,6 +7,7 @@ import PersonnelOverview from './PersonnelOverview'
 import './PersonnelDashboard.css'
 import DeclinedApplicants from '../DeclinedApplicants'
 import Header from '../../Components/Header/Header'
+import ViewDetails from '../ViewDetails'
 
 function PersonnelDashboard() {
   return (
@@ -18,6 +19,7 @@ function PersonnelDashboard() {
           <Route path="/" element={<PersonnelOverview />} />
           <Route path="/applications" element={<ApplicantEvaluation />} />
           <Route path="/declined-applicants" element={<DeclinedApplicants />} />
+          <Route path='/view-details' element={<ViewDetails />}/>
         </Routes>
       </div>
     </div>
