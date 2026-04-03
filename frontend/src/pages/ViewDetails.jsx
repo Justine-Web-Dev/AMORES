@@ -11,6 +11,7 @@ import ApplicantInfoView from './ApplicantInfoView'
 
 import { api } from '../../api/api'
 import { useParams } from 'react-router'
+import ViewDocumentSubmitted from '../ViewDocumentSubmitted';
 
 function ViewDetails() {
   const {id} = useParams()
@@ -95,6 +96,9 @@ function ViewDetails() {
           />
         </div>
         <ApplicantInfoView data={applicant}/>
+
+
+        <ViewDocumentSubmitted applicantId={id}/>
       </div>
       
     </div>

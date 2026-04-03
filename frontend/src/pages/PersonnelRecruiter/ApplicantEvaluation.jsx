@@ -3,6 +3,7 @@ import { api } from '../../../api/api'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './ApplicantEval.css'
+import ViewDocumentSubmitted from '../../ViewDocumentSubmitted'
 
 
 function ApplicantEvaluation() {

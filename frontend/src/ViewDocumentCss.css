@@ -1,0 +1,11 @@
+.ViewDocumentSubmitted{
+  background-color: #F9FAFB;
+  padding: 8px 18px;
+}
+.submitted-doc-title{
+  margin-bottom: 2rem;
+}
+.image-docs-container{
+  padding: 12px;
+  border-color: rgba(128, 128, 128, 0.336);
+}

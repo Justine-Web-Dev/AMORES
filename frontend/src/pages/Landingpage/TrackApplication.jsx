@@ -10,6 +10,13 @@ function TrackApplication() {
  const [loading, setLoading] = useState(false);
  const [error, setError] = useState('');
 
+ const statusColors = {
+    "New Applicant": "bg-blue-100 text-blue-600 font-semibold",
+    "Under Review": "bg-yellow-100 text-yellow-600 font-semibold",
+    "Accepted": "bg-green-100 text-green-600 font-semibold",
+    "Rejected": "bg-red-100 text-red-600 font-semibold",
+  };
+
  const handleTrack = async () =>{
   if(!code.trim()){
     setError('Please enter a tracking code');
@@ -71,9 +78,8 @@ function TrackApplication() {
                 <p><span className='font-semibold'>Date Applied:</span> {new Date(application.date_applied).toLocaleDateString()}</p>
                 <p className='col-span-2'>
                   <span className='font-semibold'>Current Status:</span> 
-                  <span className={`rounded text-white ${
-                    application.status === 'Accepted' ? 'bg-green-500' : 
-                    application.status === 'Rejected' ? 'bg-red-500' : 'bg-yellow-500'
+                  <span className={`rounded ${
+                    statusColors[application.status]
                   } status-text`}>
                     {application.status}
                   </span>
