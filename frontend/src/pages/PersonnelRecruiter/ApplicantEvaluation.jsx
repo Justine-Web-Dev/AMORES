@@ -67,7 +67,7 @@ function ApplicantEvaluation() {
                 <th scope="col" className="th">Program</th>
                 <th scope="col" className="th">Name of School</th>
                 <th scope="col" className="th whitespace-nowrap">Date Graduated</th>
-                <th scope="col" className="th text-center">Height</th>
+                <th scope="col" className="th text-center">Status</th>
                 <th scope="col" className="th text-center">Applied On</th>
                 <th scope="col" className="th"></th>
               </tr>
@@ -82,7 +82,7 @@ function ApplicantEvaluation() {
                     <td>{applicant.program}</td>
                     <td>{applicant.name_of_school}</td>
                     <td>{applicant.date_graduated}</td>
-                    <td>{applicant.height}</td>
+                    <td><span className='bg-yellow-300 rounded font-semibold status-text'>{applicant.status}</span></td>
                     <td>{applicant.created_at}</td>
                     <td className="px-4 py-4 text-center relative">
                       <div className="flex justify-center items-center">
