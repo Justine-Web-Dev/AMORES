@@ -12,11 +12,11 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path='/*' element={<LandingpageMain />}/>
         <Route path='/LoginUsers' element={<LoginForm />} />
         <Route path='/Dashboard/*' element={<AdminDashboard />} />
         <Route path='/PersonnelDashboard/*' element={<PersonnelDashboard />} />
         <Route path='/success-submit' element={<SubmitApplicationModal />} />
+        <Route path='/*' element={<LandingpageMain />}/>
       </Routes>
     </>
   )

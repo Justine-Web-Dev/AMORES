@@ -19,7 +19,7 @@ function PersonnelDashboard() {
           <Route path="/" element={<PersonnelOverview />} />
           <Route path="/applications" element={<ApplicantEvaluation />} />
           <Route path="/declined-applicants" element={<DeclinedApplicants />} />
-          <Route path='/view-details' element={<ViewDetails />}/>
+          <Route path='/view-details/:id' element={<ViewDetails />}/>
         </Routes>
       </div>
     </div>

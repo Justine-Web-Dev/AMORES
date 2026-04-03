@@ -1,43 +1,93 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+
+import { HiArrowNarrowLeft } from "react-icons/hi";
+
+import { useNavigate } from 'react-router';
+
 import './ViewDetailsCss.css'
+
 import StatusManagement from './PersonnelRecruiter/StatusManagement'
 import ApplicantInfoView from './ApplicantInfoView'
 
-function ViewDetails() {
+import { api } from '../../api/api'
+import { useParams } from 'react-router'
 
+function ViewDetails() {
+  const {id} = useParams()
+  const [applicant,setApplicant] = useState(null)
+  const [loading,setLoading] = useState(true)
+  const navigate = useNavigate()
+
+    const fetchApplicantDetails = async () =>{
+      try{
+        const response = await api.get(`users/get_single_applicant_info/${id}`)
+        setApplicant(response.data)
+      }catch(err){
+        console.error("Error fetching applicant:", err)
+      }finally{
+        setLoading(false)
+      }
+    }
+
+    useEffect(()=>{
+      fetchApplicantDetails()
+    },[id]) 
+
+    const handleBack = () =>{
+      navigate(-1)
+    }
+
+
+    if (loading) return <div className="p-10 text-center">Loading Applicant Details...</div>
+    if (!applicant) return <div className="p-10 text-center">Applicant not found.</div>
 
   return (
     <div className=' ViewDetails'>
+        <button
+        onClick={handleBack}
+         className='flex items-center justify-between cursor-pointer back-btn'>
+          <HiArrowNarrowLeft size={25}/>
+           Back to Applicants
+        </button>
+
       <div className='module-content'>
         <div className='flex gap-10'>
           <div className="w-[650px] bg-[#F9FAFB] rounded-xl shadow-sm card-detail">
             <div className="top-section">
-              <h1 className="text-xl font-semibold text-gray-800">Name</h1>
-              <p className="text-sm text-gray-500">Track Number</p>
+              <h1 className="text-xl font-semibold text-gray-800"> Name: {applicant.firstname} {applicant.lastname}</h1>
+              <p className="text-sm text-gray-500">Reference Code: {applicant.tracking_code}</p>
 
-              <span className="inline-block mt-2 px-3 py-1 text-xs bg-blue-100 text-blue-600 rounded-full status-detail-text">
-                Status
+
+              <span className="inline-block mt-2 px-3 py-1 text-xs bg-blue-100 text-blue-600 rounded-full font-semibold status-detail-text">
+                {applicant.status}
               </span>
             </div>
 
             <div className="flex justify-between items-center text-sm text-gray-700 border-t email-section">
-              <div className="flex items-center gap-2">
-                <p>Email</p>
+              <div className="flex flex-col gap-2">
+                <label htmlFor="">Email:</label>
+                <p>{applicant.email}</p>
               </div>
 
-              <div className="flex items-center gap-2">
-                <p>Contact Number</p>
+              <div className="flex flex-col  gap-2">
+                <label htmlFor="">CP#:</label>
+                <p>{applicant.cp_number}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 text-sm text-gray-500 mt-4">
-              <p>Date Applied</p>
+            <div className="flex flex-col gap-2 text-sm text-gray-500 mt-4">
+              <label htmlFor="">Applied on:</label>
+              <p>{applicant.created_at}</p>
             </div>
           </div> 
           {/* Update Status */}
-          <StatusManagement />
+          <StatusManagement 
+            applicantId={id}
+            currentStatus={applicant.status}
+            onUpdate={fetchApplicantDetails}
+          />
         </div>
-        <ApplicantInfoView />
+        <ApplicantInfoView data={applicant}/>
       </div>
       
     </div>

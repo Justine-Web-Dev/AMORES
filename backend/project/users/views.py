@@ -86,6 +86,16 @@ def get_applicant_form(request):
   return Response(serializers.data)
 
 @api_view(['GET'])
+def get_single_applicant(request, pk):
+    try:
+        # Fetch only the applicant matching the ID from the URL
+        applicant = Applicant_infos.objects.get(pk=pk)
+        serializer = ApplicantInfosSerializers(applicant)
+        return Response(serializer.data)
+    except Applicant_infos.DoesNotExist:
+        return Response({"error": "Applicant not found"}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
 def track_status(request, code):
     try:
         # We look up the applicant by the unique tracking code
@@ -111,6 +121,27 @@ def register_applicant_form(request):
               "message": "Success"
   }, status=status.HTTP_201_CREATED)
  return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PATCH'])
+def update_applicant_status(request, pk):
+    try:
+        applicant = Applicant_infos.objects.get(pk=pk)
+        
+        # We only want to update the 'status' field from the request body
+        new_status = request.data.get('status')
+        if not new_status:
+            return Response({"error": "Status is required"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        applicant.status = new_status
+        applicant.save()
+        
+        return Response({
+            "message": "Status updated successfully",
+            "new_status": applicant.status
+        }, status=status.HTTP_200_OK)
+        
+    except Applicant_infos.DoesNotExist:
+        return Response({"error": "Applicant not found"}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
 def track_application_status(request):

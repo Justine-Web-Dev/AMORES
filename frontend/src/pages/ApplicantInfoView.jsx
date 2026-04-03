@@ -1,6 +1,8 @@
 import React from 'react'
 
-function ApplicantInfoView() {
+function ApplicantInfoView({data}) {
+  if (!data) return null
+  
   return (
 <div className="bg-[#F9FAFB] shadow-md rounded-[12px] summary-container">
       <header className="summary-header">
@@ -14,23 +16,23 @@ function ApplicantInfoView() {
         <div className="grid-layout">
           <div className="info-item">
             <label>Last Name</label>
-            <p>Jones</p>
+            <p>{data.lastname || 'N/A'}</p>
             </div>
           <div className="info-item">
             <label>First Name</label>
-            <p>Peter</p>
+            <p>{data.firstname || 'N/A'}</p>
           </div>
           <div className="info-item">
             <label>Age</label>
-            <p>22</p>
+            <p>{data.age || 'N/A'}</p>
           </div>
           <div className="info-item">
             <label>CP #</label>
-            <p>09205555555</p>
+            <p>{data.cp_number || 'N/A'}</p>
           </div>
           <div className="info-item">
             <label>Height</label>
-            <p>180cm</p>
+            <p>{data.height || 'N/A'}</p>
           </div>
         </div>
       </section>
@@ -39,9 +41,9 @@ function ApplicantInfoView() {
       <section className="info-section">
         <h1 className='text-black label-info'>Educational Background</h1>
         <div className="grid-layout">
-          <div className="info-item"><label>School</label><p>De La Salle University</p></div>
-          <div className="info-item"><label>Course</label><p>BS Information Technology</p></div>
-          <div className="info-item"><label>Date Graduated</label><p>June 1st, 2023</p></div>
+          <div className="info-item"><label>School</label><p>{data.name_of_school || 'N/A'}</p></div>
+          <div className="info-item"><label>Course</label><p>{data.program || 'N/A'}</p></div>
+          <div className="info-item"><label>Date Graduated</label><p>{data.date_graduated || 'N/A'}</p></div>
         </div>
       </section>
     </div>

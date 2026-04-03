@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { api } from '../../../api/api'
 import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './ApplicantEval.css'
 
 
@@ -8,14 +9,19 @@ function ApplicantEvaluation() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('All')
   const [sortBy, setSortBy] = useState('name')
+  const navigate = useNavigate()
 
  const [applicantInfo,setApplicantInfo] = useState([])
  const [open,setOpen] = useState(null)
 
   const fetchInfo = async () =>{
-      const response = await api.get("users/get_applicant_info")
-      setApplicantInfo(response.data)
-      console.log(response.data)
+      try {
+        const response = await api.get("users/get_applicant_info")
+        setApplicantInfo(response.data)
+        console.log(response.data)
+      } catch (err) {
+        console.error("Error fetching applicant info:", err)
+      }
     }
 
   useEffect(()=>{
@@ -100,10 +106,14 @@ function ApplicantEvaluation() {
                             <div className="absolute right-10 w-30 bg-white shadow rounded actions">
                               <ul className="flex justify-start flex-col text-[14px] gap-[5px]">
                                 <h1 className='font-bold text-black'>Actions</h1>
-                                <button className=" h-[30px] cursor-pointer view-details-btn-action">
+                                <button 
+                                onClick={() => navigate(`../view-details/${applicant.id}`)}
+                                className=" h-[30px] cursor-pointer view-details-btn-action">
                                   View Details
                                 </button>
-                                <button className="h-[30px] cursor-pointer update-status-btn-action">
+                                <button 
+                                onClick={() => navigate(`../view-details/${applicant.id}`)}
+                                className="h-[30px] cursor-pointer update-status-btn-action">
                                   Update Status
                                 </button>
                               </ul>

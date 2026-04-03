@@ -10,6 +10,7 @@ import SystemSettings from './SystemSettings'
 import './AdminDashboard.css'
 import DeclinedApplicants from '../DeclinedApplicants'
 import ApplicantEvaluation from '../PersonnelRecruiter/ApplicantEvaluation'
+import ViewDetails from '../ViewDetails'
 
 function AdminDashboard() {
   return (
@@ -20,6 +21,7 @@ function AdminDashboard() {
         <Routes>
           <Route index element={<DashboardOverview />} />
           <Route path="applications" element={<ApplicantEvaluation />}/>
+          <Route path="view-details/:id" element={<ViewDetails />}/>
           <Route path="user-management" element={<UserManagement />} />
           <Route path="declined-applicant" element={<DeclinedApplicants />} />
           <Route path="audit-logs" element={<AuditLogs />} />
