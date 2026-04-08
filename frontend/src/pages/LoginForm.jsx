@@ -55,8 +55,8 @@ function LoginForm() {
             <p className='logo-name'>PNP- AMORES</p>
             <hr className='border-gray-300'/>
             <div className='title'>
-              <h3>Personnel  Login</h3>
-              <p>Enter your credentials to access your dashboard.</p>
+              <h1>Personnel  Login</h1>
+              <p className='text-gray-300'>Enter your credentials to access your dashboard.</p>
             </div>
           </div>
 

@@ -28,10 +28,6 @@
   padding: 20px;
   text-align: center;
 }
-.form{
-  display: flex;
-  flex-direction: row-reverse;
-}
 
 .logo-name {
   font-family: "Koulen", Arial, Helvetica, sans-serif;

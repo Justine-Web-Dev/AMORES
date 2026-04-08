@@ -37,17 +37,17 @@ const AboutUs = () => {
 
             <div className="about-card">
               <h4>INTEGRITY</h4>
-              <p>Upholding the highest ethical standards in all duties.</p>
+              <p className="desc">Upholding the highest ethical standards in all duties.</p>
             </div>
 
             <div className="about-card">
               <h4>SERVICE</h4>
-              <p>Serving the public with respect and professionalism.</p>
+              <p className="desc">Serving the public with respect and professionalism.</p>
             </div>
 
             <div className="about-card">
               <h4>EXCELLENCE</h4>
-              <p>Continuously improving skills to serve better.</p>
+              <p className="desc">Continuously improving skills to serve better.</p>
             </div>
 
           </div>
