@@ -22,32 +22,68 @@
 
 .stat-card-container{
   display: flex;
-  gap: 30px;
+  flex-wrap: wrap;
+  gap: 1.5rem;
 }
 
+.top-summary-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
 
-.stat-card-container .total-users{
+.admin-summary-card,
+.stat-card-container .total-users,
+.stat-card-container .total-applicants {
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: #fff;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.151);
-  height: 70px;
+  height: 90px;
   border-left: 5px solid #2C2D86;
   border-radius: 8px;
-  width: 200px;
+  min-width: 200px;
+  padding: 0 20px;
 }
- .stat-card-container .total-applicants{
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #fff;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.151);
-  height: 70px;
-  border-left: 5px solid #4A4DB8;
-  border-radius: 8px;
-  width: 200px;
- }
+
+.admin-summary-card .summary-label,
+.stat-card-container .total-users span,
+.stat-card-container .total-applicants span {
+  display: block;
+}
+
+.admin-summary-card .summary-label {
+  font-size: 0.95rem;
+  color: #666;
+  margin-bottom: 0.35rem;
+}
+
+.admin-summary-card .summary-value {
+  font-size: 1.6rem;
+  color: #2C2D86;
+  font-weight: 700;
+}
+
+.admin-summary-card.new-applicants {
+  border-left-color: #2196F3;
+}
+
+.admin-summary-card.under-review {
+  border-left-color: #FFC107;
+}
+
+.admin-summary-card.accepted {
+  border-left-color: #4CAF50;
+}
+
+.admin-summary-card.rejected {
+  border-left-color: #F44336;
+}
+
+.stat-card-container .total-applicants {
+  border-left-color: #4A4DB8;
+}
 
 .module-content h2 {
   color: #2C2D86;

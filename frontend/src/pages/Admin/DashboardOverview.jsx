@@ -6,6 +6,12 @@ function DashboardOverview() {
   const [users, setUsers] = useState([])
   const [applicants, setApplicants] = useState([])
   const [statusData, setStatusData] = useState([])
+  const [statusCounts, setStatusCounts] = useState({
+    'New Applicant': 0,
+    'Under Review': 0,
+    'Accepted': 0,
+    'Rejected': 0
+  })
   const [monthlyData, setMonthlyData] = useState([])
 
   useEffect(() => {
@@ -32,6 +38,7 @@ function DashboardOverview() {
         value: statuses[status]
       }))
       setStatusData(statusChartData)
+      setStatusCounts(statuses)
       
       // Process monthly data
       const monthlyCount = {}
@@ -67,18 +74,45 @@ function DashboardOverview() {
   return (
     <div className='module-content'>
       <h2>Dashboard Overview</h2>
-      
-      <div className='System-overview-container'>
-        <h3>System Overview</h3>
-        <div className='stat-card-container'>
-          <div className="flex flex-col justify-center items-center total-users">
-            <span className='text-[1.5rem]'>{user_length}</span>
-            <span className='text-[#2C2D86] font-bold'>Users</span>
-          </div>
 
-          <div className="flex flex-col justify-center items-center total-applicants">
-            <span className='text-[1.5rem]'>{applicant_length}</span>
-            <span className='text-[#4A4DB8] font-bold'>Total Applicants</span>
+      <div className='System-overview-container' style={{ marginTop: '2rem' }}>
+        <h3>System Overview</h3>
+        <div className='stat-card-container top-summary-cards'>
+          <div className='admin-summary-card users'>
+            <div>
+              <span className='summary-label'>Users</span>
+              <span className='summary-value'>{user_length}</span>
+            </div>
+          </div>
+          <div className='admin-summary-card total-applicants'>
+            <div>
+              <span className='summary-label'>Total Applicants</span>
+              <span className='summary-value'>{applicant_length}</span>
+            </div>
+          </div>
+          <div className='admin-summary-card new-applicants'>
+            <div>
+              <span className='summary-label'>New Applicants</span>
+              <span className='summary-value'>{statusCounts['New Applicant']}</span>
+            </div>
+          </div>
+          <div className='admin-summary-card under-review'>
+            <div>
+              <span className='summary-label'>Under Review</span>
+              <span className='summary-value'>{statusCounts['Under Review']}</span>
+            </div>
+          </div>
+          <div className='admin-summary-card accepted'>
+            <div>
+              <span className='summary-label'>Accepted</span>
+              <span className='summary-value'>{statusCounts['Accepted']}</span>
+            </div>
+          </div>
+          <div className='admin-summary-card rejected'>
+            <div>
+              <span className='summary-label'>Rejected</span>
+              <span className='summary-value'>{statusCounts['Rejected']}</span>
+            </div>
           </div>
         </div>
       </div>

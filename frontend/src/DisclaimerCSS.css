@@ -1,0 +1,163 @@
+.disclaimer-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.disclaimer-modal {
+  background: #fff;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 560px;
+  box-sizing: border-box;
+  overflow: hidden;
+  border: 0.5px solid #e5e5e5;
+}
+
+/* Header */
+.disclaimer-header {
+  background: #2C2D86;
+  padding: 20px 28px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.disclaimer-header-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.disclaimer-header-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+  line-height: 1.3;
+}
+
+.disclaimer-header-sub {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Title bar */
+.disclaimer-titlebar {
+  background: #f0f4f9;
+  padding: 12px 28px;
+  border-bottom: 0.5px solid #e5e5e5;
+}
+
+.disclaimer-titlebar-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a3a6b;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Body */
+.disclaimer-body {
+  padding: 20px 28px;
+  max-height: 320px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.8;
+  color: #111;
+}
+
+.disclaimer-body p {
+  margin-bottom: 14px;
+}
+
+.disclaimer-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* Footer */
+.disclaimer-footer {
+  padding: 16px 28px 20px;
+  border-top: 0.5px solid #e5e5e5;
+  background: #f7f7f5;
+}
+
+.disclaimer-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.disclaimer-checkbox {
+  margin-top: 2px;
+  accent-color: #1a3a6b;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.disclaimer-checkbox-text {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.6;
+}
+
+.disclaimer-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.disclaimer-btn-cancel {
+  padding: 8px 20px;
+  font-size: 13px;
+  border-radius: 8px;
+  border: 0.5px solid #ccc;
+  background: transparent;
+  cursor: pointer;
+  color: #111;
+  font-family: inherit;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.disclaimer-btn-cancel:hover {
+  background: #f0f0f0;
+}
+
+.disclaimer-btn-accept {
+  padding: 8px 24px;
+  font-size: 13px;
+  border-radius: 8px;
+  border: none;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 500;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.disclaimer-btn-accept.active {
+  background: #2C2D86;
+  cursor: pointer;
+}
+
+.disclaimer-btn-accept.active:hover {
+  opacity: 0.88;
+}
+
+.disclaimer-btn-accept.disabled {
+  background: #a0aab8;
+  cursor: not-allowed;
+}

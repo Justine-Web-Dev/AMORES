@@ -7,6 +7,7 @@ import LandingpageMain from './pages/Landingpage/LandingpageMain'
 import TrackApplication from './pages/Landingpage/TrackApplication'
 import SubmitApplicationModal from './Modals/SubmitApplicationModal'
 import ViewDetails from './pages/ViewDetails'
+import Disclaimer from './Disclaimer'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path='/PersonnelDashboard/*' element={<PersonnelDashboard />} />
         <Route path='/success-submit' element={<SubmitApplicationModal />} />
         <Route path='/*' element={<LandingpageMain />}/>
+        <Route path='/disclaimer' element = {<Disclaimer />}/>
       </Routes>
     </>
   )

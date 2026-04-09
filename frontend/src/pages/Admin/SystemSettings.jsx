@@ -26,10 +26,6 @@ function SystemSettings() {
             <label>Session Timeout (minutes):</label>
             <input type="number" defaultValue="30" />
           </div>
-          <div className="setting-item">
-            <label>Enable Two-Factor Auth:</label>
-            <input type="checkbox" defaultChecked />
-          </div>
         </div>
         <button className="save-settings-btn">Save Settings</button>
       </div>

@@ -34,12 +34,29 @@
 
 /* Statistics Cards */
 .stat-card {
-  background: linear-gradient(135deg, #2C2D86, #4A4DB8);
-  color: white;
+  background: #fff;
+  color: black;
   padding: 20px;
   border-radius: 8px;
   margin: 10px 0;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #2C2D86;
+}
+
+.stat-card.new-applicants {
+  border-left-color: #2196F3;
+}
+
+.stat-card.under-review {
+  border-left-color: #FFC107;
+}
+
+.stat-card.accepted {
+  border-left-color: #4CAF50;
+}
+
+.stat-card.rejected {
+  border-left-color: #F44336;
 }
 
 .stat-card h4 {
