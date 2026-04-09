@@ -1,24 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import './LandingPageCss.css';
 import AboutUs from './AboutUs';
 import Disclaimer from '../../Disclaimer';
 
 const LandingPage = () => {
-  const [showDisclaimer, setShowDisclaimer] = useState(true);
+const [showDisclaimer, setShowDisclaimer] = useState(false);
+
+  useEffect(() => {
+    const sessionAccepted = sessionStorage.getItem('disclaimer_accepted_session');
+
+    if (!sessionAccepted) {
+      setShowDisclaimer(true);
+    }
+  }, []);
 
   const handleAccept = () => {
-    setShowDisclaimer(false);
-  };
+        sessionStorage.setItem('disclaimer_accepted_session', 'true');
+        setShowDisclaimer(false);
+      };
 
   const handleCancel = () => {
-    // Redirect away or close — adjust as needed
-    window.location.href = 'about:blank';
+    window.location.href = 'https://www.google.com';
   };
 
   return (
     <div className="bg-gray-100 home-landing-page pt-20 md:pt-28">
-
-      {/* Disclaimer Modal — shows automatically on load */}
       {showDisclaimer && (
         <Disclaimer onAccept={handleAccept} onCancel={handleCancel} />
       )}
