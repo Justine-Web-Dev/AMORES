@@ -8,6 +8,7 @@ import TrackApplication from './pages/Landingpage/TrackApplication'
 import SubmitApplicationModal from './Modals/SubmitApplicationModal'
 import ViewDetails from './pages/ViewDetails'
 import Disclaimer from './Disclaimer'
+import MinimumRequirement from './pages/Landingpage/MinimumRequirement'
 
 function App() {
   return (

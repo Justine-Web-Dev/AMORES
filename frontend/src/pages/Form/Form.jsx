@@ -46,10 +46,10 @@ function Form() {
     const value = formData[key]
     return value !== null && value !== undefined && value.toString().trim() !== ''
   })
-
+  
   return (
-    <div className='form-application-container bg-gray-100 min-h-screen py-6 px-4 md:py-10'>
-      <form className='my-form max-w-4xl mx-auto bg-white p-4 md:p-6 rounded-lg shadow-sm' onSubmit={handleSubmit}>
+    <div className='form-application-container bg-gray-100 min-h-screen  '>
+      <form className='my-form max-w-4xl mx-auto bg-white my-11 rounded-lg shadow-sm' onSubmit={handleSubmit}>
         <h1 className='text-2xl md:text-[24px] font-semibold title-application-form mb-6'>Application Form</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">

@@ -96,8 +96,8 @@ function DocumentSubmission() {
   }
 
   return (
-    <div className="document-submit-container">
-      <div className="document-card">
+    <div className="document-submit-container ">
+      <div className="my-11 document-card">
         {/* Back Button */}
         <button
           onClick={handleBack}

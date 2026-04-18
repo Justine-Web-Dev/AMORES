@@ -12,7 +12,46 @@
   padding: 10px;
   z-index: 1;
 }
+.home,.track-app,.about-us{
+  position: relative;
+}
+.home::before{
+  position: absolute;
+  content: '';
+  left: 0;
+  bottom: 0;
+  height: 4px;
+  width: 0;
+  background-color: #2C2D86;
+  transition: 0.3s;
+}
+.home:hover::before{
+  width: 100%;
+}
 
-.home:hover{
-  color: #2C2D86;
+.track-app::before{
+  position: absolute;
+  content: '';
+  left: 0;
+  bottom: 0;
+  height: 4px;
+  width: 0;
+  background-color: #2C2D86;
+  transition: 0.3s;
+}
+.track-app:hover::before{
+  width: 100%;
+}
+.about-us::before{
+  position: absolute;
+  content: '';
+  left: 0;
+  bottom: 0;
+  height: 4px;
+  width: 0;
+  background-color: #2C2D86;
+  transition: 0.3s;
+}
+.about-us:hover::before{
+  width: 100%;
 }

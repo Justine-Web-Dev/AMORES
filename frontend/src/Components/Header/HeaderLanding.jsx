@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 
 function HeaderLanding() {
     const [menuOpen, setMenuOpen] = useState(false);
-
+    
   return (
     <header className="fixed top-0 left-0 right-0 bg-[#fff] shadow w-full my-header">
       {/* Top bar */}

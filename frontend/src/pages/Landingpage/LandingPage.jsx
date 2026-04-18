@@ -1,10 +1,31 @@
 import React, { useState,useEffect } from 'react';
+import { useScrollFade } from '../../useScrollFade';
 import './LandingPageCss.css';
 import AboutUs from './AboutUs';
 import Disclaimer from '../../Disclaimer';
+import MinimumRequirement from './MinimumRequirement';
+import ApplicationProcess from './ApplicationProcess';
+import CalltoAction from './CalltoAction';
+import Footer from '../../Components/Footer/Footer';
+
+const FadeInSection = ({ children }) => {
+  const [ref, isVisible] = useScrollFade();
+  return (
+    <div 
+      ref={ref} 
+      className={`transition-all duration-1000 ease-out transform ${
+        isVisible 
+          ? 'opacity-100 translate-y-0' 
+          : 'opacity-0 translate-y-20' // Starts 80px down
+      }`}
+    >
+      {children}
+    </div>
+  );
+};
 
 const LandingPage = () => {
-const [showDisclaimer, setShowDisclaimer] = useState(false);
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
 
   useEffect(() => {
     const sessionAccepted = sessionStorage.getItem('disclaimer_accepted_session');
@@ -24,7 +45,7 @@ const [showDisclaimer, setShowDisclaimer] = useState(false);
   };
 
   return (
-    <div className="bg-gray-100 home-landing-page pt-20 md:pt-28">
+    <div className="bg-gray-100 home-landing-page ">
       {showDisclaimer && (
         <Disclaimer onAccept={handleAccept} onCancel={handleCancel} />
       )}
@@ -141,7 +162,14 @@ const [showDisclaimer, setShowDisclaimer] = useState(false);
         </div>
       </div>
 
-      <AboutUs />
+      <FadeInSection><AboutUs /></FadeInSection>
+      <FadeInSection><MinimumRequirement /></FadeInSection>
+      <FadeInSection><ApplicationProcess /></FadeInSection>
+      <FadeInSection><CalltoAction /></FadeInSection>
+
+      <div className='absolute left-0 right-0'>
+        <Footer />
+      </div>
 
     </div>
   );
