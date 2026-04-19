@@ -1,35 +1,35 @@
 import React from 'react'
-import { useState } from 'react'
+import { useState,useEffect } from 'react'
 import { api } from '../../../api/api'
 
-function StatusManagement({applicantId, currentStatus, onUpdate}) {
+function StatusManagement({applicantId, currentStatus, onUpdate,currentRejectionReason}) {
   const [selectedStatus, setSelectedStatus] = useState(currentStatus)
-  const [rejectionReason,setRejectionReason] = useState("")
+  const [rejectionReason,setRejectionReason] = useState(currentRejectionReason || "")
   const [isUpdating, setIsUpdating] = useState(false)
 
-  const handleUpdate = async () => {
-  setIsUpdating(true);
-  try {
-    // 1. Prepare the data object
-    const dataToSend = {
-      status: selectedStatus,
-      // Only include the reason if the status is "Rejected"
-      rejection_reason: selectedStatus === 'Rejected' ? rejectionReason : null
-    };
+  useEffect(() => {
+    setSelectedStatus(currentStatus);
+    setRejectionReason(currentRejectionReason || "");
+  }, [currentStatus, currentRejectionReason]);
 
-    // 2. Send the PUT request
-    const response = await api.put(`users/update_status/${applicantId}/`, dataToSend);
-    
-    console.log("Success:", response.data);
-    alert("Status updated successfully");
-    onUpdate(); // Trigger parent refresh
-  } catch (err) {
-    console.error("Update failed:", err);
-    alert("Failed to update status.");
-  } finally {
-    setIsUpdating(false);
-  }
-};
+const handleUpdate = async () => {
+    setIsUpdating(true);
+    try {
+      const dataToSend = {
+        status: selectedStatus,
+        rejection_reason: selectedStatus === 'Rejected' ? rejectionReason : null
+      };
+
+      await api.put(`users/update_status/${applicantId}/`, dataToSend);
+      alert("Status updated successfully");
+      onUpdate(); 
+    } catch (err) {
+      console.error("Update failed:", err);
+      alert("Failed to update status.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   return (
     <div className='flex flex-col justify-evenly bg-[#F9FAFB] shadow-sm w-[300px] rounded-[12px] status-management'>

@@ -35,7 +35,7 @@ class ApplicantInfosSerializers(serializers.ModelSerializer):
   class Meta:
     model = Applicant_infos
     fields = '__all__'
-    read_only_fields = ['tracking_code', 'created_at', 'status']
+    read_only_fields = ['tracking_code', 'created_at', 'status','rejection_reason']
 
 class ApplicantDocumentSerializer(serializers.ModelSerializer):
    # We include the ID of the applicant to link the file to their profile

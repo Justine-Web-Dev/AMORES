@@ -91,6 +91,10 @@ def get_single_applicant(request, pk):
         # Fetch only the applicant matching the ID from the URL
         applicant = Applicant_infos.objects.get(pk=pk)
         serializer = ApplicantInfosSerializers(applicant)
+        
+        data = serializer.data
+        data['rejection_reason'] = applicant.rejection_reason
+
         return Response(serializer.data)
     except Applicant_infos.DoesNotExist:
         return Response({"error": "Applicant not found"}, status=status.HTTP_404_NOT_FOUND)
@@ -193,7 +197,8 @@ def track_application_status(request):
         "full_name": f"{applicant.firstname} {applicant.lastname}",
         "status": applicant.status,
         "program": applicant.program,
-        "date_applied": applicant.created_at
+        "date_applied": applicant.created_at,
+        "rejection_reason" : applicant.rejection_reason
     }, status=status.HTTP_200_OK)
   
   except Applicant_infos.DoesNotExist:

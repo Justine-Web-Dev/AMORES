@@ -93,6 +93,7 @@ function ViewDetails() {
             applicantId={id}
             currentStatus={applicant.status}
             onUpdate={fetchApplicantDetails}
+            currentRejectionReason={applicant.rejection_reason}
           />
         </div>
         <ApplicantInfoView data={applicant}/>

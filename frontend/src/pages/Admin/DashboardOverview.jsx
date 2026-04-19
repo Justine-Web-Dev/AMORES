@@ -79,37 +79,37 @@ function DashboardOverview() {
         <h3>System Overview</h3>
         <div className='stat-card-container top-summary-cards'>
           <div className='admin-summary-card users'>
-            <div>
+            <div className='flex flex-col-reverse items-center'>
               <span className='summary-label'>Users</span>
               <span className='summary-value'>{user_length}</span>
             </div>
           </div>
           <div className='admin-summary-card total-applicants'>
-            <div>
+            <div className='flex flex-col-reverse items-center'>
               <span className='summary-label'>Total Applicants</span>
               <span className='summary-value'>{applicant_length}</span>
             </div>
           </div>
           <div className='admin-summary-card new-applicants'>
-            <div>
+            <div className='flex flex-col-reverse items-center'>
               <span className='summary-label'>New Applicants</span>
               <span className='summary-value'>{statusCounts['New Applicant']}</span>
             </div>
           </div>
           <div className='admin-summary-card under-review'>
-            <div>
+            <div className='flex flex-col-reverse items-center'>
               <span className='summary-label'>Under Review</span>
               <span className='summary-value'>{statusCounts['Under Review']}</span>
             </div>
           </div>
           <div className='admin-summary-card accepted'>
-            <div>
+            <div className='flex flex-col-reverse items-center'>
               <span className='summary-label'>Accepted</span>
               <span className='summary-value'>{statusCounts['Accepted']}</span>
             </div>
           </div>
           <div className='admin-summary-card rejected'>
-            <div>
+            <div className='flex flex-col-reverse items-center'>
               <span className='summary-label'>Rejected</span>
               <span className='summary-value'>{statusCounts['Rejected']}</span>
             </div>

@@ -64,7 +64,7 @@ function PersonnelOverview() {
               Total Applications
             </h4>
           </div>
-
+          
           <div className='stat-card new-applicants'>
             <h4 className='flex flex-col justify-center items-center'>
               <span className='text-[18px]'>{status_new_applicant}</span>

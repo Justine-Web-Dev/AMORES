@@ -84,9 +84,18 @@ function TrackApplication() {
                     {application.status}
                   </span>
                 </p>
+                {application?.status === 'Rejected' && application?.rejection_reason && (
+                  <div className='col-span-2 mt-4 p-3 bg-red-50 border border-red-200 rounded'>
+                    <strong className='text-red-800'>Reason for Rejection:</strong>
+                    <p className='text-red-700'>{application.rejection_reason}</p>
+                  </div>
+                )}
               </div>
             </div>
+            
           )}
+
+          
       
     </div>
 </div>
