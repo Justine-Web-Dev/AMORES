@@ -43,6 +43,8 @@ class Applicant_infos(models.Model):
   program = models.CharField(max_length=20)
   date_graduated = models.DateField(default=default_date)
 
+  rejection_reason = models.TextField(blank=True,null=True)
+
   name_of_school = models.CharField(max_length=100)
   latin_honor = models.CharField(max_length=50, null=True,blank=True)
   pag_ibig_number = models.CharField(max_length=15 )

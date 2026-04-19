@@ -24,7 +24,7 @@ function ApplicantEvaluation() {
 
   const fetchInfo = async () =>{
       try {
-        const response = await api.get("users/get_applicant_info")
+        const response = await api.get("users/applicants/active")
         setApplicantInfo(response.data)
         console.log(response.data)
       } catch (err) {

@@ -156,6 +156,11 @@ def update_applicant_status(request, pk):
         
         # We only want to update the 'status' field from the request body
         new_status = request.data.get('status')
+        reason = request.data.get('rejection_reason')
+
+        if new_status == 'Rejected':
+           applicant.rejection_reason = reason
+
         if not new_status:
             return Response({"error": "Status is required"}, status=status.HTTP_400_BAD_REQUEST)
             
@@ -218,4 +223,13 @@ def upload_document(request):
 def get_applicant_documents(request, applicant_id):
     documents = ApplicantDocument.objects.filter(applicant_id=applicant_id)
     serializer = ApplicantDocumentSerializer(documents, many=True, context={'request': request})
+    return Response(serializer.data)
+
+# Add these to your views.py
+
+@api_view(['GET'])
+def get_active_applicants(request):
+    # Exclude those that are marked as Rejected
+    applicants = Applicant_infos.objects.exclude(status='Rejected')
+    serializer = ApplicantInfosSerializers(applicants, many=True)
     return Response(serializer.data)

@@ -4,26 +4,32 @@ import { api } from '../../../api/api'
 
 function StatusManagement({applicantId, currentStatus, onUpdate}) {
   const [selectedStatus, setSelectedStatus] = useState(currentStatus)
+  const [rejectionReason,setRejectionReason] = useState("")
   const [isUpdating, setIsUpdating] = useState(false)
 
-  const handleUpdate = async () =>{
-    setIsUpdating(true)
-    try{
-       const response = await api.put(`users/update_status/${applicantId}/`,{
-      status: selectedStatus
-    })
-    console.log(response.data)
+  const handleUpdate = async () => {
+  setIsUpdating(true);
+  try {
+    // 1. Prepare the data object
+    const dataToSend = {
+      status: selectedStatus,
+      // Only include the reason if the status is "Rejected"
+      rejection_reason: selectedStatus === 'Rejected' ? rejectionReason : null
+    };
 
-    alert("Status updated successfully")
-    onUpdate()
-    }catch(err){
-      console.error("Update failed:", err)
-      alert("Failed to update status.")
-    }finally{
-      setIsUpdating(false)
-    }
-   
+    // 2. Send the PUT request
+    const response = await api.put(`users/update_status/${applicantId}/`, dataToSend);
+    
+    console.log("Success:", response.data);
+    alert("Status updated successfully");
+    onUpdate(); // Trigger parent refresh
+  } catch (err) {
+    console.error("Update failed:", err);
+    alert("Failed to update status.");
+  } finally {
+    setIsUpdating(false);
   }
+};
 
   return (
     <div className='flex flex-col justify-evenly bg-[#F9FAFB] shadow-sm w-[300px] rounded-[12px] status-management'>
@@ -45,6 +51,17 @@ function StatusManagement({applicantId, currentStatus, onUpdate}) {
 
         </select>
       </div>
+      {selectedStatus === 'Rejected' && (
+        <div className="mt-4">
+          <label className="text-sm font-medium">Reason for Rejection:</label>
+          <textarea
+            className="w-full mt-1 p-2 border rounded"
+            placeholder="Enter reason..."
+            value={rejectionReason}
+            onChange={(e) => setRejectionReason(e.target.value)}
+          />
+        </div>
+      )}
       <button onClick={handleUpdate}
         disabled={isUpdating || selectedStatus === currentStatus}
         className={`rounded-[4px] text-white cursor-pointer save-changes-btn mt-4 h-10 ${

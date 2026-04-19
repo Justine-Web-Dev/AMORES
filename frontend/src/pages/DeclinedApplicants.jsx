@@ -87,6 +87,7 @@ function DeclinedApplicants() {
                 <th scope="col" className="th">Name of School</th>
                 <th scope="col" className="th whitespace-nowrap">Date Graduated</th>
                 <th scope="col" className="th text-center">Status</th>
+                <th scope="col" className="th text-center">Reason</th>
                 <th scope="col" className="th text-center">Applied On</th>
                 <th scope="col" className="th"></th>
               </tr>
@@ -106,6 +107,7 @@ function DeclinedApplicants() {
                         {applicant.status}
                       </span>
                     </td>
+                    <td>{applicant.rejection_reason}</td>
                     <td>{applicant.created_at}</td>
                     <td className="px-4 py-4 text-center relative">
                       <div className="flex justify-center items-center">
