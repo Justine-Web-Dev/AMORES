@@ -9,8 +9,13 @@
   opacity: 0.8;
 }
 .my-header{
+  background-color: rgba(255, 255, 255, 0.5);
   padding: 10px;
   z-index: 1;
+  backdrop-filter: blur(10px);
+  
+  /* For Safari support */
+  -webkit-backdrop-filter: blur(10px);
 }
 .home,.track-app,.about-us{
   position: relative;
