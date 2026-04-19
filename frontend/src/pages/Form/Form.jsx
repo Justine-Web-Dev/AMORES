@@ -48,7 +48,7 @@ function Form() {
   })
   
   return (
-    <div className='form-application-container bg-gray-100 min-h-screen  '>
+    <div className='form-application-container min-h-screen  '>
       <form className='my-form max-w-4xl mx-auto bg-white my-11 rounded-lg shadow-sm' onSubmit={handleSubmit}>
         <h1 className='text-2xl md:text-[24px] font-semibold title-application-form mb-6'>Application Form</h1>
         

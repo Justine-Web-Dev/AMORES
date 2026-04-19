@@ -8,6 +8,7 @@ import './PersonnelDashboard.css'
 import DeclinedApplicants from '../DeclinedApplicants'
 import Header from '../../Components/Header/Header'
 import ViewDetails from '../ViewDetails'
+import Form from '../Form/Form'
 
 function PersonnelDashboard() {
   return (
@@ -20,6 +21,7 @@ function PersonnelDashboard() {
           <Route path="/applications" element={<ApplicantEvaluation />} />
           <Route path="/declined-applicants" element={<DeclinedApplicants />} />
           <Route path='/view-details/:id' element={<ViewDetails />}/>
+          <Route path='/application-form' element={<Form/>}/>
         </Routes>
       </div>
     </div>

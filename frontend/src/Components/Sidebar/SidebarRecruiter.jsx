@@ -30,6 +30,8 @@ function SidebarRecruiter() {
           <li><Link className={`nav-link ${isActive('/PersonnelDashboard/applications') ? 'active' : ''}`} to={"/PersonnelDashboard/applications"}>Applications</Link></li>
 
           <li><Link className={`nav-link ${isActive('/PersonnelDashboard/declined-applicants') ? 'active' : ''}`} to={"/PersonnelDashboard/declined-applicants"}>Declined Applicant</Link></li>
+
+          <li><Link className={`nav-link ${isActive('/PersonnelDashboard/application-form') ? 'active' : ''}`} to={"/PersonnelDashboard/application-form"}>Form Application</Link></li>
         </ul>
         <button className='logout-btn' onClick={handleLogout}>Logout</button>
       </nav>

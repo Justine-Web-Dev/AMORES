@@ -9,7 +9,7 @@ import DocumentSubmission from '../Form/DocumentSubmission'
 
 function LandingpageMain() {
   return (
-    <div>
+    <div className='bg-gray-100'>
       <HeaderLanding />
       <Routes>
         <Route path='/' element={<LandingPage />} />
