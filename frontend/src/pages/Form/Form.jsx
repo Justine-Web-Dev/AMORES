@@ -144,7 +144,6 @@ function Form() {
               className="border rounded px-3 py-2 text-sm w-full" type="text" placeholder="Latin honor" />
           </div>
 
-         
           <div className="flex flex-col gap-1">
             <label className="text-sm text-gray-600">Pag-ibig #</label>
             <input 
@@ -154,6 +153,7 @@ function Form() {
               className="border rounded px-3 py-2 text-sm w-full" type="number" placeholder="Pag-ibig #" required 
             />
           </div>
+          
           <div className="flex flex-col gap-1">
             <label className="text-sm text-gray-600">PhilHealth ID #</label>
             <input
