@@ -110,7 +110,7 @@ function ApplicantEvaluation() {
                 <th scope="col" className="th whitespace-nowrap">Date Graduated</th>
                 <th scope="col" className="th text-center">Status</th>
                 <th scope="col" className="th text-center">Applied On</th>
-                <th scope="col" className="th"></th>
+                <th scope="col" className="th">Actions</th>
               </tr>
             </thead>
 
