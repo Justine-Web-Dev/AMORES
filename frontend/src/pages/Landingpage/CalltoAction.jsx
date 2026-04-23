@@ -1,6 +1,13 @@
 import React from 'react';
+import { useNavigate } from 'react-router';
 
 const CalltoAction = () => {
+  const navigate = useNavigate()
+
+  const handleApply = () =>{
+    navigate("/form-informations")
+  }
+
   return (
     // Main Container (bg-gray-100 to match requirements section)
     <div className="bg-gray-100 flex flex-col items-center justify-center p-20 py-32 min-h-screen">
@@ -35,6 +42,7 @@ const CalltoAction = () => {
           
           {/* Primary CTA (Filled - Accent Color) */}
           <button
+          onClick={handleApply}
             className=" text-center bg-[#EB612A] text-white px-10 py-5 rounded-lg text-lg font-extrabold uppercase tracking-wide hover:bg-[#EB612A]/90 transition-colors shadow-md cursor-pointer"
           >
             APPLY ONLINE NOW

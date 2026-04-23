@@ -58,6 +58,11 @@
   letter-spacing: 0.1em;
 }
 
+.application-btn:hover{
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.288);
+  transform: translateY(-3px);
+}
+
 @media (max-width: 640px) {
   .application-btn {
     width: 100%;

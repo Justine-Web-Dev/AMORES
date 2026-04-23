@@ -1,4 +1,5 @@
 import React, { useState,useEffect } from 'react';
+import {useNavigate} from 'react-router-dom'
 import { useScrollFade } from '../../useScrollFade';
 import './LandingPageCss.css';
 import AboutUs from './AboutUs';
@@ -26,6 +27,8 @@ const FadeInSection = ({ children }) => {
 
 const LandingPage = () => {
   const [showDisclaimer, setShowDisclaimer] = useState(false);
+  const navigate = useNavigate()
+
 
   useEffect(() => {
     const sessionAccepted = sessionStorage.getItem('disclaimer_accepted_session');
@@ -43,6 +46,11 @@ const LandingPage = () => {
   const handleCancel = () => {
     window.location.href = 'https://www.google.com';
   };
+
+  const handleStartApp = () =>{
+    navigate("/form-informations")
+  }
+
 
   return (
     <div className="bg-gray-100 home-landing-page ">
@@ -76,7 +84,9 @@ const LandingPage = () => {
           </div>
 
           <div className="button-group delay-3">
-            <button className="bg-[#EB612A] application-btn">
+            <button 
+            onClick={handleStartApp}
+            className="bg-[#EB612A] cursor-pointer application-btn">
               Start Application
             </button>
             <button className="btn-req">
@@ -170,7 +180,6 @@ const LandingPage = () => {
       <div className='absolute left-0 right-0'>
         <Footer />
       </div>
-
     </div>
   );
 };

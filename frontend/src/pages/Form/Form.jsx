@@ -136,7 +136,7 @@ function Form() {
           </div>
           
           <div className="flex flex-col gap-1">
-            <label className="text-sm text-gray-600">Latin honor</label>
+            <label className="text-sm text-gray-600">Latin honor <span className='px-2 rounded bg-gray-200'>optional</span></label>
             <input
               name='latin_honor'
               value={formData.latin_honor}
@@ -173,7 +173,7 @@ function Form() {
 
           
           <div className="flex flex-col gap-1 md:col-span-3">
-            <label className="text-sm text-gray-600">Tribe affiliated</label>
+            <label className="text-sm text-gray-600">Tribe affiliated <span className='px-2 rounded bg-gray-200'>optional</span></label>
             <input 
               name='tribe_affiliated'
               value={formData.tribe_affiliated}
