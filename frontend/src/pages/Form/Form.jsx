@@ -22,7 +22,7 @@ function Form() {
       }
     }
   }, [])
-
+  
   const handleChange = (e) => {
     const updatedData = { ...formData, [e.target.name]: e.target.value }
     setFormData(updatedData)
@@ -39,7 +39,7 @@ function Form() {
   const requiredFields = [
     'lastname', 'firstname', 'middle_name', 'age', 'cp_number',
     'program', 'name_of_school', 'date_graduated', 'email',
-    'pag_ibig_number', 'phil_health_id_num', 'height', 'tribe_affiliated'
+    'pag_ibig_number', 'phil_health_id_num', 'height'
   ]
 
   const isFormValid = requiredFields.every((key) => {
@@ -178,7 +178,7 @@ function Form() {
               name='tribe_affiliated'
               value={formData.tribe_affiliated}
               onChange={handleChange}
-              className="border rounded px-3 py-2 text-sm w-full" type="text" placeholder="Tribe affiliated" required />
+              className="border rounded px-3 py-2 text-sm w-full" type="text" placeholder="Tribe affiliated"  />
           </div>
 
           

@@ -11,6 +11,8 @@ import './AdminDashboard.css'
 import DeclinedApplicants from '../DeclinedApplicants'
 import ApplicantEvaluation from '../PersonnelRecruiter/ApplicantEvaluation'
 import ViewDetails from '../ViewDetails'
+import Form from '../Form/Form'
+import DocumentSubmission from '../Form/DocumentSubmission'
 
 function AdminDashboard() {
   return (
@@ -27,6 +29,8 @@ function AdminDashboard() {
           <Route path="audit-logs" element={<AuditLogs />} />
           <Route path="backup-restore" element={<BackupRestore />} />
           <Route path="system-settings" element={<SystemSettings />} />
+          <Route path="application-form" element={<Form />} />
+          <Route path="Dashboard/document-submission" element={<DocumentSubmission />} />
         </Routes>
       </div>
     </div>

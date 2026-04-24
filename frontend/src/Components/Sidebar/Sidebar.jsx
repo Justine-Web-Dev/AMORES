@@ -46,6 +46,10 @@ function Sidebar() {
             <Link className={`nav-link ${isActive('/Dashboard/declined-applicant') ? 'active' : ''}`} to={"/Dashboard/declined-applicant"}>Declined Applicant</Link>
           </li>
 
+          <li>
+            <Link className={`nav-link ${isActive('/Dashboard/application-form') ? 'active' : ''}`} to={"/Dashboard/application-form"}>Form Application</Link>
+          </li>
+
           <li className="system-utilities-dropdown">
 
             <div className="dropdown-header" onClick={toggleSystemUtilities}>

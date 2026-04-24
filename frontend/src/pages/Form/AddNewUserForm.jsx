@@ -6,6 +6,7 @@ import './AddNewUserForm.css'
 import { api } from '../../../api/api'
 
 function AddNewUserForm({onClose,user}) {
+  const isEditMode = !!user;
 
   const [formData,setFormData] = useState({
     name:"",
@@ -96,7 +97,9 @@ function AddNewUserForm({onClose,user}) {
           name='password'
           value={formData.password}
           onChange={handleChange}
-          placeholder={user ? 'Leave blank to keep current' : 'Enter password'}
+          disabled={isEditMode}
+          className={isEditMode ? "opacity-50 cursor-not-allowed" : ""}
+          placeholder={user ? 'Password cannot be change here' : 'Enter password'}
           required={!user}/>
 
           <div className='flex flex-col role-container'>

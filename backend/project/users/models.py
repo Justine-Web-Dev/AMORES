@@ -46,11 +46,11 @@ class Applicant_infos(models.Model):
   rejection_reason = models.TextField(blank=True,null=True)
 
   name_of_school = models.CharField(max_length=100)
-  latin_honor = models.CharField(max_length=50, null=True,blank=True)
+  latin_honor = models.CharField(max_length=50, null=True,blank=True,default='N/A')
   pag_ibig_number = models.CharField(max_length=15 )
   phil_health_id_num = models.CharField(max_length=15)
   height = models.CharField(max_length=10)
-  tribe_affiliated = models.CharField(max_length=50, null=True, blank=True)
+  tribe_affiliated = models.CharField(max_length=50, null=True, blank=True,default='N/A')
   created_at = models.DateField(auto_now_add=True)
 
   tracking_code = models.CharField(

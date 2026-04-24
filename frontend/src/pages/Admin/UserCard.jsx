@@ -1,21 +1,75 @@
 import React from 'react'
 import profile from '../../assets/RRSU1 logo.png'
 
-function UserCard({users, onEdit}) {
-  return (
-    <div className='flex flex-col justify-evenly items-center h-[280px] w-[270px] shadow-md bg-[#F9FAFB] rounded '>
-      <img src={profile} alt="profile pic" className='h-[60px]'/>
-      
-      <div>
-        <p>Name: {users.name}</p>
-        <p>Status: {users.role}</p>
-      </div>
+import { useState } from 'react'
 
-      <div className='flex flex-col w-full items-center justify-center gap-2'>
-        <button onClick={()=> onEdit(users)}
-        className='bg-[#2C2D86] w-[90%] h-[30px] rounded text-white cursor-pointer'>Edit</button>
-        <button className='bg-gray-300 w-[90%] h-[30px] rounded cursor-pointer'>Archive</button>
-      </div>
+function UserCard({users, onEdit,search}) {
+  const [open,setOpen] = useState(null)
+    const toggleMenu = (id) =>{
+    setOpen(open === id ? null : id)
+  }
+  return (
+    <div>
+
+       <table className="w-full text-sm text-center text-gray-500">
+            <thead className="text-xs text-gray-700 uppercase bg-gray-100 ">
+              <tr>
+                <th scope="col" className="th">Name</th>
+                <th scope="col" className="th">Username</th>
+                <th scope="col" className="th text-center">Status</th>
+                <th scope="col" className="th">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody className="divide-y divide-gray-200 bg-white">
+              {
+                search.length > 0 ?(
+                  users.map((user)=>(
+                  <tr key={user.id}>
+                    <td>{user.name}</td>
+                    <td>{user.username}</td>
+                    <td>{user.role}</td>
+                    <td className="px-4 py-4 text-center relative">
+                      <div className="flex justify-center items-center">
+                        <button 
+                          onClick={() => toggleMenu(user.id)}
+                          className="flex items-center justify-center w-9 h-9 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all duration-200 active:scale-95"
+                          title="More Options"
+                        >
+                          <span className="text-xl font-bold tracking-widest leading-none pb-2">...</span>
+                        </button>
+                      </div>
+
+                      {open === user.id && (
+                        <div className="absolute right-10 z-10 w-40 bg-white shadow-lg border border-gray-100 rounded-md actions">
+                          <ul className="flex flex-col text-[14px] gap-[5px]">
+                            <h1 className='font-bold text-black border-b pb-1 border-gray-200 action-title'>Actions</h1>
+                            <button 
+                              onClick={()=>onEdit(user)}
+                              className="text-left px-2 py-1 cursor-pointer view-details-btn-action">
+                              Edit
+                            </button>
+                            <button 
+                              className="text-left  cursor-pointer view-details-btn-action">
+                              Archive
+                            </button>
+                          </ul>
+                        </div>
+                      )}
+                      
+                    </td>
+                  </tr>
+                ))):(
+                  <tr>
+                  <td colSpan="8" className="py-10 text-gray-500 italic col-8">
+                    No users registered
+                  </td>
+                </tr>
+                )
+              }
+              
+            </tbody>
+          </table> 
 
     </div>
   )

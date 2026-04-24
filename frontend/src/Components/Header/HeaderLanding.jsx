@@ -24,7 +24,7 @@ function HeaderLanding() {
             <Link to={'/about-us'} className="text-sm about-us">About Us</Link>
             <Link to={'/track-application'} className="text-sm track-app">Track Application</Link>
           </nav>
-          <Link to={'/form-informations'} 
+          <Link to={'/form-application'} 
           className="flex justify-center items-center bg-[#2C2D86] h-[40px] w-[160px] text-sm text-white rounded cursor-pointer apply-btn"
           >
             Apply Now

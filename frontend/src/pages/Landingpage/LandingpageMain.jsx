@@ -15,7 +15,7 @@ function LandingpageMain() {
         <Route path='/' element={<LandingPage />} />
         <Route path='/about-us' element={<AboutUs />}/>
         <Route path='/track-application' element={<TrackApplication />}/>
-        <Route path='/form-informations' element={<Form/>}/>
+        <Route path='/form-application' element={<Form/>}/>
         <Route path='/document-submission' element={<DocumentSubmission/>}/>
     </Routes>
     </div>

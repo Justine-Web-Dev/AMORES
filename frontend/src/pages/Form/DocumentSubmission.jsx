@@ -38,8 +38,8 @@ function DocumentSubmission() {
     navigate(-1)
   }
 
-  const handleSubmit = async (event) => {
-    event.preventDefault()
+  const handleSubmit = async (e) => {
+    e.preventDefault()
     setError('')
     setLoading(true)
 
@@ -53,6 +53,11 @@ function DocumentSubmission() {
       const response = await api.post("users/register_applicant_info/", payload)
       const applicantId = response.data.id;
       const code = response.data.tracking_code;
+
+    navigate('/success-submit', { 
+      state: { trackingCode: code },
+      replace: true 
+    });
 
       // 2. Prepare document uploads
       const uploadPromises = []
