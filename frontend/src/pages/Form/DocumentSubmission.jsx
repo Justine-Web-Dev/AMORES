@@ -54,9 +54,10 @@ function DocumentSubmission() {
       const applicantId = response.data.id;
       const code = response.data.tracking_code;
 
-    navigate('/success-submit', { 
+    navigate('../success-submit', { 
       state: { trackingCode: code },
-      replace: true 
+      replace: true,
+      relative: 'path'
     });
 
       // 2. Prepare document uploads
@@ -88,7 +89,7 @@ function DocumentSubmission() {
       localStorage.removeItem('applicationFormData')
       localStorage.removeItem('applicationDocumentNames')
 
-      navigate('/success-submit', { state: { trackingCode: code } })
+      navigate('../success-submit', { state: { trackingCode: code }, relative: 'path' })
     } catch (err) {
       const errorMessage =
         err?.response?.data?.error ||

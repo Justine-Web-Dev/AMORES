@@ -33,7 +33,8 @@ function Form() {
   const handleSubmit = (e) => {
     e.preventDefault()
     // Navigate to document submission with form data
-    navigate('/document-submission', { state: { formData } })
+    // Using relative path to stay within current dashboard context if applicable
+    navigate('../document-submission', { state: { formData }, relative: 'path' })
   }
 
   const requiredFields = [

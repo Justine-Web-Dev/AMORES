@@ -13,6 +13,7 @@ import ApplicantEvaluation from '../PersonnelRecruiter/ApplicantEvaluation'
 import ViewDetails from '../ViewDetails'
 import Form from '../Form/Form'
 import DocumentSubmission from '../Form/DocumentSubmission'
+import SubmitApplicationModal from '../../Modals/SubmitApplicationModal'
 
 function AdminDashboard() {
   return (
@@ -30,7 +31,8 @@ function AdminDashboard() {
           <Route path="backup-restore" element={<BackupRestore />} />
           <Route path="system-settings" element={<SystemSettings />} />
           <Route path="application-form" element={<Form />} />
-          <Route path="Dashboard/document-submission" element={<DocumentSubmission />} />
+          <Route path="document-submission" element={<DocumentSubmission />} />
+          <Route path="success-submit" element={<SubmitApplicationModal />} />
         </Routes>
       </div>
     </div>

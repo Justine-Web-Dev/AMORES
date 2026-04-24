@@ -11,7 +11,7 @@ function SubmitApplicationModal({ trackingCode: trackingCodeProp }) {
   const trackingCode = trackingCodeProp || location.state?.trackingCode || "N/A";
 
   const handleBackToHome = () => {
-    navigate('/')
+    navigate('..', { relative: 'path' })
   }
   const directTrackApplication = () =>{
     navigate('/track-application')
