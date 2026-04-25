@@ -81,7 +81,7 @@ function LoginForm() {
               />
             </div>
 
-            <button className='login-btn' type='submit'>Login</button>
+            <button className='login-btn' type='submit'>{isLoggedIn ? 'Logging in' : 'Login'}</button>
           </div>
         </form>
 
