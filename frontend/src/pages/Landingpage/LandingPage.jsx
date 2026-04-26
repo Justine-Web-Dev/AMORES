@@ -1,6 +1,7 @@
-import React, { useState,useEffect } from 'react';
-import {useNavigate} from 'react-router-dom'
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom'
 import { useScrollFade } from '../../useScrollFade';
+import axios from 'axios';
 import './LandingPageCss.css';
 import AboutUs from './AboutUs';
 import Disclaimer from '../../Disclaimer';
@@ -17,7 +18,7 @@ const FadeInSection = ({ children }) => {
       className={`transition-all duration-1000 ease-out transform ${
         isVisible 
           ? 'opacity-100 translate-y-0' 
-          : 'opacity-0 translate-y-20' // Starts 80px down
+          : 'opacity-0 translate-y-20'
       }`}
     >
       {children}
@@ -25,9 +26,10 @@ const FadeInSection = ({ children }) => {
   );
 };
 
-const LandingPage = () => {
+const LandingPage = ({ isApplicationOpen }) => {
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const navigate = useNavigate()
+  const requirementsRef = useRef(null);
 
 
   useEffect(() => {
@@ -48,8 +50,14 @@ const LandingPage = () => {
   };
 
   const handleStartApp = () =>{
-    navigate("/form-informations")
+    if (isApplicationOpen) {
+      navigate("/form-application")
+    }
   }
+
+  const scrollToRequirements = () => {
+    requirementsRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
 
   return (
@@ -84,12 +92,25 @@ const LandingPage = () => {
           </div>
 
           <div className="button-group delay-3">
+            {isApplicationOpen ? (
+              <button 
+                onClick={handleStartApp}
+                className="bg-[#EB612A] cursor-pointer application-btn">
+                Start Application
+              </button>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <button 
+                  disabled
+                  className="bg-gray-400 cursor-not-allowed application-btn opacity-70">
+                  Applications Closed
+                </button>
+                <p className="text-[10px] text-red-500 font-bold uppercase tracking-widest">Currently not accepting new applicants</p>
+              </div>
+            )}
             <button 
-            onClick={handleStartApp}
-            className="bg-[#EB612A] cursor-pointer application-btn">
-              Start Application
-            </button>
-            <button className="btn-req">
+            onClick={scrollToRequirements}
+            className="btn-req cursor-pointer">
               View Requirements
             </button>
           </div>
@@ -173,9 +194,11 @@ const LandingPage = () => {
       </div>
 
       <FadeInSection><AboutUs /></FadeInSection>
-      <FadeInSection><MinimumRequirement /></FadeInSection>
+      <div ref={requirementsRef}>
+        <FadeInSection><MinimumRequirement /></FadeInSection>
+      </div>
       <FadeInSection><ApplicationProcess /></FadeInSection>
-      <FadeInSection><CalltoAction /></FadeInSection>
+      <FadeInSection><CalltoAction isApplicationOpen={isApplicationOpen} /></FadeInSection>
 
       <div className='absolute left-0 right-0'>
         <Footer />

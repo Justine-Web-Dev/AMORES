@@ -95,3 +95,10 @@ class ApplicantDocument(models.Model):
 
     def __str__(self):
         return f"{self.document_type} for {self.applicant.lastname}"
+
+class SystemSettings(models.Model):
+    is_application_open = models.BooleanField(default=True)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"System Settings - Application Open: {self.is_application_open}"

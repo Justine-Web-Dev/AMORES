@@ -14,6 +14,7 @@ import ViewDetails from '../ViewDetails'
 import Form from '../Form/Form'
 import DocumentSubmission from '../Form/DocumentSubmission'
 import SubmitApplicationModal from '../../Modals/SubmitApplicationModal'
+import Logout from '../../Modals/Logout'
 
 function AdminDashboard() {
   return (
@@ -33,6 +34,7 @@ function AdminDashboard() {
           <Route path="application-form" element={<Form />} />
           <Route path="document-submission" element={<DocumentSubmission />} />
           <Route path="success-submit" element={<SubmitApplicationModal />} />
+          <Route path="logout" element={<Logout />} />
         </Routes>
       </div>
     </div>

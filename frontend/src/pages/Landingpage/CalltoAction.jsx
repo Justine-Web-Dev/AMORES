@@ -1,11 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 
-const CalltoAction = () => {
+const CalltoAction = ({ isApplicationOpen = true }) => {
   const navigate = useNavigate()
 
   const handleApply = () =>{
-    navigate("/form-informations")
+    if (isApplicationOpen) {
+      navigate("/form-application")
+    }
   }
 
   return (
@@ -33,8 +35,8 @@ const CalltoAction = () => {
         {/* The Subtitle (Text Color - Blue) */}
         <p className="text-[#2C2D86]/90 text-xl font-medium max-w-2xl mb-16 leading-relaxed">
           Your decision to join the Philippine National Police is a commitment to
-          something greater than yourself. Applications for 2025 are now open —
-          don't miss this opportunity to become a guardian of peace.
+          something greater than yourself. {isApplicationOpen ? 'Applications for 2026 are now open —' : 'Applications are currently closed —'}
+          {isApplicationOpen ? " don't miss this opportunity to become a guardian of peace." : " please check back later for updates on the next recruitment cycle."}
         </p>
 
         {/* Button Container (Flexbox) */}
@@ -42,10 +44,15 @@ const CalltoAction = () => {
           
           {/* Primary CTA (Filled - Accent Color) */}
           <button
-          onClick={handleApply}
-            className=" text-center bg-[#EB612A] text-white px-10 py-5 rounded-lg text-lg font-extrabold uppercase tracking-wide hover:bg-[#EB612A]/90 transition-colors shadow-md cursor-pointer"
+            onClick={handleApply}
+            disabled={!isApplicationOpen}
+            className={`text-center px-10 py-5 rounded-lg text-lg font-extrabold uppercase tracking-wide transition-all shadow-md ${
+              isApplicationOpen 
+                ? "bg-[#EB612A] text-white hover:bg-[#EB612A]/90 cursor-pointer hover:-translate-y-1 active:translate-y-0" 
+                : "bg-gray-400 text-gray-100 cursor-not-allowed opacity-70"
+            }`}
           >
-            APPLY ONLINE NOW
+            {isApplicationOpen ? "APPLY ONLINE NOW" : "APPLICATIONS CLOSED"}
           </button>
 
           {/* Secondary CTA (Outlined - Text Color) */}

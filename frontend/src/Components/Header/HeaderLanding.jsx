@@ -1,15 +1,13 @@
-import React from 'react'
-import { useState } from 'react';
-
+import React, { useState } from 'react'
 import logo from '../../assets/RRSU1 logo.png'
 import '../Header/Headerlanding.css'
 import { Link } from 'react-router-dom';
 
-function HeaderLanding() {
+function HeaderLanding({ isApplicationOpen = true }) {
     const [menuOpen, setMenuOpen] = useState(false);
     
   return (
-    <header className="fixed top-0 left-0 right-0 shadow w-full my-header">
+    <header className="fixed top-0 left-0 right-0 shadow w-full my-header z-[100]">
       {/* Top bar */}
       <div className="flex justify-around items-center">
         {/* Logo + Name */}
@@ -24,11 +22,21 @@ function HeaderLanding() {
             <Link to={'/about-us'} className="text-sm about-us">About Us</Link>
             <Link to={'/track-application'} className="text-sm track-app">Track Application</Link>
           </nav>
-          <Link to={'/form-application'} 
-          className="flex justify-center items-center bg-[#2C2D86] h-[40px] w-[160px] text-sm text-white rounded cursor-pointer apply-btn"
-          >
-            Apply Now
-          </Link>
+          
+          {isApplicationOpen ? (
+            <Link to={'/form-application'} 
+            className="flex justify-center items-center bg-[#2C2D86] h-[40px] w-[160px] text-sm text-white rounded cursor-pointer apply-btn hover:bg-[#1a1b5c] transition-all"
+            >
+              Apply Now
+            </Link>
+          ) : (
+            <button 
+            disabled
+            className="flex justify-center items-center bg-gray-400 h-[40px] w-[160px] text-sm text-white rounded cursor-not-allowed opacity-70"
+            >
+              Closed
+            </button>
+          )}
         </div>
 
         <button
@@ -43,15 +51,26 @@ function HeaderLanding() {
       </div>
 
       <div className={`md:hidden overflow-hidden transition-all duration-300 ${menuOpen ? "max-h-64" : "max-h-0"}`}>
-        <nav className="flex flex-col items-center gap-4 px-6 pb-5 pt-2 border-t border-gray-100">
-          <Link to={'/'} className="text-sm w-full text-center py-2 home">Home</Link>
-          <Link to={'/about-us'} className="text-sm w-full text-center py-2 about-us">About Us</Link>
-          <Link to={'/track-application'} className="text-sm w-full text-center py-2 track-app">Track Application</Link>
-          <Link to={'/form-informations'} className="flex justify-center items-center bg-[#2C2D86] h-[40px] w-full text-sm text-white rounded cursor-pointer apply-btn"
+        <nav className="flex flex-col items-center gap-4 px-6 pb-5 pt-2 border-t border-gray-100 bg-white">
+          <Link to={'/'} className="text-sm w-full text-center py-2 home" onClick={() => setMenuOpen(false)}>Home</Link>
+          <Link to={'/about-us'} className="text-sm w-full text-center py-2 about-us" onClick={() => setMenuOpen(false)}>About Us</Link>
+          <Link to={'/track-application'} className="text-sm w-full text-center py-2 track-app" onClick={() => setMenuOpen(false)}>Track Application</Link>
           
-          >
-            Apply Now
-          </Link>
+          {isApplicationOpen ? (
+            <Link to={'/form-application'} 
+            className="flex justify-center items-center bg-[#2C2D86] h-[40px] w-full text-sm text-white rounded cursor-pointer apply-btn"
+            onClick={() => setMenuOpen(false)}
+            >
+              Apply Now
+            </Link>
+          ) : (
+            <button 
+            disabled
+            className="flex justify-center items-center bg-gray-400 h-[40px] w-full text-sm text-white rounded cursor-not-allowed opacity-70"
+            >
+              Closed
+            </button>
+          )}
         </nav>
       </div>
     </header>

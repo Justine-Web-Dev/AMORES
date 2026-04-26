@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from .serializers import UsersSerializers,ApplicantInfosSerializers,ApplicantDocumentSerializer
-from .models import User,Applicant_infos,ApplicantDocument
+from .serializers import UsersSerializers,ApplicantInfosSerializers,ApplicantDocumentSerializer, SystemSettingsSerializer
+from .models import User,Applicant_infos,ApplicantDocument, SystemSettings
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
 from rest_framework import status
@@ -238,3 +238,18 @@ def get_active_applicants(request):
     applicants = Applicant_infos.objects.exclude(status='Rejected')
     serializer = ApplicantInfosSerializers(applicants, many=True)
     return Response(serializer.data)
+
+@api_view(['GET'])
+def get_system_settings(request):
+    settings_obj, created = SystemSettings.objects.get_or_create(id=1)
+    serializer = SystemSettingsSerializer(settings_obj)
+    return Response(serializer.data)
+
+@api_view(['PUT'])
+def update_system_settings(request):
+    settings_obj, created = SystemSettings.objects.get_or_create(id=1)
+    serializer = SystemSettingsSerializer(settings_obj, data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

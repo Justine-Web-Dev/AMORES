@@ -33,3 +33,22 @@
     transform: rotate(360deg);
   }
 } */
+
+/* Logout buttons */
+.logout-yes-btn{
+  transition: 0.3s;
+}
+.logout-no-btn{
+  transition: 0.3s;
+}
+
+.logout-yes-btn:hover{
+  transform: translateY(-3px);
+  box-shadow: 0px 0px 10px rgba(44, 45, 134, 0.116);
+  cursor: pointer;
+}
+.logout-no-btn:hover{
+  transform: translateY(-3px);
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.116);
+  cursor: pointer;
+}

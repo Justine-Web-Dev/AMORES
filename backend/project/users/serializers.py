@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User,Applicant_infos,ApplicantDocument
+from .models import User,Applicant_infos,ApplicantDocument, SystemSettings
 from django.utils.dateparse import parse_datetime, parse_date
 
 class FlexibleDateField(serializers.DateField):
@@ -54,4 +54,9 @@ class ApplicantDocumentSerializer(serializers.ModelSerializer):
         if obj.file and request:
             return request.build_absolute_uri(obj.file.url)
         return None
+
+class SystemSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SystemSettings
+        fields = '__all__'
 
