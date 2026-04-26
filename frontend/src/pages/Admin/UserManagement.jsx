@@ -73,7 +73,7 @@ function UserManagement() {
             className="search-input"
           />
           <button onClick={()=> setActiveSearchTerm(searchTerm)}
-          className='flex items-center px-10 bg-[#2C2D86] text-white cursor-pointer rounded'><CiSearch size={30} /> Search</button>
+          className='flex items-center px-10 bg-[#2C2D86] text-white cursor-pointer rounded search-btn'><CiSearch size={30} /> Search</button>
       </div>
 
       <hr className='border-gray-300 my-4'/>

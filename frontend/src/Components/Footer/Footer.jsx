@@ -21,7 +21,7 @@ const Footer = () => {
         {[
           { title: 'RECRUITMENT', links: ['How to Apply', 'Requirements', 'Open Positions', 'Exam Schedules', 'FAQs'] },
           { title: 'ABOUT PNP', links: ['Our Mission', 'History', 'Leadership', 'Units & Commands', 'Regional Offices'] },
-          { title: 'CONTACT', links: ['PNP Hotline: 117', 'Camp Crame, QC', 'pnprecruit@pnp.gov.ph', 'Facebook Page', 'pnp.gov.ph'] }
+          { title: 'CONTACT', links: ['PNP Hotline: 117', 'Camp Crame, LU', 'pnprecruit@pnp.gov.ph', 'Facebook Page', 'pnp.gov.ph'] }
         ].map((section) => (
           <div key={section.title}>
             <h4 className="text-[#EB612A] font-bold tracking-widest mb-6 text-sm">{section.title}</h4>
