@@ -94,9 +94,6 @@ function TrackApplication() {
             </div>
             
           )}
-
-          
-      
     </div>
 </div>
   )

@@ -98,6 +98,8 @@ class ApplicantDocument(models.Model):
 
 class SystemSettings(models.Model):
     is_application_open = models.BooleanField(default=True)
+    application_start_date = models.DateField(null=True, blank=True)
+    application_end_date = models.DateField(null=True, blank=True)
     last_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):

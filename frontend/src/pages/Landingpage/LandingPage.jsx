@@ -26,7 +26,7 @@ const FadeInSection = ({ children }) => {
   );
 };
 
-const LandingPage = ({ isApplicationOpen }) => {
+const LandingPage = ({ isApplicationOpen, appDates }) => {
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const navigate = useNavigate()
   const requirementsRef = useRef(null);
@@ -152,10 +152,10 @@ const LandingPage = ({ isApplicationOpen }) => {
             <div className="flex items-center gap-4 stat-item">
               <div className="min-w-[80px] md:min-w-[120px]">
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-none uppercase text-[#EB612A]">
-                  May
+                  {appDates?.end ? new Date(appDates.end).toLocaleString('en-US', { month: 'long' }) : 'May'}
                 </h2>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-none uppercase text-[#EB612A]">
-                  '26
+                  {appDates?.end ? `'${new Date(appDates.end).getFullYear().toString().slice(-2)}` : "'26"}
                 </h2>
               </div>
               <p className="text-xs md:text-sm text-gray-200 italic">

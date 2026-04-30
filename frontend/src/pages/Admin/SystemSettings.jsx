@@ -3,6 +3,8 @@ import { api } from '../../../api/api'
 
 function SystemSettings() {
   const [isApplicationOpen, setIsApplicationOpen] = useState(true);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -14,6 +16,8 @@ function SystemSettings() {
     try {
       const response = await api.get('/users/system-settings/');
       setIsApplicationOpen(response.data.is_application_open);
+      setStartDate(response.data.application_start_date || '');
+      setEndDate(response.data.application_end_date || '');
       setLoading(false);
     } catch (error) {
       console.error("Error fetching settings:", error);
@@ -25,7 +29,9 @@ function SystemSettings() {
     setSaving(true);
     try {
       await api.put('/users/system-settings/update/', {
-        is_application_open: isApplicationOpen
+        is_application_open: isApplicationOpen,
+        application_start_date: startDate || null,
+        application_end_date: endDate || null
       });
       alert("Settings saved successfully!");
     } catch (error) {
@@ -66,6 +72,27 @@ function SystemSettings() {
               >
                 <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ${isApplicationOpen ? 'translate-x-6' : 'translate-x-1'}`} />
               </button>
+            </div>
+          </div>
+
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="date-input-group">
+              <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Start of Applying</label>
+              <input 
+                type="date" 
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="w-full p-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#2C2D86] focus:border-transparent outline-none transition-all shadow-sm"
+              />
+            </div>
+            <div className="date-input-group">
+              <label className="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">End of Applying</label>
+              <input 
+                type="date" 
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full p-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#2C2D86] focus:border-transparent outline-none transition-all shadow-sm"
+              />
             </div>
           </div>
         </div>
