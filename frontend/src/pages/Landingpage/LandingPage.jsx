@@ -155,7 +155,7 @@ const LandingPage = ({ isApplicationOpen, appDates }) => {
                   {appDates?.end ? new Date(appDates.end).toLocaleString('en-US', { month: 'long' }) : 'May'}
                 </h2>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-none uppercase text-[#EB612A]">
-                  {appDates?.end ? `'${new Date(appDates.end).getFullYear().toString().slice(-2)}` : "'26"}
+                  {appDates?.end ? `'${new Date(appDates.end).getDate().toString().slice(-2)}` : "26"}
                 </h2>
               </div>
               <p className="text-xs md:text-sm text-gray-200 italic">
