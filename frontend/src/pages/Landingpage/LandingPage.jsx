@@ -59,7 +59,6 @@ const LandingPage = ({ isApplicationOpen, appDates }) => {
     requirementsRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-
   return (
     <div className="bg-gray-100 home-landing-page ">
       {showDisclaimer && (
@@ -152,10 +151,10 @@ const LandingPage = ({ isApplicationOpen, appDates }) => {
             <div className="flex items-center gap-4 stat-item">
               <div className="min-w-[80px] md:min-w-[120px]">
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-none uppercase text-[#EB612A]">
-                  {appDates?.end ? new Date(appDates.end).toLocaleString('en-US', { month: 'long' }) : 'May'}
+                  {appDates?.end ? new Date(appDates.end).toLocaleString('en-US', { month: 'long' }) : ''}
                 </h2>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-none uppercase text-[#EB612A]">
-                  {appDates?.end ? `'${new Date(appDates.end).getDate().toString().slice(-2)}` : "26"}
+                  {appDates?.end ? `'${new Date(appDates.end).getDate().toString().slice(-2)}` : ""}
                 </h2>
               </div>
               <p className="text-xs md:text-sm text-gray-200 italic">

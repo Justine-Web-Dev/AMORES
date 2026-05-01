@@ -92,15 +92,20 @@ function AddNewUserForm({onClose,user}) {
           onChange={handleChange}
           placeholder='Username'/>
 
-          <label htmlFor="">Password</label>
-          <input type="password" 
-          name='password'
-          value={formData.password}
-          onChange={handleChange}
-          disabled={isEditMode}
-          className={isEditMode ? "opacity-50 cursor-not-allowed" : ""}
-          placeholder={user ? 'Password cannot be change here' : 'Enter password'}
-          required={!user}/>
+          {!isEditMode && (
+          <div className='flex flex-col gap-[5px]'>
+            <label htmlFor="">Password</label>
+            <input type="password" 
+            name='password'
+            value={formData.password}
+            onChange={handleChange}
+            disabled={isEditMode}
+            placeholder='Enter Password'
+            className={isEditMode ? "opacity-50 cursor-not-allowed" : ""}
+            required={!user}/>
+          </div>
+          )
+          }
 
           <div className='flex flex-col role-container'>
             <label htmlFor="">Role</label>
