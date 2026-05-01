@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User,Applicant_infos,ApplicantDocument, SystemSettings
+from .models import User,Applicant_infos,ApplicantDocument, SystemSettings, AuditLog
 from django.utils.dateparse import parse_datetime, parse_date
 
 class FlexibleDateField(serializers.DateField):
@@ -60,3 +60,7 @@ class SystemSettingsSerializer(serializers.ModelSerializer):
         model = SystemSettings
         fields = '__all__'
 
+class AuditLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AuditLog
+        fields = '__all__'

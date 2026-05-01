@@ -55,25 +55,6 @@ function SystemSettings() {
             <span className="w-2 h-6 bg-[#EB612A] rounded-full"></span>
             Recruitment Management
           </h3>
-          
-          <div className="setting-item flex items-center justify-between p-5 bg-gray-50 rounded-xl border border-gray-200 transition-all hover:border-[#2C2D86]/30">
-            <div className="max-w-[70%]">
-              <label className="font-bold block text-gray-800 mb-1">Application Status</label>
-              <p className="text-sm text-gray-500">When closed, the "Start Application" button on the landing page will be disabled.</p>
-            </div>
-            
-            <div className="flex flex-col items-end gap-2">
-              <span className={`text-[10px] font-black tracking-widest px-2 py-1 rounded ${isApplicationOpen ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                {isApplicationOpen ? 'ACTIVE' : 'INACTIVE'}
-              </span>
-              <button 
-                onClick={() => setIsApplicationOpen(!isApplicationOpen)}
-                className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-300 focus:outline-none shadow-inner ${isApplicationOpen ? 'bg-green-500' : 'bg-gray-300'}`}
-              >
-                <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-300 ${isApplicationOpen ? 'translate-x-6' : 'translate-x-1'}`} />
-              </button>
-            </div>
-          </div>
 
           <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="date-input-group">

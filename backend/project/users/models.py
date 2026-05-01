@@ -104,3 +104,12 @@ class SystemSettings(models.Model):
 
     def __str__(self):
         return f"System Settings - Application Open: {self.is_application_open}"
+
+class AuditLog(models.Model):
+    user = models.CharField(max_length=100, null=True, blank=True) # Username or 'System'
+    action = models.CharField(max_length=100)
+    details = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} - {self.action} at {self.timestamp}"

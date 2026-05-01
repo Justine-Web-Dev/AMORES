@@ -12,12 +12,25 @@ function StatusManagement({applicantId, currentStatus, onUpdate,currentRejection
     setRejectionReason(currentRejectionReason || "");
   }, [currentStatus, currentRejectionReason]);
 
-const handleUpdate = async () => {
+  const handleUpdate = async () => {
     setIsUpdating(true);
     try {
+      // Get the current user from the token for audit logging
+      const token = localStorage.getItem('token');
+      let currentUser = 'Unknown';
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          currentUser = payload.username || 'Unknown';
+        } catch (e) {
+          console.error("Token parse error:", e);
+        }
+      }
+
       const dataToSend = {
         status: selectedStatus,
-        rejection_reason: selectedStatus === 'Rejected' ? rejectionReason : null
+        rejection_reason: selectedStatus === 'Rejected' ? rejectionReason : null,
+        performed_by: currentUser // Pass the user explicitly
       };
 
       await api.put(`users/update_status/${applicantId}/`, dataToSend);
