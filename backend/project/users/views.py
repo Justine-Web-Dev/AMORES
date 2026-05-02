@@ -15,7 +15,8 @@ from django.conf import settings
 
 @api_view(['GET'])
 def get_user(request):
-  users = User.objects.all()
+  is_archived = request.query_params.get('archived', 'false') == 'true'
+  users = User.objects.filter(is_archived=is_archived)
   serializers = UsersSerializers(users,many=True)
   return Response(serializers.data)
 
@@ -40,7 +41,7 @@ def login_user(request):
 
   # look up user by username
   try:
-    user = User.objects.get(username=username)
+    user = User.objects.get(username=username, is_archived=False)
   except User.DoesNotExist:
     return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
   
@@ -69,7 +70,7 @@ def login_user(request):
 def update_user(request,pk):
   try:
     users = User.objects.get(pk=pk)
-  except User.DoNotExist:
+  except User.DoesNotExist:
     return Response(status=status.HTTP_404_NOT_FOUND)
 
   if request.method == 'GET':
@@ -88,11 +89,12 @@ def update_user(request,pk):
     return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
   elif request.method == 'DELETE':
     username = users.username
-    users.delete()
+    users.is_archived = True
+    users.save()
     performer = get_user_from_request(request)
     if performer == 'Unknown':
         performer = 'Administrator'
-    create_audit_log(performer, 'USER_DELETE', f"User '{username}' deleted.")
+    create_audit_log(performer, 'USER_ARCHIVE', f"User '{username}' archived.")
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 #applicant applications

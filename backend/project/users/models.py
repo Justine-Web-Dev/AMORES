@@ -32,6 +32,7 @@ class User(models.Model):
   username = models.CharField(max_length=100)
   password = models.CharField(max_length=50)
   role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='Recruiter')
+  is_archived = models.BooleanField(default=False)
 
 class Applicant_infos(models.Model):
   firstname = models.CharField(max_length=100)

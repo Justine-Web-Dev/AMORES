@@ -8,6 +8,7 @@ import './UserManagement.css'
 import { api } from '../../../api/api'
 import UserCard from './UserCard'
 import AddNewUserForm from '../Form/AddNewUserForm'
+import ConfirmationModal from '../../Modals/ConfirmationModal'
 
 function UserManagement() {
   const [users,setUsers] = useState([])
@@ -16,20 +17,62 @@ function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('')
   const [activeSearchTerm, setActiveSearchTerm] = useState('')
   const [open,setOpen] = useState(null)
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [userToArchive, setUserToArchive] = useState(null)
 
-  useEffect(()=>{
-   const fetchUsers = async () => {
-      const response = await api.get("users/get_user")
+  const [activeTab, setActiveTab] = useState('active') // 'active' or 'archived'
+
+  const fetchUsers = async () => {
+    try {
+      const response = await api.get(`users/get_user/?archived=${activeTab === 'archived'}`)
       setUsers(response.data)
       console.log(response.data)
+    } catch (error) {
+      console.error("Error fetching users:", error)
     }
+  }
+
+  useEffect(()=>{
     fetchUsers()
-  },[])
+  }, [activeTab])
 
   const handleEdit = (user) =>{
     setSelectedUser(user)
     setToggleModal(true)
     setOpen(null)
+  }
+
+  const handleArchive = (user) => {
+    setUserToArchive(user)
+    setShowConfirmModal(true)
+    setOpen(null)
+  }
+
+  const handleRestore = async (user) => {
+    if (window.confirm(`Are you sure you want to restore user "${user.username}"?`)) {
+      try {
+        await api.put(`users/update_user/${user.id}/`, { ...user, is_archived: false })
+        fetchUsers()
+        setOpen(null)
+      } catch (error) {
+        console.error("Error restoring user:", error)
+        alert("Failed to restore user.")
+      }
+    }
+  }
+
+  const confirmArchive = async () => {
+    if (!userToArchive) return;
+    
+    try {
+      await api.delete(`users/update_user/${userToArchive.id}/`)
+      fetchUsers()
+      setShowConfirmModal(false)
+      setUserToArchive(null)
+    } catch (error) {
+      console.error("Error archiving user:", error.response || error)
+      alert(`Failed to archive user: ${error.response?.data?.error || error.message}`)
+    }
   }
 
   const filteredAndSorted = users
@@ -64,7 +107,20 @@ function UserManagement() {
           </button>
       </div>
 
-      <div className='flex gap-5'>
+      <div className="flex gap-4 mt-6 mb-2 border-b border-gray-200">
+        <button 
+          onClick={() => setActiveTab('active')}
+          className={`pb-2 px-4 text-sm font-medium transition-all duration-200 ${activeTab === 'active' ? 'border-b-2 border-[#2C2D86] text-[#2C2D86]' : 'text-gray-500 hover:text-gray-700'}`}>
+          Active Users ({activeTab === 'active' ? filteredAndSorted.length : '...'})
+        </button>
+        <button 
+          onClick={() => setActiveTab('archived')}
+          className={`pb-2 px-4 text-sm font-medium transition-all duration-200 ${activeTab === 'archived' ? 'border-b-2 border-[#2C2D86] text-[#2C2D86]' : 'text-gray-500 hover:text-gray-700'}`}>
+          Archived Users ({activeTab === 'archived' ? filteredAndSorted.length : '...'})
+        </button>
+      </div>
+
+      <div className='flex gap-5 mt-4'>
         <input
             type="text"
             placeholder="Search applicants..."
@@ -118,10 +174,19 @@ function UserManagement() {
                               className="text-left px-2 py-1 cursor-pointer view-details-btn-action">
                               Edit
                             </button>
-                            <button 
-                              className="text-left  cursor-pointer view-details-btn-action">
-                              Archive
-                            </button>
+                            {activeTab === 'active' ? (
+                              <button 
+                                onClick={() => handleArchive(user)}
+                                className="text-left  cursor-pointer view-details-btn-action">
+                                Archive
+                              </button>
+                            ) : (
+                              <button 
+                                onClick={() => handleRestore(user)}
+                                className="text-left text-green-600 font-medium cursor-pointer view-details-btn-action">
+                                Restore
+                              </button>
+                            )}
                           </ul>
                         </div>
                       )}
@@ -131,7 +196,7 @@ function UserManagement() {
                 ))):(
                   <tr>
                   <td colSpan="8" className="py-10 text-gray-500 italic col-8">
-                    No users registered
+                    No {activeTab} users found
                   </td>
                 </tr>
                 )
@@ -145,6 +210,14 @@ function UserManagement() {
           setToggleModal(false)
           setSelectedUser(null)
         }} user={selectedUser}/>}
+
+        <ConfirmationModal 
+          isOpen={showConfirmModal}
+          onClose={() => setShowConfirmModal(false)}
+          onConfirm={confirmArchive}
+          title="Archive User"
+          message={`Are you sure you want to archive "${userToArchive?.username}"? This will disable their account but preserve their data.`}
+        />
     </div>
   )
 }

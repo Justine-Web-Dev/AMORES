@@ -20,10 +20,11 @@ class FlexibleDateField(serializers.DateField):
         if hasattr(value, 'date'):
             return value.date().isoformat()
         return super().to_representation(value)
+
 class UsersSerializers(serializers.ModelSerializer):
   class Meta:
     model = User
-    fields = ['id', 'name', 'username', 'password', 'role']
+    fields = ['id', 'name', 'username', 'password', 'role', 'is_archived']
     extra_kwargs = {
             'password': {'write_only': True, 'required': False}
         }
