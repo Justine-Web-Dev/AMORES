@@ -28,10 +28,23 @@ function SystemSettings() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Get the current user from the token for audit logging
+      const token = localStorage.getItem('token');
+      let currentUser = 'Unknown';
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          currentUser = payload.username || 'Unknown';
+        } catch (e) {
+          console.error("Token parse error:", e);
+        }
+      }
+
       await api.put('/users/system-settings/update/', {
         is_application_open: isApplicationOpen,
         application_start_date: startDate || null,
-        application_end_date: endDate || null
+        application_end_date: endDate || null,
+        performed_by: currentUser // Pass the user explicitly
       });
       alert("Settings saved successfully!");
     } catch (error) {

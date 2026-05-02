@@ -43,14 +43,28 @@ function AddNewUserForm({onClose,user}) {
   e.preventDefault();
 
   try {
+    // Get the current user from the token for audit logging
+    const token = localStorage.getItem('token');
+    let currentUser = 'Unknown';
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        currentUser = payload.username || 'Unknown';
+      } catch (e) {
+        console.error("Token parse error:", e);
+      }
+    }
+
     if (user) {
       const { password, ...updateData } = formData;
+      updateData.performed_by = currentUser;
 
       const response = await api.put(`users/update_user/${user.id}/`, updateData);
       alert("Updated")
       console.log("Updated", response.data);
     } else {
-      const response = await api.post("users/register_user/", formData);
+      const registerData = { ...formData, performed_by: currentUser };
+      const response = await api.post("users/register_user/", registerData);
       console.log("Success", response.data);
     }
     onClose();

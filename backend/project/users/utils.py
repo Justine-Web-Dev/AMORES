@@ -53,7 +53,9 @@ def create_audit_log(user, action, details, request=None):
             return AuditLog.objects.create(user=user, action=action, details=details)
 
     # Priority 2: Try to get the actual user from the token in headers
-    if request:
+    # We SKIP this for LOGIN and REGISTRATION because the request might contain 
+    # a stale token from a previous session (e.g. logging in as a different user).
+    if request and action not in ['LOGIN', 'USER_REGISTRATION', 'APPLICANT_REGISTRATION']:
         token_user = get_user_from_request(request)
         if token_user != 'Unknown':
             user = token_user

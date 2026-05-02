@@ -95,14 +95,13 @@ function AuditLogs() {
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         {/* Filters Header */}
         <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex flex-col md:flex-row gap-4 items-center justify-between">
-          <div className="relative w-full md:w-96">
-            <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+          <div className="relative w-full md:w-96 flex gap-2">
             <input 
               type="text" 
               placeholder="Search by user, action, or details..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#2C2D86] focus:border-transparent outline-none transition-all shadow-sm"
+              className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#2C2D86] focus:border-transparent outline-none transition-all shadow-sm"
             />
           </div>
           

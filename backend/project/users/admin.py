@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Applicant_infos, ApplicantDocument
+from .models import User, Applicant_infos, ApplicantDocument,AuditLog
 
 # Register your models here.
 class UserAdmin(admin.ModelAdmin):
@@ -20,3 +20,10 @@ class ApplicantDocumentAdmin(admin.ModelAdmin):
   list_filter = ("document_type","uploaded_at")
 
 admin.site.register(ApplicantDocument, ApplicantDocumentAdmin)
+
+class AuditLogAdmin(admin.ModelAdmin):
+  list_display = ["user","action","timestamp"]
+  search_fields = ["user__username","action"]
+  list_filter = ["action"]
+
+admin.site.register(AuditLog, AuditLogAdmin)

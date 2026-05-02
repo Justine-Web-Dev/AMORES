@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from .serializers import UsersSerializers,ApplicantInfosSerializers,ApplicantDocumentSerializer, SystemSettingsSerializer, AuditLogSerializer
 from .models import User,Applicant_infos,ApplicantDocument, SystemSettings, AuditLog
-from .utils import create_audit_log
+from .utils import create_audit_log, get_user_from_request
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
 from rest_framework import status
@@ -25,7 +25,10 @@ def register_user(request):
 
   if serializers.is_valid():
     user = serializers.save()
-    create_audit_log(request.data.get('username', 'Unknown'), 'USER_REGISTRATION', f"New user '{user.username}' registered as {user.role}.", request)
+    performer = get_user_from_request(request)
+    if performer == 'Unknown':
+        performer = request.data.get('username', 'Unknown')
+    create_audit_log(performer, 'USER_REGISTRATION', f"New user '{user.username}' registered as {user.role}.")
     return Response(serializers.data, status=status.HTTP_201_CREATED)
   return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -53,7 +56,7 @@ def login_user(request):
   
   token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
-  create_audit_log(user.username, 'LOGIN', f"User '{user.username}' logged in successfully.", request)
+  create_audit_log(user.username, 'LOGIN', f"User '{user.username}' logged in successfully.")
 
   return Response({
     "token": token,
@@ -73,16 +76,23 @@ def update_user(request,pk):
     serializers = UsersSerializers(users)
     return Response(serializers.data)
   elif request.method == 'PUT':
+    target_username = users.username
     serializers = UsersSerializers(users,data=request.data)
     if serializers.is_valid():
       serializers.save()
-      create_audit_log(users.username, 'USER_UPDATE', f"User '{users.username}' details updated.", request)
+      performer = get_user_from_request(request)
+      if performer == 'Unknown':
+          performer = 'Administrator'
+      create_audit_log(performer, 'USER_UPDATE', f"User '{target_username}' details updated.")
       return Response(serializers.data)
     return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
   elif request.method == 'DELETE':
     username = users.username
     users.delete()
-    create_audit_log('Administrator', 'USER_DELETE', f"User '{username}' deleted.", request)
+    performer = get_user_from_request(request)
+    if performer == 'Unknown':
+        performer = 'Administrator'
+    create_audit_log(performer, 'USER_DELETE', f"User '{username}' deleted.")
     return Response(status=status.HTTP_204_NO_CONTENT)
 
 #applicant applications
@@ -153,7 +163,7 @@ def register_applicant_form(request):
     serializer = ApplicantInfosSerializers(data=request.data)
     if serializer.is_valid():
        instance = serializer.save() 
-       create_audit_log('System', 'APPLICANT_REGISTRATION', f"New applicant '{instance.firstname} {instance.lastname}' ({instance.tracking_code}) registered.", request)
+       create_audit_log('System', 'APPLICANT_REGISTRATION', f"New applicant '{instance.firstname} {instance.lastname}' ({instance.tracking_code}) registered.")
        return Response({
                  "id": instance.id,
                  "tracking_code": instance.tracking_code, 
@@ -179,7 +189,10 @@ def update_applicant_status(request, pk):
         applicant.status = new_status
         applicant.save()
         
-        create_audit_log('Administrator', 'STATUS_UPDATE', f"Applicant '{applicant.firstname} {applicant.lastname}' status updated to '{new_status}'" + (f" with reason: {reason}" if reason else ""), request)
+        performer = get_user_from_request(request)
+        if performer == 'Unknown':
+            performer = 'Administrator'
+        create_audit_log(performer, 'STATUS_UPDATE', f"Applicant '{applicant.firstname} {applicant.lastname}' status updated to '{new_status}'" + (f" with reason: {reason}" if reason else ""))
 
         return Response({
             "message": "Status updated successfully",
@@ -261,7 +274,10 @@ def update_system_settings(request):
     serializer = SystemSettingsSerializer(settings_obj, data=request.data)
     if serializer.is_valid():
         serializer.save()
-        create_audit_log('Administrator', 'SETTINGS_UPDATE', "System settings updated.", request)
+        performer = get_user_from_request(request)
+        if performer == 'Unknown':
+            performer = 'Administrator'
+        create_audit_log(performer, 'SETTINGS_UPDATE', "System settings updated.")
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
