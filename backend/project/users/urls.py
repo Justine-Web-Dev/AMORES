@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import register_user,login_user, get_user,update_user, get_applicant_form,register_applicant_form, track_status,track_application_status, upload_document,get_applicant_documents,get_single_applicant,update_applicant_status,get_active_applicants, get_system_settings, update_system_settings, get_audit_logs
+from .views import register_user,login_user, get_user,update_user, get_applicant_form,register_applicant_form, track_status,track_application_status, upload_document,get_applicant_documents,get_single_applicant,update_applicant_status,get_active_applicants, get_system_settings, update_system_settings, get_audit_logs, backup_database, restore_database
 
 urlpatterns = [
   #Login Users
@@ -33,5 +33,9 @@ urlpatterns = [
     
   #Audit Logs
     path('audit-logs/', get_audit_logs, name='get_audit_logs'),
+    
+  #Backup & Restore
+    path('backup/', backup_database, name='backup_database'),
+    path('restore/', restore_database, name='restore_database'),
 
 ]

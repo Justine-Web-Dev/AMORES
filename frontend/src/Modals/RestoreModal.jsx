@@ -1,7 +1,7 @@
 import React from 'react';
-import { IoWarningOutline } from "react-icons/io5";
+import { IoArrowUndoOutline } from "react-icons/io5";
 
-const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
+const RestoreModal = ({ isOpen, onClose, onConfirm, title, message }) => {
   if (!isOpen) return null;
 
   return (
@@ -9,12 +9,12 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-slide-up">
         <div className="p-6">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
-              <IoWarningOutline size={48} />
+            <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+              <IoArrowUndoOutline size={58} />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-gray-900">{title || 'Confirm Action'}</h3>
-              <p className="text-gray-500 text-sm mt-1">{message || 'Are you sure you want to proceed?'}</p>
+              <h3 className="text-xl font-bold text-gray-900">{title || 'Restore User'}</h3>
+              <p className="text-gray-500 text-sm mt-1">{message || 'Are you sure you want to restore this user?'}</p>
             </div>
           </div>
         </div>
@@ -28,9 +28,9 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
           </button>
           <button
             onClick={onConfirm}
-            className="px-6 py-2 bg-[#2C2D86] hover:bg-[#4547a3] text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 active:scale-95"
+            className="px-6 py-2 bg-[#2C2D86] hover:bg-[#202163] text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 active:scale-95"
           >
-            Archive
+            Restore
           </button>
         </div>
       </div>
@@ -38,4 +38,4 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
   );
 };
 
-export default ConfirmationModal;
+export default RestoreModal;

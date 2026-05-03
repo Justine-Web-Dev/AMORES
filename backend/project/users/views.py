@@ -9,7 +9,11 @@ from rest_framework.parsers import MultiPartParser, FormParser
 
 import jwt
 import datetime
+import os
+import shutil
 from django.conf import settings
+from django.http import FileResponse
+from django.db import connections
 
 # Create your views here.
 
@@ -288,3 +292,48 @@ def get_audit_logs(request):
     logs = AuditLog.objects.all().order_by('-timestamp')
     serializer = AuditLogSerializer(logs, many=True)
     return Response(serializer.data)
+
+@api_view(['GET'])
+def backup_database(request):
+    db_path = os.path.join(settings.BASE_DIR, 'db.sqlite3')
+    if os.path.exists(db_path):
+        response = FileResponse(open(db_path, 'rb'), content_type='application/x-sqlite3')
+        response['Content-Disposition'] = f'attachment; filename="backup_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.sqlite3"'
+        
+        performer = get_user_from_request(request)
+        if performer == 'Unknown':
+            performer = 'Administrator'
+        create_audit_log(performer, 'BACKUP', "System database backup exported.")
+        
+        return response
+    return Response({"error": "Database file not found"}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST'])
+@parser_classes([MultiPartParser, FormParser])
+def restore_database(request):
+    file_obj = request.FILES.get('backup_file')
+    if not file_obj:
+        return Response({"error": "No backup file provided"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if not file_obj.name.endswith('.sqlite3'):
+        return Response({"error": "Invalid file format. Please upload a .sqlite3 file."}, status=status.HTTP_400_BAD_REQUEST)
+
+    db_path = os.path.join(settings.BASE_DIR, 'db.sqlite3')
+    
+    try:
+        # Close all active database connections to release the file lock
+        connections.close_all()
+        
+        # Save the uploaded file as the new database
+        with open(db_path, 'wb+') as destination:
+            for chunk in file_obj.chunks():
+                destination.write(chunk)
+        
+        performer = get_user_from_request(request)
+        if performer == 'Unknown':
+            performer = 'Administrator'
+        create_audit_log(performer, 'RESTORE', "System database restored from backup file.")
+        
+        return Response({"message": "Database restored successfully. The system may require a restart to reflect changes."}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": f"Failed to restore database: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -9,6 +9,8 @@ import { api } from '../../../api/api'
 import UserCard from './UserCard'
 import AddNewUserForm from '../Form/AddNewUserForm'
 import ConfirmationModal from '../../Modals/ConfirmationModal'
+import RestoreModal from '../../Modals/RestoreModal'
+import MessageModal from '../../Modals/MessageModal'
 
 function UserManagement() {
   const [users,setUsers] = useState([])
@@ -18,7 +20,10 @@ function UserManagement() {
   const [activeSearchTerm, setActiveSearchTerm] = useState('')
   const [open,setOpen] = useState(null)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [showRestoreModal, setShowRestoreModal] = useState(false)
   const [userToArchive, setUserToArchive] = useState(null)
+  const [userToRestore, setUserToRestore] = useState(null)
+  const [modalConfig, setModalConfig] = useState({ isOpen: false, type: 'success', title: '', message: '' })
 
   const [activeTab, setActiveTab] = useState('active') // 'active' or 'archived'
 
@@ -48,16 +53,33 @@ function UserManagement() {
     setOpen(null)
   }
 
-  const handleRestore = async (user) => {
-    if (window.confirm(`Are you sure you want to restore user "${user.username}"?`)) {
-      try {
-        await api.put(`users/update_user/${user.id}/`, { ...user, is_archived: false })
-        fetchUsers()
-        setOpen(null)
-      } catch (error) {
-        console.error("Error restoring user:", error)
-        alert("Failed to restore user.")
-      }
+  const handleRestore = (user) => {
+    setUserToRestore(user)
+    setShowRestoreModal(true)
+    setOpen(null)
+  }
+
+  const confirmRestore = async () => {
+    if (!userToRestore) return;
+    try {
+      await api.put(`users/update_user/${userToRestore.id}/`, { ...userToRestore, is_archived: false })
+      fetchUsers()
+      setShowRestoreModal(false)
+      setUserToRestore(null)
+      setModalConfig({
+        isOpen: true,
+        type: 'success',
+        title: 'User Restored',
+        message: `User "${userToRestore.username}" has been successfully restored.`
+      })
+    } catch (error) {
+      console.error("Error restoring user:", error)
+      setModalConfig({
+        isOpen: true,
+        type: 'error',
+        title: 'Restore Failed',
+        message: 'There was an error restoring the user.'
+      })
     }
   }
 
@@ -69,9 +91,20 @@ function UserManagement() {
       fetchUsers()
       setShowConfirmModal(false)
       setUserToArchive(null)
+      setModalConfig({
+        isOpen: true,
+        type: 'success',
+        title: 'User Archived',
+        message: `User "${userToArchive.username}" has been successfully archived.`
+      })
     } catch (error) {
       console.error("Error archiving user:", error.response || error)
-      alert(`Failed to archive user: ${error.response?.data?.error || error.message}`)
+      setModalConfig({
+        isOpen: true,
+        type: 'error',
+        title: 'Archive Failed',
+        message: error.response?.data?.error || 'There was an error archiving the user.'
+      })
     }
   }
 
@@ -217,6 +250,22 @@ function UserManagement() {
           onConfirm={confirmArchive}
           title="Archive User"
           message={`Are you sure you want to archive "${userToArchive?.username}"? This will disable their account but preserve their data.`}
+        />
+
+        <RestoreModal 
+          isOpen={showRestoreModal}
+          onClose={() => setShowRestoreModal(false)}
+          onConfirm={confirmRestore}
+          title="Restore User"
+          message={`Are you sure you want to restore user "${userToRestore?.username}"? This will reactivate their account.`}
+        />
+
+        <MessageModal 
+          isOpen={modalConfig.isOpen}
+          onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+          type={modalConfig.type}
+          title={modalConfig.title}
+          message={modalConfig.message}
         />
     </div>
   )

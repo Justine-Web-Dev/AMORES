@@ -1,17 +1,8 @@
 .login-overlay{
-  animation: fadeIn 1s ease-in-out forwards;
+  animation: fadeIn 0.5s ease-in-out forwards;
   border-radius: 8px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.116);
 }
-
-/* .loader{
-  height: 30px;
-  width: 30px;
-  border: 5px solid #ccc;
-  border-top: 5px solid #2C2D86;
-  border-radius: 50px;
-  animation: spin 1s infinite;
-} */
 
 @keyframes slideIn{
 0%{
@@ -25,16 +16,6 @@
 }
 }
 
-/* @keyframes spin{
-  0%{
-    transform: rotate(0deg)
-  }
-  100%{
-    transform: rotate(360deg);
-  }
-} */
-
-/* Logout buttons */
 .logout-yes-btn{
   transition: 0.3s;
 }

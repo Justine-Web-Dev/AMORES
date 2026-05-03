@@ -1,11 +1,13 @@
 import React from 'react'
 import { useState,useEffect } from 'react'
 import { api } from '../../../api/api'
+import MessageModal from '../../Modals/MessageModal'
 
 function StatusManagement({applicantId, currentStatus, onUpdate,currentRejectionReason}) {
   const [selectedStatus, setSelectedStatus] = useState(currentStatus)
   const [rejectionReason,setRejectionReason] = useState(currentRejectionReason || "")
   const [isUpdating, setIsUpdating] = useState(false)
+  const [modalConfig, setModalConfig] = useState({ isOpen: false, type: 'success', message: '' })
 
   useEffect(() => {
     setSelectedStatus(currentStatus);
@@ -34,11 +36,19 @@ function StatusManagement({applicantId, currentStatus, onUpdate,currentRejection
       };
 
       await api.put(`users/update_status/${applicantId}/`, dataToSend);
-      alert("Status updated successfully");
+      setModalConfig({
+        isOpen: true,
+        type: 'success',
+        message: 'The applicant status has been updated successfully.'
+      });
       onUpdate(); 
     } catch (err) {
       console.error("Update failed:", err);
-      alert("Failed to update status.");
+      setModalConfig({
+        isOpen: true,
+        type: 'error',
+        message: 'There was an error updating the status. Please try again.'
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -80,6 +90,14 @@ function StatusManagement({applicantId, currentStatus, onUpdate,currentRejection
         className={`rounded-[4px] text-white cursor-pointer save-changes-btn mt-4 h-10 ${
           isUpdating ? 'bg-gray-400' : 'bg-[#2C2D86]'
         }`}>{isUpdating ? 'Saving...' : 'Save Changes'}</button>
+
+      <MessageModal 
+        isOpen={modalConfig.isOpen}
+        onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+        type={modalConfig.type}
+        title={modalConfig.type === 'success' ? 'Update Successful' : 'Update Failed'}
+        message={modalConfig.message}
+      />
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import {api} from '../../../api/api'
-import { PieChart, Pie, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
+import { PieChart, Pie, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
 
 function DashboardOverview() {
   const [users, setUsers] = useState([])
@@ -69,13 +69,13 @@ function DashboardOverview() {
   const user_length = users.filter(user => user).length
   const applicant_length = applicants.filter(applicant => applicant).length
 
-  const COLORS = ['#2196F3', '#FFC107','#4CAF50' , '#F44336']
+  const COLORS = ['#2196F3', '#ffc007b7','#4CAF50' , '#F44336']
 
   return (
     <div className='module-content'>
       <h2>Dashboard Overview</h2>
 
-      <div className='System-overview-container' style={{ marginTop: '2rem' }}>
+      <div className='System-overview-container mt-8'>
         <h3>System Overview</h3>
         <div className='stat-card-container top-summary-cards'>
           <div className='admin-summary-card users'>
@@ -118,11 +118,11 @@ function DashboardOverview() {
       </div>
 
       {/* Charts Section */}
-      <div className='charts-container' style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))', gap: '2rem', marginTop: '2rem' }}>
+      <div className='charts-container grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8'>
         
         {/* Pie Chart for Applicant Status */}
-        <div className='chart-card' style={{ backgroundColor: '#fff', padding: '1.5rem', borderRadius: '0.75rem', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-          <h3 style={{ marginBottom: '1rem', color: '#2C2D86', fontWeight: '600' }}>Applicant Status Distribution</h3>
+        <div className='chart-card bg-white p-6 rounded-xl shadow-md border border-gray-100'>
+          <h3 className='mb-4 text-[#2C2D86] font-semibold text-lg'>Applicant Status Distribution</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -144,18 +144,24 @@ function DashboardOverview() {
           </ResponsiveContainer>
         </div>
 
-        {/* Line Chart for Monthly Applicants */}
-        <div className='chart-card' style={{ backgroundColor: '#fff', padding: '1.5rem', borderRadius: '0.75rem', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-          <h3 style={{ marginBottom: '1rem', color: '#2C2D86', fontWeight: '600' }}>Monthly Applicant Registration</h3>
+        {/* Bar Chart for Monthly Applicants */}
+        <div className='chart-card bg-white p-6 rounded-xl shadow-md border border-gray-100'>
+          <h3 className='mb-4 text-[#2C2D86] font-semibold text-lg'>Monthly Applicant Registration</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={monthlyData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
+            <BarChart data={monthlyData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="applicants" stroke="#EB612A" strokeWidth={2} dot={{ fill: '#EB612A' }} name="Applicants" />
-            </LineChart>
+              <Bar 
+                dataKey="applicants" 
+                fill="#2C2D86" 
+                name="Applicants" 
+                radius={[4, 4, 0, 0]} 
+                barSize={40}
+              />
+            </BarChart>
           </ResponsiveContainer>
         </div>
       </div>

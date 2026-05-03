@@ -38,7 +38,7 @@ function TrackApplication() {
  }
 
   return (
-  <div className='bg-gray-100 min-h-screen p-4 flex justify-center items-start track-application-container'>
+  <div className='min-h-screen p-4 flex justify-center items-start track-application-container'>
     <div className='flex flex-col w-full max-w-2xl items-center rounded-[8px] gap-8 p-6 md:p-10 bg-white shadow-sm track-container'>
       
       <div className='w-full text-left'>

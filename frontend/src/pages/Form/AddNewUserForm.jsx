@@ -4,6 +4,7 @@ import { IoIosClose } from "react-icons/io"
 import './AddNewUserForm.css'
 
 import { api } from '../../../api/api'
+import MessageModal from '../../Modals/MessageModal'
 
 function AddNewUserForm({onClose,user}) {
   const isEditMode = !!user;
@@ -14,6 +15,7 @@ function AddNewUserForm({onClose,user}) {
     password: "",
     role: "Recruiter"
   })
+  const [modalConfig, setModalConfig] = useState({ isOpen: false, type: 'success', message: '' })
 
   useEffect(() => {
     if (user) {
@@ -59,17 +61,28 @@ function AddNewUserForm({onClose,user}) {
       const { password, ...updateData } = formData;
       updateData.performed_by = currentUser;
 
-      const response = await api.put(`users/update_user/${user.id}/`, updateData);
-      alert("Updated")
-      console.log("Updated", response.data);
+      await api.put(`users/update_user/${user.id}/`, updateData);
+      setModalConfig({
+        isOpen: true,
+        type: 'success',
+        message: 'The user information has been updated successfully.'
+      });
     } else {
       const registerData = { ...formData, performed_by: currentUser };
-      const response = await api.post("users/register_user/", registerData);
-      console.log("Success", response.data);
+      await api.post("users/register_user/", registerData);
+      setModalConfig({
+        isOpen: true,
+        type: 'success',
+        message: 'The new user has been registered successfully.'
+      });
     }
-    onClose();
   } catch (error) {
     console.error("Error:", error.response?.data || error.message);
+    setModalConfig({
+      isOpen: true,
+      type: 'error',
+      message: error.response?.data?.error || 'There was an error processing your request.'
+    });
   }
 };
 
@@ -138,6 +151,19 @@ function AddNewUserForm({onClose,user}) {
         </div>
 
       </form>
+
+      <MessageModal 
+        isOpen={modalConfig.isOpen}
+        onClose={() => {
+          setModalConfig({ ...modalConfig, isOpen: false });
+          if (modalConfig.type === 'success') {
+            onClose(); // Only close the form if the action was successful
+          }
+        }}
+        type={modalConfig.type}
+        title={modalConfig.type === 'success' ? 'Success' : 'Error'}
+        message={modalConfig.message}
+      />
     </div>
   )
 }
