@@ -26,8 +26,16 @@ def get_user(request):
 
 @api_view(['POST'])
 def register_user(request):
-  serializers = UsersSerializers(data=request.data)
+  username = request.data.get('username')
+  name = request.data.get('name')
 
+  if User.objects.filter(username=username).exists():
+      return Response({"error": f"Username '{username}' is already taken."}, status=status.HTTP_400_BAD_REQUEST)
+  
+  if User.objects.filter(name=name).exists():
+      return Response({"error": f"A personnel with the name '{name}' is already registered."}, status=status.HTTP_400_BAD_REQUEST)
+
+  serializers = UsersSerializers(data=request.data)
   if serializers.is_valid():
     user = serializers.save()
     performer = get_user_from_request(request)
@@ -82,6 +90,15 @@ def update_user(request,pk):
     return Response(serializers.data)
   elif request.method == 'PUT':
     target_username = users.username
+    new_username = request.data.get('username')
+    new_name = request.data.get('name')
+
+    if User.objects.filter(username=new_username).exclude(pk=pk).exists():
+        return Response({"error": f"Username '{new_username}' is already taken."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    if User.objects.filter(name=new_name).exclude(pk=pk).exists():
+        return Response({"error": f"A personnel with the name '{new_name}' is already registered."}, status=status.HTTP_400_BAD_REQUEST)
+
     serializers = UsersSerializers(users,data=request.data)
     if serializers.is_valid():
       serializers.save()
