@@ -59,13 +59,13 @@ const LandingPage = ({ isApplicationOpen, appDates }) => {
     requirementsRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  return (
-    <div className="bg-gray-100 home-landing-page ">
+  return ( 
+    <div className="bg-gray-100 my-10 home-landing-page ">
       {showDisclaimer && (
         <Disclaimer onAccept={handleAccept} onCancel={handleCancel} />
       )}
 
-      <section className="flex flex-col lg:flex-row items-start justify-between hero-section max-w-6xl mx-auto w-full">
+      <section className="flex flex-col lg:flex-row items-center justify-between hero-section max-w-7xl mx-auto w-full px-6 lg:px-10">
         
         {/* Left Column */}
         <div className="flex flex-col text-[#2C2D88] items-center lg:items-start text-center lg:text-left w-full lg:w-1/2 content-left">

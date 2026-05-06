@@ -58,11 +58,11 @@ function SystemSettings() {
   if (loading) return <div className="p-10 text-center">Loading settings...</div>;
 
   return (
-    <div className='module-content p-6'>
+    <div className='module-content max-w-7xl mx-auto p-6'>
       <h2 className="text-2xl font-bold mb-2">System Settings</h2>
       <p className="text-gray-600 mb-6">Configure system-wide settings and preferences.</p>
       
-      <div className="system-settings-container bg-white p-8 rounded-xl shadow-md border border-gray-100 max-w-2xl">
+      <div className="system-settings-container bg-white p-10 rounded-xl shadow-md border border-gray-100 max-w-6xl">
         <div className="settings-section mb-10">
           <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-[#2C2D86]">
             <span className="w-2 h-6 bg-[#EB612A] rounded-full"></span>

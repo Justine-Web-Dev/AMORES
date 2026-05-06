@@ -66,7 +66,6 @@ function LandingpageMain() {
             />
           } 
         />
-        <Route path='/about-us' element={<AboutUs />} />
         <Route path='/track-application' element={<TrackApplication />} />
         <Route path='/form-application' element={<Form />} />
         <Route path='/document-submission' element={<DocumentSubmission />} />

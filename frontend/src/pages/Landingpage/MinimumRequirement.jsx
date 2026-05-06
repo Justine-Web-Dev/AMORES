@@ -27,8 +27,8 @@ const RequirementCard = ({ id, title, points }) => (
 );
 
   return (
-    <div className="bg-gray-100 p-10 min-h-screen">
-      <div className="max-w-6xl mx-auto">
+    <div className="bg-gray-100 p-10 lg:p-20 min-h-screen">
+      <div className="max-w-7xl mx-auto px-6">
         <div className='flex items-center gap-3'>
           <div className="h-[2px] w-8 bg-[#EB612A]"></div>
           <span className="uppercase tracking-[0.3em] text-[10px] md:text-xs font-bold text-gray-500">Who may apply</span>

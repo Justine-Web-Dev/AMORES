@@ -90,15 +90,15 @@ function BackupRestore() {
   }
 
   return (
-    <div className='module-content max-w-4xl'>
+    <div className='module-content max-w-7xl mx-auto'>
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-slate-800">Backup & Restore</h2>
         <p className="text-slate-500">Securely manage your system data by creating backups or restoring from a previous state.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
         {/* Backup Section */}
-        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
+        <div className="bg-white p-10 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
           <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-6">
             <FaDatabase size={30} />
           </div>
@@ -117,7 +117,7 @@ function BackupRestore() {
         </div>
 
         {/* Restore Section */}
-        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
+        <div className="bg-white p-10 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
           <div className="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mb-6">
             <FaSyncAlt size={30} />
           </div>

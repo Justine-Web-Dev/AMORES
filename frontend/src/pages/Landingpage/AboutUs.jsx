@@ -5,7 +5,7 @@ import { FaShieldAlt } from "react-icons/fa";
 
 const AboutUs = () => {
   return (
-    <section className="about-section">
+    <section id="about-us" className="about-section">
       
       <div className="about-container">
 
@@ -22,12 +22,12 @@ const AboutUs = () => {
             DRIVEN BY DUTY
           </h1>
 
-          <p className="about-text">
+          <p className="about-text max-w-xl">
             The Philippine National Police is the national civilian police force 
             tasked with enforcing the law, preventing crimes, and maintaining peace and order.
           </p>
 
-          <p className="about-text">
+          <p className="about-text max-w-xl">
             As a PNP Officer, you become a guardian of your community — protecting the innocent, 
             upholding justice, and serving with integrity.
           </p>

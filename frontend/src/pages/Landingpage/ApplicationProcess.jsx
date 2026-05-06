@@ -44,8 +44,8 @@ const ProcessCard = ({ id, title, description }) => (
 function ApplicationProcess() {
   return (
 // Main Container with bg-gray-100
-    <div className="bg-gray-100 p-10 min-h-screen">
-      <div className="max-w-7xl mx-auto">
+    <div className="bg-gray-100 p-10 lg:p-20 min-h-screen">
+      <div className="max-w-7xl mx-auto px-6">
         
         {/* Top Titles */}
         <div className="mb-12">

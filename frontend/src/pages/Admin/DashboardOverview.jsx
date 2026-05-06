@@ -19,7 +19,6 @@ function DashboardOverview() {
       const response = await api.get('users/get_applicant_info/')
       setApplicants(response.data)
       
-      // Process status data for pie chart
       const statuses = {
         'New Applicant': 0,
         'Under Review': 0,
