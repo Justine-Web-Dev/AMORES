@@ -55,7 +55,7 @@ function StatusManagement({applicantId, currentStatus, onUpdate,currentRejection
   };
 
   return (
-    <div className='flex flex-col justify-evenly bg-[#F9FAFB] shadow-sm w-[300px] rounded-[12px] status-management'>
+    <div className='flex flex-col justify-evenly bg-[#F9FAFB] shadow-sm  rounded-[12px] status-management'>
       <div>
         <h1 className='text-[24px] font-semibold'>Update Status</h1>
         <p>Update the applicant's status in the recruitment workflow.</p>

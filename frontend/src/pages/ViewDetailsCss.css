@@ -44,11 +44,11 @@
   padding: 10px; /* Note: padding inside option often ignored by browsers */
 }
 .summary-container {
-  max-width: 800px;
+  max-width: 1280px;
   margin: 2rem auto;
-  font-family: sans-serif;
+  font-family: Karla, sans-serif;
   color: #333;
-  padding: 18px;
+  padding: 24px;
 }
 
 .info-section {
@@ -63,8 +63,8 @@
 
 .grid-layout {
   display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 4 columns like your image */
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 30px;
 }
 
 .info-item label {

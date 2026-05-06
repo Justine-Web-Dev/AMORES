@@ -58,9 +58,9 @@ function ViewDetails() {
            Back to Applicants
         </button>
 
-      <div className='module-content'>
-        <div className='flex gap-10'>
-          <div className="w-[650px] bg-[#F9FAFB] rounded-xl shadow-sm card-detail">
+      <div className='module-content max-w-7xl mx-auto'>
+        <div className='flex flex-col lg:flex-row gap-10'>
+          <div className="flex-1 max-w-3xl bg-[#F9FAFB] rounded-xl shadow-sm card-detail">
             <div className="top-section">
               <h1 className="text-xl font-semibold text-gray-800"> Name: {applicant.firstname} {applicant.lastname}</h1>
               <p className="text-sm text-gray-500">Reference Code: {applicant.tracking_code}</p>
@@ -97,11 +97,8 @@ function ViewDetails() {
           />
         </div>
         <ApplicantInfoView data={applicant}/>
-
-
         <ViewDocumentSubmitted applicantId={id}/>
       </div>
-      
     </div>
   )
 }
