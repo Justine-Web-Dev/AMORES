@@ -4,11 +4,9 @@ import { Routes, Route } from 'react-router-dom'
 import AdminDashboard from './pages/Admin/AdminDashboard'
 import PersonnelDashboard from './pages/PersonnelRecruiter/PersonnelDashboard'
 import LandingpageMain from './pages/Landingpage/LandingpageMain'
-import TrackApplication from './pages/Landingpage/TrackApplication'
 import SubmitApplicationModal from './Modals/SubmitApplicationModal'
-import ViewDetails from './pages/ViewDetails'
 import Disclaimer from './Disclaimer'
-import MinimumRequirement from './pages/Landingpage/MinimumRequirement'
+import NotFound from './NotFound'
 
 function App() {
   return (
@@ -18,8 +16,13 @@ function App() {
         <Route path='/Dashboard/*' element={<AdminDashboard />} />
         <Route path='/PersonnelDashboard/*' element={<PersonnelDashboard />} />
         <Route path='/success-submit' element={<SubmitApplicationModal />} />
-        <Route path='/*' element={<LandingpageMain />}/>
-        <Route path='/disclaimer' element = {<Disclaimer />}/>
+        <Route path='/disclaimer' element={<Disclaimer />} />
+        
+        {/* Landing Page & Sub-routes (Track, Form, etc.) handled by LandingpageMain */}
+        <Route path='/*' element={<LandingpageMain />} />
+
+        {/* Global Catch-all for 404 */}
+        <Route path='*' element={<NotFound />} />
       </Routes>
     </>
   )

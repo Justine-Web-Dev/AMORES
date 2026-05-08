@@ -7,6 +7,7 @@ import TrackApplication from './TrackApplication'
 import HeaderLanding from '../../Components/Header/HeaderLanding'
 import Form from '../Form/Form'
 import DocumentSubmission from '../Form/DocumentSubmission'
+import NotFound from '../../NotFound'
 
 function LandingpageMain() {
   const [isApplicationOpen, setIsApplicationOpen] = useState(true);
@@ -55,20 +56,15 @@ function LandingpageMain() {
 
   return (
     <div className='bg-gray-100'>
-      <HeaderLanding isApplicationOpen={isApplicationOpen} />
       <Routes>
-        <Route 
-          path='/' 
-          element={
-            <LandingPage 
-              isApplicationOpen={isApplicationOpen} 
-              appDates={appDates} 
-            />
-          } 
-        />
-        <Route path='/track-application' element={<TrackApplication />} />
-        <Route path='/form-application' element={<Form />} />
-        <Route path='/document-submission' element={<DocumentSubmission />} />
+        {/* Routes WITH Header */}
+        <Route path="/" element={<><HeaderLanding isApplicationOpen={isApplicationOpen} /><LandingPage isApplicationOpen={isApplicationOpen} appDates={appDates} /></>} />
+        <Route path="/track-application" element={<><HeaderLanding isApplicationOpen={isApplicationOpen} /><TrackApplication /></>} />
+        <Route path="/form-application" element={<><HeaderLanding isApplicationOpen={isApplicationOpen} /><Form /></>} />
+        <Route path="/document-submission" element={<><HeaderLanding isApplicationOpen={isApplicationOpen} /><DocumentSubmission /></>} />
+
+        {/* Route WITHOUT Header (404) */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </div>
   )
