@@ -8,6 +8,7 @@ function Logout({ setShowLogout }) {
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('role');
     navigate('/LoginUsers');
   };
   

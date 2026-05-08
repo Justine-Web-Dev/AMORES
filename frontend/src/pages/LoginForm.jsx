@@ -32,6 +32,7 @@ function LoginForm() {
     const data = response.data;
 
     localStorage.setItem("token", data.token);
+    localStorage.setItem("role", data.role || (data.username === "Admin" ? "Admin" : "Personnel"));
     setIsLoggedIn(true)
 
     setTimeout(()=>{

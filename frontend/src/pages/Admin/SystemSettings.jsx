@@ -54,15 +54,20 @@ function SystemSettings() {
       setSaving(false);
     }
   };
-
-  if (loading) return <div className="p-10 text-center">Loading settings...</div>;
-
+  
   return (
     <div className='module-content max-w-7xl mx-auto p-6'>
-      <h2 className="text-2xl font-bold mb-2">System Settings</h2>
-      <p className="text-gray-600 mb-6">Configure system-wide settings and preferences.</p>
+
+      <h2 className="text-2xl font-bold mb-2 text-[#2C2D86]">System Settings</h2>
+      <p className="text-gray-600 mb-6 italic">Configure system-wide settings and preferences for the AMORes platform.</p>
       
-      <div className="system-settings-container bg-white p-10 rounded-xl shadow-md border border-gray-100 max-w-6xl">
+      {loading ? (
+        <div className="bg-white p-20 rounded-xl shadow-md border border-gray-100 flex flex-col items-center justify-center min-h-[400px]">
+          <div className="w-12 h-12 border-4 border-[#2C2D86]/10 border-t-[#2C2D86] rounded-full animate-spin mb-4"></div>
+          <p className="text-[#2C2D86] font-medium">Loading system settings...</p>
+        </div>
+      ) : (
+        <div className="system-settings-container bg-white p-10 rounded-xl shadow-md border border-gray-100 max-w-6xl">
         <div className="settings-section mb-10">
           <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-[#2C2D86]">
             <span className="w-2 h-6 bg-[#EB612A] rounded-full"></span>
@@ -115,7 +120,8 @@ function SystemSettings() {
             {saving ? 'Saving...' : 'Save All Settings'}
           </button>
         </div>
-      </div>
+        </div>
+      )}
     </div>
   )
 }
