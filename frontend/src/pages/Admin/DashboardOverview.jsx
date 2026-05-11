@@ -29,8 +29,7 @@ function DashboardOverview() {
       const screeningStages = [
         'Document Review',
         'Initial Screening',
-        'Technical Interview',
-        'Final Interview'
+        'Technical Interview'
       ]
       
       response.data.forEach(applicant => {

@@ -9,7 +9,6 @@ const STAGES = [
     { id: 'Document Review', title: 'Doc Review', icon: <HiOutlineClipboardCheck />, colorClass: 'column-doc' },
     { id: 'Initial Screening', title: 'Initial Screening', icon: <HiOutlineChatAlt2 />, colorClass: 'column-initial' },
     { id: 'Technical Interview', title: 'Technical', icon: <HiOutlineClipboardCheck />, colorClass: 'column-technical' },
-    { id: 'Final Interview', title: 'Final Interview', icon: <HiOutlineChatAlt2 />, colorClass: 'column-final' },
     { id: 'Accepted', title: 'Accepted', icon: <HiOutlineBadgeCheck />, colorClass: 'column-accepted' },
     { id: 'Rejected', title: 'Rejected', icon: <HiOutlineXCircle />, colorClass: 'column-rejected' }
 ];
@@ -46,7 +45,6 @@ function TrackingScreening() {
             case 'Document Review': return 'card-doc';
             case 'Initial Screening': return 'card-initial';
             case 'Technical Interview': return 'card-technical';
-            case 'Final Interview': return 'card-final';
             case 'Accepted': return 'card-accepted';
             case 'Rejected': return 'card-rejected';
             default: return '';
@@ -63,11 +61,6 @@ function TrackingScreening() {
 
     return (
         <div className="tracking-screening-container">
-            <div className="tracking-screening-header">
-                <h2>Tracking & Screening</h2>
-                <p>Monitor and manage applicants through each stage of the recruitment process.</p>
-            </div>
-
             <div className="pipeline-board">
                 {STAGES.map(stage => {
                     const stageApplicants = getApplicantsByStage(stage.id);

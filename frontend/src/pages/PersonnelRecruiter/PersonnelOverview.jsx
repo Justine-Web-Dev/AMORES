@@ -24,8 +24,7 @@ function PersonnelOverview() {
         const screeningStages = [
           'Document Review',
           'Initial Screening',
-          'Technical Interview',
-          'Final Interview'
+          'Technical Interview'
         ]
 
         const monthlyCount = {}
@@ -61,8 +60,7 @@ function PersonnelOverview() {
   const screeningStages = [
     'Document Review',
     'Initial Screening',
-    'Technical Interview',
-    'Final Interview'
+    'Technical Interview'
   ]
 
   const application_length = applications.length

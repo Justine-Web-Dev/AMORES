@@ -15,7 +15,6 @@ function ApplicantEvaluation() {
     "Document Review": "bg-purple-100 text-purple-600",
     "Initial Screening": "bg-yellow-100 text-yellow-600",
     "Technical Interview": "bg-cyan-100 text-cyan-600",
-    "Final Interview": "bg-pink-100 text-pink-600",
     "Accepted": "bg-green-100 text-green-600",
     "Rejected": "bg-red-100 text-red-600",
   };
@@ -93,8 +92,8 @@ function ApplicantEvaluation() {
             <option value="Document Review">Document Review</option>
             <option value="Initial Screening">Initial Screening</option>
             <option value="Technical Interview">Technical Interview</option>
-            <option value="Final Interview">Final Interview</option>
             <option value="Accepted">Accepted</option>
+            <option value="Rejected">Rejected</option>
           </select>
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="sort-select">
             <option value="date">Sort by Date</option>

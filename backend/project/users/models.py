@@ -68,7 +68,6 @@ class Applicant_infos(models.Model):
             ('Document Review', 'Document Review'),
             ('Initial Screening', 'Initial Screening'),
             ('Technical Interview', 'Technical Interview'),
-            ('Final Interview', 'Final Interview'),
             ('Accepted', 'Accepted'),
             ('Rejected', 'Rejected')
         ]

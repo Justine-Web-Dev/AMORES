@@ -21,9 +21,11 @@ function ViewDetails() {
 
     const statusColors = {
       "New Applicant": "inline-block mt-2 px-3 py-1 text-xs bg-blue-100 text-blue-600 rounded-full font-semibold ",
-      "Under Review": "inline-block mt-2 px-3 py-1 text-xs text-yellow-600 rounded-full font-semibold  bg-yellow-100",
+      "Document Review": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold  bg-purple-200 text-purple-600",
+      "Initial Screening": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold  bg-yellow-100 text-yellow-600",
+      "Technical Interview": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold  bg-cyan-100 text-cyan-600",
       "Accepted": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold  bg-green-100 text-green-600",
-      "Rejected": "inline-block mt-2 px-3 py-1 text-xs text-red-600 rounded-full font-semibold  bg-red-100",
+      "Rejected": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold  bg-red-100",
     };
 
     const fetchApplicantDetails = async () =>{

@@ -17,7 +17,6 @@ function TrackApplication() {
     "Document Review": "bg-purple-100 text-purple-600",
     "Initial Screening": "bg-yellow-100 text-yellow-600",
     "Technical Interview": "bg-cyan-100 text-cyan-600",
-    "Final Interview": "bg-pink-100 text-pink-600",
     "Accepted": "bg-green-100 text-green-600",
     "Rejected": "bg-red-100 text-red-600",
   };
@@ -27,7 +26,6 @@ function TrackApplication() {
     "Document Review",
     "Initial Screening",
     "Technical Interview",
-    "Final Interview",
     "Accepted"
   ];
 
@@ -101,8 +99,11 @@ function TrackApplication() {
                 {/* Progress Line */}
                 <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 -translate-y-1/2 z-0"></div>
                 <div 
-                  className="absolute top-1/2 left-0 h-1 bg-blue-600 -translate-y-1/2 z-0 transition-all duration-500"
-                  style={{ width: `${Math.max(0, (getStageIndex(application.status) / (STAGES.length - 1)) * 100)}%` }}
+                  className="absolute top-1/2 left-0 h-1 -translate-y-1/2 z-0 transition-all duration-500"
+                  style={{ 
+                    width: `${Math.max(0, (getStageIndex(application.status) / (STAGES.length - 1)) * 100)}%`,
+                    backgroundColor: '#2C2D86' 
+                  }}
                 ></div>
 
                 {STAGES.map((stage, index) => {
@@ -112,15 +113,20 @@ function TrackApplication() {
 
                   return (
                     <div key={stage} className="relative z-10 flex flex-col items-center">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
-                        isRejected ? 'bg-red-100 text-red-600 border-2 border-red-600' :
-                        isActive ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-400 border-2 border-gray-200'
-                      } ${isCurrent ? 'ring-4 ring-blue-100' : ''}`}>
+                      <div 
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                          isRejected ? 'bg-red-100 text-red-600 border-2 border-red-600' :
+                          isActive ? 'text-white shadow-md' : 'bg-white text-gray-400 border-2 border-gray-200'
+                        } ${isCurrent ? 'ring-4 ring-indigo-50' : ''}`}
+                        style={isActive && !isRejected ? { backgroundColor: '#2C2D86' } : {}}
+                      >
                         {index + 1}
                       </div>
                       <span className={`absolute -bottom-8 whitespace-nowrap text-[10px] font-semibold uppercase tracking-tighter text-center ${
-                        isActive ? 'text-blue-700' : 'text-gray-400'
-                      }`}>
+                        isActive ? '' : 'text-gray-400'
+                      }`}
+                      style={isActive ? { color: '#2C2D86' } : {}}
+                      >
                         {stage === "New Applicant" ? "Submitted" : stage.split(' ')[0]}
                       </span>
                     </div>

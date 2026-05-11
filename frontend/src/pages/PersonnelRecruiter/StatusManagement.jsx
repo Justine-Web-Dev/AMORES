@@ -71,7 +71,6 @@ function StatusManagement({applicantId, currentStatus, onUpdate,currentRejection
           <option value="Document Review">Document Review</option>
           <option value="Initial Screening">Initial Screening</option>
           <option value="Technical Interview">Technical Interview</option>
-          <option value="Final Interview">Final Interview</option>
           <option value="Accepted">Accepted</option>
           <option value="Rejected">Rejected</option>
 
