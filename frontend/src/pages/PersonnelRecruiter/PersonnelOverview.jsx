@@ -16,16 +16,29 @@ function PersonnelOverview() {
 
         const statuses = {
           'New Applicant': 0,
-          'Under Review': 0,
+          'Screening': 0,
           'Accepted': 0,
           'Rejected': 0
         }
 
+        const screeningStages = [
+          'Document Review',
+          'Initial Screening',
+          'Technical Interview',
+          'Final Interview'
+        ]
+
         const monthlyCount = {}
 
         data.forEach(applicant => {
-          if (applicant.status in statuses) {
-            statuses[applicant.status]++
+          if (applicant.status === 'New Applicant') {
+            statuses['New Applicant']++
+          } else if (screeningStages.includes(applicant.status)) {
+            statuses['Screening']++
+          } else if (applicant.status === 'Accepted') {
+            statuses['Accepted']++
+          } else if (applicant.status === 'Rejected') {
+            statuses['Rejected']++
           }
 
           if (applicant.created_at) {
@@ -45,9 +58,16 @@ function PersonnelOverview() {
     fetchApplications()
   }, [])
 
+  const screeningStages = [
+    'Document Review',
+    'Initial Screening',
+    'Technical Interview',
+    'Final Interview'
+  ]
+
   const application_length = applications.length
   const status_new_applicant = applications.filter(application => application.status === 'New Applicant').length
-  const underReviewCount = applications.filter(application => application.status === 'Under Review').length
+  const screeningCount = applications.filter(application => screeningStages.includes(application.status)).length
   const acceptedCount = applications.filter(application => application.status === 'Accepted').length
   const rejectedCount = applications.filter(application => application.status === 'Rejected').length
 
@@ -74,8 +94,8 @@ function PersonnelOverview() {
 
           <div className='stat-card under-review'>
             <h4 className='flex flex-col justify-center items-center'>
-              <span className='text-[18px]'>{underReviewCount}</span>
-              Under Review
+              <span className='text-[18px]'>{screeningCount}</span>
+              Screening
             </h4>
           </div>
 

@@ -4,6 +4,7 @@ import SidebarRecruiter from '../../Components/Sidebar/SidebarRecruiter'
 import ApplicantEvaluation from './ApplicantEvaluation'
 import StatusManagement from './StatusManagement'
 import PersonnelOverview from './PersonnelOverview'
+import TrackingScreening from './TrackingScreening'
 import './PersonnelDashboard.css'
 import DeclinedApplicants from '../DeclinedApplicants'
 import Header from '../../Components/Header/Header'
@@ -21,6 +22,7 @@ function PersonnelDashboard() {
         <Routes>
           <Route path="/" element={<PersonnelOverview />} />
           <Route path="/applications" element={<ApplicantEvaluation />} />
+          <Route path="/tracking-screening" element={<TrackingScreening />} />
           <Route path="/declined-applicants" element={<DeclinedApplicants />} />
           <Route path='/view-details/:id' element={<ViewDetails />}/>
           <Route path='/application-form' element={<Form/>}/>

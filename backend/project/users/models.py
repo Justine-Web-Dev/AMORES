@@ -61,11 +61,14 @@ class Applicant_infos(models.Model):
     editable=False
     )
   status = models.CharField(
-        max_length=20, 
+        max_length=50, 
         default='New Applicant',
         choices=[
             ('New Applicant', 'New Applicant'),
-            ('Under Review', 'Under Review'),
+            ('Document Review', 'Document Review'),
+            ('Initial Screening', 'Initial Screening'),
+            ('Technical Interview', 'Technical Interview'),
+            ('Final Interview', 'Final Interview'),
             ('Accepted', 'Accepted'),
             ('Rejected', 'Rejected')
         ]

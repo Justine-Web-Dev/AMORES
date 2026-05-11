@@ -68,7 +68,10 @@ function StatusManagement({applicantId, currentStatus, onUpdate,currentRejection
          className='status-option'>
           <option value="" disabled>Select Status</option>
           <option value="New Applicant">New Applicant</option>
-          <option value="Under Review">Under Review</option>
+          <option value="Document Review">Document Review</option>
+          <option value="Initial Screening">Initial Screening</option>
+          <option value="Technical Interview">Technical Interview</option>
+          <option value="Final Interview">Final Interview</option>
           <option value="Accepted">Accepted</option>
           <option value="Rejected">Rejected</option>
 

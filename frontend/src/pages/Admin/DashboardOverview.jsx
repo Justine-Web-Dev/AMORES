@@ -8,7 +8,7 @@ function DashboardOverview() {
   const [statusData, setStatusData] = useState([])
   const [statusCounts, setStatusCounts] = useState({
     'New Applicant': 0,
-    'Under Review': 0,
+    'Screening': 0,
     'Accepted': 0,
     'Rejected': 0
   })
@@ -21,14 +21,27 @@ function DashboardOverview() {
       
       const statuses = {
         'New Applicant': 0,
-        'Under Review': 0,
+        'Screening': 0,
         'Accepted': 0,
         'Rejected': 0
       }
+
+      const screeningStages = [
+        'Document Review',
+        'Initial Screening',
+        'Technical Interview',
+        'Final Interview'
+      ]
       
       response.data.forEach(applicant => {
-        if (applicant.status in statuses) {
-          statuses[applicant.status]++
+        if (applicant.status === 'New Applicant') {
+          statuses['New Applicant']++
+        } else if (screeningStages.includes(applicant.status)) {
+          statuses['Screening']++
+        } else if (applicant.status === 'Accepted') {
+          statuses['Accepted']++
+        } else if (applicant.status === 'Rejected') {
+          statuses['Rejected']++
         }
       })
       
@@ -97,8 +110,8 @@ function DashboardOverview() {
           </div>
           <div className='admin-summary-card under-review'>
             <div className='flex flex-col-reverse items-center'>
-              <span className='summary-label'>Under Review</span>
-              <span className='summary-value'>{statusCounts['Under Review']}</span>
+              <span className='summary-label'>Screening</span>
+              <span className='summary-value'>{statusCounts['Screening']}</span>
             </div>
           </div>
           <div className='admin-summary-card accepted'>

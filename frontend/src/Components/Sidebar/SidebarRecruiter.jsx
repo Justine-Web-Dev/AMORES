@@ -31,6 +31,8 @@ function SidebarRecruiter() {
             <li><Link className={`nav-link ${isActive('/PersonnelDashboard') ? 'active' : ''}`} to={"/PersonnelDashboard"}>Dashboard</Link></li>
 
             <li><Link className={`nav-link ${isActive('/PersonnelDashboard/applications') ? 'active' : ''}`} to={"/PersonnelDashboard/applications"}>Applications</Link></li>
+            
+            <li><Link className={`nav-link ${isActive('/PersonnelDashboard/tracking-screening') ? 'active' : ''}`} to={"/PersonnelDashboard/tracking-screening"}>Tracking & Screening</Link></li>
 
             <li><Link className={`nav-link ${isActive('/PersonnelDashboard/declined-applicants') ? 'active' : ''}`} to={"/PersonnelDashboard/declined-applicants"}>Declined Applicant</Link></li>
 

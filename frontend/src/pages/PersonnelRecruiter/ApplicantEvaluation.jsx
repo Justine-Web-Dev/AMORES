@@ -12,10 +12,13 @@ function ApplicantEvaluation() {
 
   const statusColors = {
     "New Applicant": "bg-blue-100 text-blue-600",
-    "Under Review": "bg-yellow-100 text-yellow-600",
+    "Document Review": "bg-purple-100 text-purple-600",
+    "Initial Screening": "bg-yellow-100 text-yellow-600",
+    "Technical Interview": "bg-cyan-100 text-cyan-600",
+    "Final Interview": "bg-pink-100 text-pink-600",
     "Accepted": "bg-green-100 text-green-600",
     "Rejected": "bg-red-100 text-red-600",
-};
+  };
 
  const [applicantInfo,setApplicantInfo] = useState([])
  const [open,setOpen] = useState(null)
@@ -87,9 +90,11 @@ function ApplicantEvaluation() {
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
             <option value="All">All Statuses</option>
             <option value="New Applicant">New Applicant</option>
-            <option value="Under Review">Under Review</option>
+            <option value="Document Review">Document Review</option>
+            <option value="Initial Screening">Initial Screening</option>
+            <option value="Technical Interview">Technical Interview</option>
+            <option value="Final Interview">Final Interview</option>
             <option value="Accepted">Accepted</option>
-            <option value="Rejected">Rejected</option>
           </select>
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="sort-select">
             <option value="date">Sort by Date</option>

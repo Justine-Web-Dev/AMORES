@@ -1,0 +1,185 @@
+.tracking-screening-container {
+    padding: 2rem;
+    background-color: #f8fafc;
+    min-height: 100vh;
+}
+
+.tracking-screening-header {
+    margin-bottom: 2rem;
+}
+
+.tracking-screening-header h2 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.5rem;
+}
+
+.tracking-screening-header p {
+    color: #64748b;
+}
+
+.pipeline-board {
+    display: flex;
+    gap: 0.75rem;
+    width: 100%;
+    min-height: 75vh;
+}
+
+.pipeline-column {
+    flex: 1;
+    min-width: 140px;
+    background-color: #f1f5f9;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 200px);
+    border: 1px solid #e2e8f0;
+}
+
+.column-header {
+    padding: 0.75rem 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid transparent;
+}
+
+.column-title {
+    font-weight: 700;
+    font-size: 0.7rem;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.applicant-count {
+    background-color: #e2e8f0;
+    color: #475569;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 0.65rem;
+    font-weight: 800;
+}
+
+.applicant-list {
+    padding: 0.5rem;
+    flex-grow: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.applicant-card {
+    background-color: white;
+    border-radius: 6px;
+    padding: 0.75rem 0.5rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border-left: 3px solid #cbd5e1;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.applicant-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.applicant-card h4 {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.75rem;
+    margin-bottom: 0.15rem;
+    line-height: 1.2;
+}
+
+.applicant-card .program {
+    font-size: 0.65rem;
+    color: #64748b;
+    margin-bottom: 0.35rem;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.applicant-card .date {
+    font-size: 0.6rem;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+/* Status specific colors */
+.column-new { border-top: 4px solid #3b82f6; }
+.column-new .column-header { background-color: #eff6ff; }
+.card-new { border-left-color: #3b82f6; }
+
+.column-doc { border-top: 4px solid #8b5cf6; }
+.column-doc .column-header { background-color: #f5f3ff; }
+.card-doc { border-left-color: #8b5cf6; }
+
+.column-initial { border-top: 4px solid #f59e0b; }
+.column-initial .column-header { background-color: #fffbeb; }
+.card-initial { border-left-color: #f59e0b; }
+
+.column-technical { border-top: 4px solid #06b6d4; }
+.column-technical .column-header { background-color: #ecfeff; }
+.card-technical { border-left-color: #06b6d4; }
+
+.column-final { border-top: 4px solid #ec4899; }
+.column-final .column-header { background-color: #fdf2f8; }
+.card-final { border-left-color: #ec4899; }
+
+.column-accepted { border-top: 4px solid #10b981; }
+.column-accepted .column-header { background-color: #ecfdf5; }
+.card-accepted { border-left-color: #10b981; }
+
+.column-rejected { border-top: 4px solid #ef4444; }
+.column-rejected .column-header { background-color: #fef2f2; }
+.card-rejected { border-left-color: #ef4444; }
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.pipeline-board::-webkit-scrollbar,
+.applicant-list::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.pipeline-board,
+.applicant-list {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .tracking-screening-container {
+        padding: 1rem;
+    }
+
+    .tracking-screening-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .pipeline-board {
+        gap: 1rem;
+    }
+
+    .pipeline-column {
+        flex: 0 0 280px;
+    }
+}
+
+@media (max-width: 480px) {
+    .pipeline-column {
+        flex: 0 0 85vw;
+    }
+}
+
