@@ -10,6 +10,13 @@ const STAGES = [
     { id: 'Initial Screening', title: 'Initial Screening', icon: <HiOutlineChatAlt2 />, colorClass: 'column-initial' },
     { id: 'Technical Interview', title: 'Technical', icon: <HiOutlineClipboardCheck />, colorClass: 'column-technical' },
     { id: 'Accepted', title: 'Accepted', icon: <HiOutlineBadgeCheck />, colorClass: 'column-accepted' },
+    { id: 'Body Mass Index', title: 'BMI', icon: <HiOutlineClipboardCheck />, colorClass: 'column-bmi' },
+    { id: 'Physical Agility Test', title: 'PAT', icon: <HiOutlineClipboardCheck />, colorClass: 'column-pat' },
+    { id: 'Neuro Examination', title: 'Neuro', icon: <HiOutlineChatAlt2 />, colorClass: 'column-psych' },
+    { id: 'Medical', title: 'Medical', icon: <HiOutlineClipboardCheck />, colorClass: 'column-medical' },
+    { id: 'Drug Test', title: 'Drug Test', icon: <HiOutlineClipboardCheck />, colorClass: 'column-drug' },
+    { id: 'Final Interview', title: 'Final Interview', icon: <HiOutlineBadgeCheck />, colorClass: 'column-final' },
+    { id: 'Oath Taking', title: 'Oath Taking', icon: <HiOutlineBadgeCheck />, colorClass: 'column-oath' },
     { id: 'Rejected', title: 'Rejected', icon: <HiOutlineXCircle />, colorClass: 'column-rejected' }
 ];
 
@@ -31,7 +38,7 @@ function TrackingScreening() {
 
     useEffect(() => {
         fetchApplicants();
-        const interval = setInterval(fetchApplicants, 10000); // Refresh every 10 seconds
+        const interval = setInterval(fetchApplicants, 10000);
         return () => clearInterval(interval);
     }, []);
 
@@ -46,6 +53,13 @@ function TrackingScreening() {
             case 'Initial Screening': return 'card-initial';
             case 'Technical Interview': return 'card-technical';
             case 'Accepted': return 'card-accepted';
+            case 'Body Mass Index': return 'card-bmi';
+            case 'Physical Agility Test': return 'card-pat';
+            case 'Neuro Examination': return 'card-psych';
+            case 'Medical': return 'card-medical';
+            case 'Drug Test': return 'card-drug';
+            case 'Final Interview': return 'card-final';
+            case 'Oath Taking': return 'card-oath';
             case 'Rejected': return 'card-rejected';
             default: return '';
         }
@@ -85,7 +99,13 @@ function TrackingScreening() {
                                             <span className="program">{applicant.program}</span>
                                             <div className="date">
                                                 <HiOutlineCalendar />
-                                                {new Date(applicant.created_at).toLocaleDateString()}
+                                                {applicant.scheduled_date ? (
+                                                    <span className="text-blue-600 font-semibold">
+                                                        Sch: {new Date(applicant.scheduled_date).toLocaleDateString()} {applicant.scheduled_time ? `@ ${applicant.scheduled_time}` : ''}
+                                                    </span>
+                                                ) : (
+                                                    <span>{new Date(applicant.created_at).toLocaleDateString()}</span>
+                                                )}
                                             </div>
                                         </div>
                                     ))

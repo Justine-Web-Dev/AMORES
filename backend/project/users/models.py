@@ -60,6 +60,23 @@ class Applicant_infos(models.Model):
     default=generate_tracking_code,
     editable=False
     )
+  
+  # Post-Acceptance Evaluation Fields
+  bmi_height = models.FloatField(null=True, blank=True)
+  bmi_weight = models.FloatField(null=True, blank=True)
+  bmi_result = models.CharField(max_length=50, null=True, blank=True)
+  pat_score = models.FloatField(null=True, blank=True)
+  psychological_result = models.TextField(null=True, blank=True)
+  medical_result = models.TextField(null=True, blank=True)
+  drug_test_result = models.CharField(max_length=50, null=True, blank=True)
+  final_interview_score = models.FloatField(null=True, blank=True)
+  oath_taking_date = models.DateField(null=True, blank=True)
+  
+  # Scheduling Fields
+  scheduled_date = models.DateField(null=True, blank=True)
+  scheduled_time = models.TimeField(null=True, blank=True)
+  evaluation_remarks = models.TextField(null=True, blank=True)
+
   status = models.CharField(
         max_length=50, 
         default='New Applicant',
@@ -69,7 +86,14 @@ class Applicant_infos(models.Model):
             ('Initial Screening', 'Initial Screening'),
             ('Technical Interview', 'Technical Interview'),
             ('Accepted', 'Accepted'),
-            ('Rejected', 'Rejected')
+            ('Rejected', 'Rejected'),
+            ('Body Mass Index', 'Body Mass Index'),
+            ('Physical Agility Test', 'Physical Agility Test'),
+            ('Neuro Examination', 'Neuro Examination'),
+            ('Medical', 'Medical'),
+            ('Drug Test', 'Drug Test'),
+            ('Final Interview', 'Final Interview'),
+            ('Oath Taking', 'Oath Taking'),
         ]
     )
   

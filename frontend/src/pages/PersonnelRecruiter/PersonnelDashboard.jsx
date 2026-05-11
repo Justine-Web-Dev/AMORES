@@ -22,7 +22,6 @@ function PersonnelDashboard() {
         <Routes>
           <Route path="/" element={<PersonnelOverview />} />
           <Route path="/applications" element={<ApplicantEvaluation />} />
-          <Route path="/tracking-screening" element={<TrackingScreening />} />
           <Route path="/declined-applicants" element={<DeclinedApplicants />} />
           <Route path='/view-details/:id' element={<ViewDetails />}/>
           <Route path='/application-form' element={<Form/>}/>

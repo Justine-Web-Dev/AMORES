@@ -203,8 +203,37 @@ def update_applicant_status(request, pk):
         new_status = request.data.get('status')
         reason = request.data.get('rejection_reason')
 
+        # Evaluation fields
+        bmi_height = request.data.get('bmi_height')
+        bmi_weight = request.data.get('bmi_weight')
+        bmi_result = request.data.get('bmi_result')
+        pat_score = request.data.get('pat_score')
+        psychological_result = request.data.get('psychological_result')
+        medical_result = request.data.get('medical_result')
+        drug_test_result = request.data.get('drug_test_result')
+        final_interview_score = request.data.get('final_interview_score')
+        oath_taking_date = request.data.get('oath_taking_date')
+        scheduled_date = request.data.get('scheduled_date')
+        scheduled_time = request.data.get('scheduled_time')
+
         if new_status == 'Rejected':
            applicant.rejection_reason = reason
+
+        if bmi_height is not None: applicant.bmi_height = bmi_height
+        if bmi_weight is not None: applicant.bmi_weight = bmi_weight
+        if bmi_result is not None: applicant.bmi_result = bmi_result
+        if pat_score is not None: applicant.pat_score = pat_score
+        if psychological_result is not None: applicant.psychological_result = psychological_result
+        if medical_result is not None: applicant.medical_result = medical_result
+        if drug_test_result is not None: applicant.drug_test_result = drug_test_result
+        if final_interview_score is not None: applicant.final_interview_score = final_interview_score
+        if oath_taking_date is not None: applicant.oath_taking_date = oath_taking_date
+        
+        # Always allow updating schedule and remarks
+        if scheduled_date is not None: applicant.scheduled_date = scheduled_date
+        if scheduled_time is not None: applicant.scheduled_time = scheduled_time
+        if request.data.get('evaluation_remarks') is not None:
+            applicant.evaluation_remarks = request.data.get('evaluation_remarks')
 
         if not new_status:
             return Response({"error": "Status is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -244,7 +273,12 @@ def track_application_status(request):
         "status": applicant.status,
         "program": applicant.program,
         "date_applied": applicant.created_at,
-        "rejection_reason" : applicant.rejection_reason
+        "rejection_reason" : applicant.rejection_reason,
+        "scheduled_date": applicant.scheduled_date,
+        "scheduled_time": applicant.scheduled_time,
+        "drug_test_result": applicant.drug_test_result,
+        "bmi_height": applicant.bmi_height,
+        "bmi_weight": applicant.bmi_weight
     }, status=status.HTTP_200_OK)
   
   except Applicant_infos.DoesNotExist:

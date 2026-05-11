@@ -4,7 +4,7 @@ import { CiSearch } from "react-icons/ci";
 
 import { api } from '../../../api/api';
 
-import { HiOutlineXCircle } from 'react-icons/hi';
+import { HiOutlineXCircle, HiOutlineCalendar } from 'react-icons/hi';
 
 function TrackApplication() {
  const [code, setCode] = useState('');
@@ -16,18 +16,43 @@ function TrackApplication() {
     "New Applicant": "bg-blue-100 text-blue-600",
     "Document Review": "bg-purple-100 text-purple-600",
     "Initial Screening": "bg-yellow-100 text-yellow-600",
-    "Technical Interview": "bg-cyan-100 text-cyan-600",
     "Accepted": "bg-green-100 text-green-600",
     "Rejected": "bg-red-100 text-red-600",
+    "Body Mass Index": "bg-blue-50 text-blue-500",
+    "Physical Agility Test": "bg-orange-100 text-orange-600",
+    "Neuro Examination": "bg-indigo-100 text-indigo-600",
+    "Medical": "bg-pink-100 text-pink-600",
+    "Drug Test": "bg-amber-100 text-amber-600",
+    "Final Interview": "bg-teal-100 text-teal-600",
+    "Oath Taking": "bg-emerald-100 text-emerald-600",
   };
 
-  const STAGES = [
+  const INITIAL_STAGES = [
     "New Applicant",
     "Document Review",
     "Initial Screening",
-    "Technical Interview",
     "Accepted"
   ];
+
+  const POST_ACCEPTANCE_STAGES = [
+    "Body Mass Index",
+    "Physical Agility Test",
+    "Neuro Examination",
+    "Medical",
+    "Drug Test",
+    "Final Interview",
+    "Oath Taking"
+  ];
+
+  // Determine which stages to show based on application status
+  const isPostAccepted = application && (
+    application.status === 'Accepted' || 
+    POST_ACCEPTANCE_STAGES.includes(application.status)
+  );
+  
+  const STAGES = isPostAccepted 
+    ? [...INITIAL_STAGES, ...POST_ACCEPTANCE_STAGES] 
+    : INITIAL_STAGES;
 
   const handleTrack = async () =>{
     if(!code.trim()){
@@ -56,7 +81,7 @@ function TrackApplication() {
 
   return (
     <div className='min-h-screen p-4 flex justify-center items-start track-application-container'>
-      <div className='flex flex-col w-full max-w-4xl items-center rounded-[8px] gap-8 p-6 md:p-10 bg-white shadow-sm track-container'>
+      <div className='flex flex-col w-full max-w-6xl items-center rounded-[8px] gap-8 p-6 md:p-10 bg-white shadow-sm track-container'>
         
         <div className='w-full text-left'>
           <h1 className='text-2xl md:text-[32px] font-semibold leading-tight'>Track Your Application</h1>
@@ -94,8 +119,8 @@ function TrackApplication() {
             </div>
 
             {/* Visual Stepper */}
-            <div className="w-full mb-10 mt-4 overflow-x-auto pb-10 stepper-scroll-container">
-              <div className="relative flex justify-between items-center min-w-[600px] px-4">
+            <div className="w-full mb-14 mt-4 overflow-x-auto md:overflow-x-visible pb-10 stepper-scroll-container">
+              <div className="relative flex justify-between items-center min-w-[1000px] md:min-w-full px-10">
                 {/* Progress Line */}
                 <div className="absolute top-1/2 left-0 w-full h-1 bg-gray-200 -translate-y-1/2 z-0"></div>
                 <div 
@@ -122,12 +147,22 @@ function TrackApplication() {
                       >
                         {index + 1}
                       </div>
-                      <span className={`absolute -bottom-8 whitespace-nowrap text-[10px] font-semibold uppercase tracking-tighter text-center ${
+                      <span className={`absolute -bottom-10 whitespace-nowrap text-[10px] font-bold uppercase tracking-tight text-center ${
                         isActive ? '' : 'text-gray-400'
                       }`}
                       style={isActive ? { color: '#2C2D86' } : {}}
                       >
-                        {stage === "New Applicant" ? "Submitted" : stage.split(' ')[0]}
+                        {stage === "New Applicant" ? "Submitted" : 
+                         stage === "Document Review" ? "Docs" :
+                         stage === "Initial Screening" ? "Initial" :
+                         stage === "Accepted" ? "Qualified" :
+                         stage === "Body Mass Index" ? "BMI" :
+                         stage === "Physical Agility Test" ? "PAT" :
+                         stage === "Neuro Examination" ? "Neuro" :
+                         stage === "Drug Test" ? "Drug" :
+                         stage === "Final Interview" ? "Final" :
+                         stage === "Oath Taking" ? "Oath" :
+                         stage}
                       </span>
                     </div>
                   );
@@ -146,12 +181,41 @@ function TrackApplication() {
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] uppercase font-bold text-gray-400">Reference Number</span>
-                <p className="font-semibold text-blue-700">{application.tracking_code}</p>
+                <p className="font-semibold ">{application.tracking_code}</p>
               </div>
               <div className="flex flex-col gap-1">
                 <span className="text-[10px] uppercase font-bold text-gray-400">Submission Date</span>
                 <p className="font-semibold text-gray-800">{new Date(application.date_applied).toLocaleDateString(undefined, { dateStyle: 'long' })}</p>
               </div>
+
+              {application?.scheduled_date && (
+                <>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] uppercase font-bold text-gray-400">Scheduled Date</span>
+                    <p className="font-bold text-blue-800">{new Date(application.scheduled_date).toLocaleDateString(undefined, { dateStyle: 'long' })}</p>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] uppercase font-bold text-gray-400">Scheduled Time</span>
+                    <p className="font-bold text-blue-800">{application.scheduled_time || 'TBA'}</p>
+                  </div>
+                </>
+              )}
+              
+              {application?.drug_test_result && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold text-gray-400">Drug Test Result</span>
+                  <p className={`font-bold ${application.drug_test_result === 'Positive' ? 'text-red-600' : 'text-green-600'}`}>
+                    {application.drug_test_result}
+                  </p>
+                </div>
+              )}
+
+              {application?.bmi_height && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold text-gray-400">BMI Data (H/W)</span>
+                  <p className="font-bold text-gray-800">{application.bmi_height} cm / {application.bmi_weight} kg</p>
+                </div>
+              )}
               
               {application?.status === 'Rejected' && application?.rejection_reason && (
                 <div className='col-span-1 md:col-span-2 mt-2 p-4 bg-red-50 border border-red-200 rounded-lg'>

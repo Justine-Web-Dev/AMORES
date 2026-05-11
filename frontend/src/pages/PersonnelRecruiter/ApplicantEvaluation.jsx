@@ -17,6 +17,13 @@ function ApplicantEvaluation() {
     "Technical Interview": "bg-cyan-100 text-cyan-600",
     "Accepted": "bg-green-100 text-green-600",
     "Rejected": "bg-red-100 text-red-600",
+    "Body Mass Index": "bg-blue-50 text-blue-500",
+    "Physical Agility Test": "bg-orange-100 text-orange-600",
+    "Neuro Examination": "bg-indigo-100 text-indigo-600",
+    "Medical": "bg-pink-100 text-pink-600",
+    "Drug Test": "bg-amber-100 text-amber-600",
+    "Final Interview": "bg-teal-100 text-teal-600",
+    "Oath Taking": "bg-emerald-100 text-emerald-600",
   };
 
  const [applicantInfo,setApplicantInfo] = useState([])
@@ -93,6 +100,13 @@ function ApplicantEvaluation() {
             <option value="Initial Screening">Initial Screening</option>
             <option value="Technical Interview">Technical Interview</option>
             <option value="Accepted">Accepted</option>
+            <option value="Body Mass Index">Body Mass Index</option>
+            <option value="Physical Agility Test">Physical Agility Test</option>
+            <option value="Neuro Examination">Neuro Examination</option>
+            <option value="Medical">Medical</option>
+            <option value="Drug Test">Drug Test</option>
+            <option value="Final Interview">Final Interview</option>
+            <option value="Oath Taking">Oath Taking</option>
             <option value="Rejected">Rejected</option>
           </select>
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="sort-select">

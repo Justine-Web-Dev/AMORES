@@ -26,6 +26,13 @@ function ViewDetails() {
       "Technical Interview": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold  bg-cyan-100 text-cyan-600",
       "Accepted": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold  bg-green-100 text-green-600",
       "Rejected": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold  bg-red-100",
+      "Body Mass Index": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-blue-50 text-blue-500",
+      "Physical Agility Test": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-orange-100 text-orange-600",
+      "Neuro Examination": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-indigo-100 text-indigo-600",
+      "Medical": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-pink-100 text-pink-600",
+      "Drug Test": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-amber-100 text-amber-600",
+      "Final Interview": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-teal-100 text-teal-600",
+      "Oath Taking": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-emerald-100 text-emerald-600",
     };
 
     const fetchApplicantDetails = async () =>{
@@ -93,6 +100,7 @@ function ViewDetails() {
           {/* Update Status */}
           <StatusManagement 
             applicantId={id}
+            applicantData={applicant}
             currentStatus={applicant.status}
             onUpdate={fetchApplicantDetails}
             currentRejectionReason={applicant.rejection_reason}

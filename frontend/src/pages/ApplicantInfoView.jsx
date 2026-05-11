@@ -46,6 +46,71 @@ function ApplicantInfoView({data}) {
           <div className="info-item"><label>Date Graduated</label><p>{data.date_graduated || 'N/A'}</p></div>
         </div>
       </section>
+
+      {/* Assessment Results Section */}
+      {(data.bmi_height || data.pat_score || data.psychological_result || data.medical_result || data.drug_test_result || data.final_interview_score || data.oath_taking_date || data.scheduled_date || data.scheduled_time) && (
+        <section className="info-section">
+          <h1 className='text-black label-info'>Assessment & Screening Results</h1>
+          <div className="grid-layout">
+            {data.bmi_height && (
+              <div className="info-item">
+                <label>BMI Data</label>
+                <p>{data.bmi_height}cm / {data.bmi_weight}kg</p>
+              </div>
+            )}
+            {data.pat_score !== null && data.pat_score !== undefined && (
+              <div className="info-item">
+                <label>PAT Score</label>
+                <p>{data.pat_score}</p>
+              </div>
+            )}
+            {data.drug_test_result && (
+              <div className="info-item">
+                <label>Drug Test</label>
+                <p>{data.drug_test_result}</p>
+              </div>
+            )}
+            {data.final_interview_score !== null && data.final_interview_score !== undefined && (
+              <div className="info-item">
+                <label>Final Interview</label>
+                <p>{data.final_interview_score}</p>
+              </div>
+            )}
+             {data.oath_taking_date && (
+              <div className="info-item">
+                <label>Oath Taking</label>
+                <p>{data.oath_taking_date}</p>
+              </div>
+            )}
+            {(data.scheduled_date || data.scheduled_time) && (
+              <div className="info-item">
+                <label className="text-blue-600">Next Scheduled Step</label>
+                <p className="font-bold text-blue-800">
+                  {data.scheduled_date || 'No date set'} {data.scheduled_time ? `@ ${data.scheduled_time}` : ''}
+                </p>
+              </div>
+            )}
+          </div>
+          {data.evaluation_remarks && (
+            <div className="info-item mt-4">
+              <label>Remarks / Findings</label>
+              <p className="whitespace-pre-wrap">{data.evaluation_remarks}</p>
+            </div>
+          )}
+          {data.psychological_result && (
+            <div className="info-item mt-4">
+              <label>Psychological Findings</label>
+              <p className="whitespace-pre-wrap">{data.psychological_result}</p>
+            </div>
+          )}
+          {data.medical_result && (
+            <div className="info-item mt-4">
+              <label>Medical Findings</label>
+              <p className="whitespace-pre-wrap">{data.medical_result}</p>
+            </div>
+          )}
+        </section>
+      )}
     </div>
   )
 }

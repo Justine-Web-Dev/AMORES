@@ -140,6 +140,35 @@
 .column-rejected .column-header { background-color: #fef2f2; }
 .card-rejected { border-left-color: #ef4444; }
 
+/* Post-Acceptance Stages */
+.column-bmi { border-top: 4px solid #3b82f6; }
+.column-bmi .column-header { background-color: #eff6ff; }
+.card-bmi { border-left-color: #3b82f6; }
+
+.column-pat { border-top: 4px solid #f97316; }
+.column-pat .column-header { background-color: #fff7ed; }
+.card-pat { border-left-color: #f97316; }
+
+.column-psych { border-top: 4px solid #6366f1; }
+.column-psych .column-header { background-color: #eef2ff; }
+.card-psych { border-left-color: #6366f1; }
+
+.column-medical { border-top: 4px solid #ec4899; }
+.column-medical .column-header { background-color: #fdf2f8; }
+.card-medical { border-left-color: #ec4899; }
+
+.column-drug { border-top: 4px solid #f59e0b; }
+.column-drug .column-header { background-color: #fffbeb; }
+.card-drug { border-left-color: #f59e0b; }
+
+.column-final { border-top: 4px solid #14b8a6; }
+.column-final .column-header { background-color: #f0fdfa; }
+.card-final { border-left-color: #14b8a6; }
+
+.column-oath { border-top: 4px solid #10b981; }
+.column-oath .column-header { background-color: #ecfdf5; }
+.card-oath { border-left-color: #10b981; }
+
 /* Hide scrollbar for Chrome, Safari and Opera */
 .pipeline-board::-webkit-scrollbar,
 .applicant-list::-webkit-scrollbar {
