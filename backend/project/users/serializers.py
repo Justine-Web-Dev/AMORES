@@ -194,8 +194,16 @@ class SystemSettingsSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class AuditLogSerializer(serializers.ModelSerializer):
-    performer_username = serializers.CharField(source='performer.username', read_only=True)
+    user = serializers.SerializerMethodField()
     
     class Meta:
         model = AuditLog
-        fields = ['id', 'performer', 'performer_username', 'performer_name', 'action', 'details', 'timestamp']
+        fields = ['id', 'user', 'action', 'details', 'timestamp']
+    
+    def get_user(self, obj):
+        """Return the performer username, with fallback to performer_name or 'System'"""
+        if obj.performer and obj.performer.username:
+            return obj.performer.username
+        elif obj.performer_name:
+            return obj.performer_name
+        return 'System'

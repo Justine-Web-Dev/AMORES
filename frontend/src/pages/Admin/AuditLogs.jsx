@@ -8,6 +8,7 @@ function AuditLogs() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [actionFilter, setActionFilter] = useState('All');
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchLogs();
@@ -19,12 +20,16 @@ function AuditLogs() {
 
   const fetchLogs = async () => {
     setLoading(true);
+    setError(null);
     try {
       const response = await api.get('/users/audit-logs/');
+      console.log('Audit logs fetched:', response.data);
       setLogs(response.data);
       setFilteredLogs(response.data);
     } catch (error) {
       console.error("Error fetching audit logs:", error);
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to fetch audit logs';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -48,12 +53,17 @@ function AuditLogs() {
   const getActionColor = (action) => {
     switch (action) {
       case 'LOGIN': return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'LOGOUT': return 'bg-blue-50 text-blue-600 border-blue-100';
       case 'USER_REGISTRATION': return 'bg-green-100 text-green-700 border-green-200';
-      case 'STATUS_UPDATE': return 'bg-amber-100 text-amber-700 border-amber-200';
-      case 'SETTINGS_UPDATE': return 'bg-purple-100 text-purple-700 border-purple-200';
-      case 'USER_DELETE': return 'bg-red-100 text-red-700 border-red-200';
-      case 'APPLICANT_REGISTRATION': return 'bg-indigo-100 text-indigo-700 border-indigo-200';
       case 'USER_UPDATE': return 'bg-cyan-100 text-cyan-700 border-cyan-200';
+      case 'USER_DELETE': return 'bg-red-100 text-red-700 border-red-200';
+      case 'USER_ARCHIVE': return 'bg-orange-100 text-orange-700 border-orange-200';
+      case 'STATUS_UPDATE': return 'bg-amber-100 text-amber-700 border-amber-200';
+      case 'APPLICANT_REGISTRATION': return 'bg-indigo-100 text-indigo-700 border-indigo-200';
+      case 'SETTINGS_UPDATE': return 'bg-purple-100 text-purple-700 border-purple-200';
+      case 'BACKUP': return 'bg-teal-100 text-teal-700 border-teal-200';
+      case 'RESTORE': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+      case 'DOCUMENT_UPLOAD': return 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200';
       default: return 'bg-gray-100 text-gray-700 border-gray-200';
     }
   };
@@ -91,6 +101,18 @@ function AuditLogs() {
           {loading ? 'Refreshing...' : 'Refresh Logs'}
         </button>
       </div>
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+          <strong>Error:</strong> {error}
+          <button 
+            onClick={() => setError(null)}
+            className="ml-4 text-red-600 underline hover:text-red-800"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         {/* Filters Header */}
@@ -189,10 +211,33 @@ function AuditLogs() {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
+        <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center flex-wrap gap-4">
           <span className="text-sm text-gray-500">
             Showing <span className="font-bold text-gray-700">{filteredLogs.length}</span> of <span className="font-bold text-gray-700">{logs.length}</span> activities
           </span>
+          <button 
+            onClick={() => {
+              const csvContent = [
+                ['Timestamp', 'User', 'Action', 'Details'],
+                ...filteredLogs.map(log => [
+                  formatTimestamp(log.timestamp),
+                  log.user || 'System',
+                  log.action,
+                  log.details
+                ])
+              ].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+              
+              const blob = new Blob([csvContent], { type: 'text/csv' });
+              const url = window.URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = `audit-logs-${new Date().toISOString().split('T')[0]}.csv`;
+              link.click();
+            }}
+            className="text-sm px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors font-medium"
+          >
+            📥 Export as CSV
+          </button>
         </div>
       </div>
     </div>
