@@ -74,6 +74,7 @@ class Application(models.Model):
         ('Document Review', 'Document Review'),
         ('Initial Screening', 'Initial Screening'),
         ('Technical Interview', 'Technical Interview'),
+        ('Qualified', 'Qualified'),
         ('Accepted', 'Accepted'),
         ('Rejected', 'Rejected'),
         ('Body Mass Index', 'Body Mass Index'),

@@ -94,7 +94,18 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Applicant
-        fields = '__all__'
+        fields = [
+            'id', 'first_name', 'last_name', 'middle_name', 'age', 'email', 
+            'contact_number', 'gender', 'program', 'date_graduated', 
+            'name_of_school', 'latin_honor', 'pag_ibig_number', 
+            'phil_health_id_num', 'height', 'tribe', 'created_at',
+            'firstname', 'lastname', 'cp_number', 'middle_initial',
+            'status', 'tracking_code', 'rejection_reason', 'scheduled_date', 
+            'scheduled_time', 'evaluation_remarks', 'oath_taking_date',
+            'bmi_height', 'bmi_weight', 'bmi_result', 'pat_score', 
+            'psychological_result', 'medical_result', 'drug_test_result', 
+            'final_interview_score'
+        ]
 
     def get_middle_initial(self, obj):
         if obj.middle_name:

@@ -73,12 +73,16 @@
   border-left-color: #FFC107;
 }
 
+.admin-summary-card.qualified {
+  border-left-color: #6366F1;
+}
+
 .admin-summary-card.accepted {
-  border-left-color: #4CAF50;
+  border-left-color: #10B981;
 }
 
 .admin-summary-card.rejected {
-  border-left-color: #F44336;
+  border-left-color: #F43F5E;
 }
 
 .stat-card-container .total-applicants {

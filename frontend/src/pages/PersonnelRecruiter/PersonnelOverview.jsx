@@ -17,6 +17,7 @@ function PersonnelOverview() {
         const statuses = {
           'New Applicant': 0,
           'Screening': 0,
+          'Qualified': 0,
           'Accepted': 0,
           'Rejected': 0
         }
@@ -34,6 +35,8 @@ function PersonnelOverview() {
             statuses['New Applicant']++
           } else if (screeningStages.includes(applicant.status)) {
             statuses['Screening']++
+          } else if (applicant.status === 'Qualified') {
+            statuses['Qualified']++
           } else if (applicant.status === 'Accepted') {
             statuses['Accepted']++
           } else if (applicant.status === 'Rejected') {
@@ -66,6 +69,7 @@ function PersonnelOverview() {
   const application_length = applications.length
   const status_new_applicant = applications.filter(application => application.status === 'New Applicant').length
   const screeningCount = applications.filter(application => screeningStages.includes(application.status)).length
+  const qualifiedCount = applications.filter(application => application.status === 'Qualified').length
   const acceptedCount = applications.filter(application => application.status === 'Accepted').length
   const rejectedCount = applications.filter(application => application.status === 'Rejected').length
 
@@ -94,6 +98,13 @@ function PersonnelOverview() {
             <h4 className='flex flex-col justify-center items-center'>
               <span className='text-[18px]'>{screeningCount}</span>
               Screening
+            </h4>
+          </div>
+
+          <div className='stat-card accepted'>
+            <h4 className='flex flex-col justify-center items-center'>
+              <span className='text-[18px]'>{qualifiedCount}</span>
+              Qualified
             </h4>
           </div>
 
@@ -128,7 +139,7 @@ function PersonnelOverview() {
                   dataKey='value'
                 >
                   {statusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={['#2196F3', '#FFC107', '#4CAF50', '#F44336'][index % 4]} />
+                    <Cell key={`cell-${index}`} fill={['#2196F3', '#FFC107', '#6366F1', '#10B981', '#F43F5E'][index % 5]} />
                   ))}
                 </Pie>
                 <Tooltip />

@@ -16,8 +16,9 @@ function TrackApplication() {
     "New Applicant": "bg-blue-100 text-blue-600",
     "Document Review": "bg-purple-100 text-purple-600",
     "Initial Screening": "bg-yellow-100 text-yellow-600",
-    "Accepted": "bg-green-100 text-green-600",
-    "Rejected": "bg-red-100 text-red-600",
+    "Qualified": "bg-indigo-100 text-indigo-700",
+    "Accepted": "bg-emerald-100 text-emerald-700",
+    "Rejected": "bg-rose-100 text-rose-700",
     "Body Mass Index": "bg-blue-50 text-blue-500",
     "Physical Agility Test": "bg-orange-100 text-orange-600",
     "Neuro Examination": "bg-indigo-100 text-indigo-600",
@@ -31,7 +32,7 @@ function TrackApplication() {
     "New Applicant",
     "Document Review",
     "Initial Screening",
-    "Accepted"
+    "Qualified"
   ];
 
   const POST_ACCEPTANCE_STAGES = [
@@ -46,6 +47,7 @@ function TrackApplication() {
 
   // Determine which stages to show based on application status
   const isPostAccepted = application && (
+    application.status === 'Qualified' || 
     application.status === 'Accepted' || 
     POST_ACCEPTANCE_STAGES.includes(application.status)
   );
@@ -155,7 +157,8 @@ function TrackApplication() {
                         {stage === "New Applicant" ? "Submitted" : 
                          stage === "Document Review" ? "Docs" :
                          stage === "Initial Screening" ? "Initial" :
-                         stage === "Accepted" ? "Qualified" :
+                         stage === "Qualified" ? "Qualified" :
+                         stage === "Accepted" ? "Accepted" :
                          stage === "Body Mass Index" ? "BMI" :
                          stage === "Physical Agility Test" ? "PAT" :
                          stage === "Neuro Examination" ? "Neuro" :
@@ -214,6 +217,48 @@ function TrackApplication() {
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase font-bold text-gray-400">BMI Data (H/W)</span>
                   <p className="font-bold text-gray-800">{application.bmi_height} cm / {application.bmi_weight} kg</p>
+                </div>
+              )}
+
+              {application?.pat_score && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold text-gray-400">Physical Agility Test Result</span>
+                  <p className="font-bold text-gray-800">{application.pat_score}</p>
+                </div>
+              )}
+
+              {application?.psychological_result && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold text-gray-400">Neuro Examination Result</span>
+                  <p className="font-bold text-gray-800">{application.psychological_result}</p>
+                </div>
+              )}
+
+              {application?.medical_result && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold text-gray-400">Medical Examination Result</span>
+                  <p className="font-bold text-gray-800">{application.medical_result}</p>
+                </div>
+              )}
+
+              {application?.final_interview_score && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold text-gray-400">Final Interview Score</span>
+                  <p className="font-bold text-gray-800">{application.final_interview_score}</p>
+                </div>
+              )}
+
+              {application?.oath_taking_date && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold text-gray-400">Oath Taking Date</span>
+                  <p className="font-bold text-blue-800">{new Date(application.oath_taking_date).toLocaleDateString(undefined, { dateStyle: 'long' })}</p>
+                </div>
+              )}
+
+              {application?.evaluation_remarks && (
+                <div className="flex flex-col gap-1 col-span-1 md:col-span-2 mt-2 p-4 bg-blue-50 border border-blue-100 rounded-lg">
+                  <span className="text-[10px] uppercase font-bold text-blue-400 mb-1">Evaluation Message / Remarks</span>
+                  <p className="text-blue-800 text-sm italic">"{application.evaluation_remarks}"</p>
                 </div>
               )}
               

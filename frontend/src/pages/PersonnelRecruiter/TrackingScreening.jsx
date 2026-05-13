@@ -9,7 +9,7 @@ const STAGES = [
     { id: 'Document Review', title: 'Doc Review', icon: <HiOutlineClipboardCheck />, colorClass: 'column-doc' },
     { id: 'Initial Screening', title: 'Initial Screening', icon: <HiOutlineChatAlt2 />, colorClass: 'column-initial' },
     { id: 'Technical Interview', title: 'Technical', icon: <HiOutlineClipboardCheck />, colorClass: 'column-technical' },
-    { id: 'Accepted', title: 'Accepted', icon: <HiOutlineBadgeCheck />, colorClass: 'column-accepted' },
+    { id: 'Qualified', title: 'Qualified', icon: <HiOutlineBadgeCheck />, colorClass: 'column-accepted' },
     { id: 'Body Mass Index', title: 'BMI', icon: <HiOutlineClipboardCheck />, colorClass: 'column-bmi' },
     { id: 'Physical Agility Test', title: 'PAT', icon: <HiOutlineClipboardCheck />, colorClass: 'column-pat' },
     { id: 'Neuro Examination', title: 'Neuro', icon: <HiOutlineChatAlt2 />, colorClass: 'column-psych' },
@@ -17,6 +17,7 @@ const STAGES = [
     { id: 'Drug Test', title: 'Drug Test', icon: <HiOutlineClipboardCheck />, colorClass: 'column-drug' },
     { id: 'Final Interview', title: 'Final Interview', icon: <HiOutlineBadgeCheck />, colorClass: 'column-final' },
     { id: 'Oath Taking', title: 'Oath Taking', icon: <HiOutlineBadgeCheck />, colorClass: 'column-oath' },
+    { id: 'Accepted', title: 'Accepted', icon: <HiOutlineBadgeCheck />, colorClass: 'column-accepted' },
     { id: 'Rejected', title: 'Rejected', icon: <HiOutlineXCircle />, colorClass: 'column-rejected' }
 ];
 
@@ -52,6 +53,7 @@ function TrackingScreening() {
             case 'Document Review': return 'card-doc';
             case 'Initial Screening': return 'card-initial';
             case 'Technical Interview': return 'card-technical';
+            case 'Qualified': return 'card-accepted';
             case 'Accepted': return 'card-accepted';
             case 'Body Mass Index': return 'card-bmi';
             case 'Physical Agility Test': return 'card-pat';

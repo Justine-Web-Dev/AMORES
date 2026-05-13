@@ -56,17 +56,18 @@ function StatusManagement({applicantId, applicantData, currentStatus, onUpdate,c
         status: selectedStatus,
         rejection_reason: selectedStatus === 'Rejected' ? rejectionReason : null,
         performed_by: currentUser,
-        drug_test_result: selectedStatus === 'Drug Test' ? drugResult : null,
-        bmi_height: selectedStatus === 'Body Mass Index' ? (bmiHeight === '' ? null : bmiHeight) : null,
-        bmi_weight: selectedStatus === 'Body Mass Index' ? (bmiWeight === '' ? null : bmiWeight) : null,
-        pat_score: selectedStatus === 'Physical Agility Test' ? (patScore === '' ? null : patScore) : null,
-        psychological_result: selectedStatus === 'Neuro Examination' ? psychologicalResult : null,
-        medical_result: selectedStatus === 'Medical' ? medicalResult : null,
-        final_interview_score: selectedStatus === 'Final Interview' ? (finalInterviewScore === '' ? null : finalInterviewScore) : null,
+        drug_test_result: drugResult || null,
+        bmi_height: bmiHeight === '' ? null : bmiHeight,
+        bmi_weight: bmiWeight === '' ? null : bmiWeight,
+        pat_score: patScore === '' ? null : patScore,
+        psychological_result: psychologicalResult || null,
+        medical_result: medicalResult || null,
+        final_interview_score: finalInterviewScore === '' ? null : finalInterviewScore,
         // Schedule
         scheduled_date: schDate || null,
         scheduled_time: schTime || null,
-        evaluation_remarks: (selectedStatus === 'Final Interview' || selectedStatus === 'Rejected') ? rejectionReason : null,
+        oath_taking_date: selectedStatus === 'Oath Taking' ? schDate : (applicantData?.oath_taking_date || null),
+        evaluation_remarks: rejectionReason || null,
       };
 
       await api.put(`users/update_status/${applicantId}/`, dataToSend);
@@ -92,12 +93,13 @@ function StatusManagement({applicantId, applicantData, currentStatus, onUpdate,c
     "New Applicant",
     "Document Review",
     "Initial Screening",
+    "Qualified",
     "Accepted",
     "Rejected"
   ];
 
   const POST_ACCEPTANCE_STATUSES = [
-    "Accepted",
+    "Qualified",
     "Body Mass Index",
     "Physical Agility Test",
     "Neuro Examination",
@@ -105,12 +107,13 @@ function StatusManagement({applicantId, applicantData, currentStatus, onUpdate,c
     "Drug Test",
     "Final Interview",
     "Oath Taking",
+    "Accepted",
     "Rejected"
   ];
 
   // Determine which list to show
-  // If current status is 'Accepted' or any of the post-acceptance stages, show the second list
-  const isPostAcceptance = currentStatus === 'Accepted' || POST_ACCEPTANCE_STATUSES.includes(currentStatus);
+  // If current status is 'Qualified' or any of the post-acceptance stages, show the second list
+  const isPostAcceptance = currentStatus === 'Qualified' || currentStatus === 'Accepted' || POST_ACCEPTANCE_STATUSES.includes(currentStatus);
   const statusOptions = isPostAcceptance ? POST_ACCEPTANCE_STATUSES : INITIAL_STATUSES;
 
   return (

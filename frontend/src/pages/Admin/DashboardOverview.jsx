@@ -9,6 +9,7 @@ function DashboardOverview() {
   const [statusCounts, setStatusCounts] = useState({
     'New Applicant': 0,
     'Screening': 0,
+    'Qualified': 0,
     'Accepted': 0,
     'Rejected': 0
   })
@@ -22,6 +23,7 @@ function DashboardOverview() {
       const statuses = {
         'New Applicant': 0,
         'Screening': 0,
+        'Qualified': 0,
         'Accepted': 0,
         'Rejected': 0
       }
@@ -37,6 +39,8 @@ function DashboardOverview() {
           statuses['New Applicant']++
         } else if (screeningStages.includes(applicant.status)) {
           statuses['Screening']++
+        } else if (applicant.status === 'Qualified') {
+          statuses['Qualified']++
         } else if (applicant.status === 'Accepted') {
           statuses['Accepted']++
         } else if (applicant.status === 'Rejected') {
@@ -80,7 +84,7 @@ function DashboardOverview() {
   const user_length = users.filter(user => user).length
   const applicant_length = applicants.filter(applicant => applicant).length
 
-  const COLORS = ['#2196F3', '#ffc007b7','#4CAF50' , '#F44336']
+  const COLORS = ['#2196F3', '#FFC107', '#6366F1', '#10B981', '#F43F5E']
 
   return (
     <div className='module-content'>
@@ -111,6 +115,12 @@ function DashboardOverview() {
             <div className='flex flex-col-reverse items-center'>
               <span className='summary-label'>Screening</span>
               <span className='summary-value'>{statusCounts['Screening']}</span>
+            </div>
+          </div>
+          <div className='admin-summary-card accepted'>
+            <div className='flex flex-col-reverse items-center'>
+              <span className='summary-label'>Qualified</span>
+              <span className='summary-value'>{statusCounts['Qualified']}</span>
             </div>
           </div>
           <div className='admin-summary-card accepted'>

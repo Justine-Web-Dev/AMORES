@@ -51,12 +51,16 @@
   border-left-color: #FFC107;
 }
 
+.stat-card.qualified {
+  border-left-color: #6366F1;
+}
+
 .stat-card.accepted {
-  border-left-color: #4CAF50;
+  border-left-color: #10B981;
 }
 
 .stat-card.rejected {
-  border-left-color: #F44336;
+  border-left-color: #F43F5E;
 }
 
 .stat-card h4 {

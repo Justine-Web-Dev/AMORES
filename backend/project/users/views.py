@@ -260,7 +260,13 @@ def track_application_status(request):
         "scheduled_time": application.scheduled_time,
         "drug_test_result": evaluation.drug_test_result if evaluation else None,
         "bmi_height": evaluation.bmi_height if evaluation else None,
-        "bmi_weight": evaluation.bmi_weight if evaluation else None
+        "bmi_weight": evaluation.bmi_weight if evaluation else None,
+        "pat_score": evaluation.pat_score if evaluation else None,
+        "psychological_result": evaluation.psychological_result if evaluation else None,
+        "medical_result": evaluation.medical_result if evaluation else None,
+        "final_interview_score": evaluation.final_interview_score if evaluation else None,
+        "oath_taking_date": application.oath_taking_date,
+        "evaluation_remarks": application.evaluation_remarks
     }, status=status.HTTP_200_OK)
   
   except Application.DoesNotExist:

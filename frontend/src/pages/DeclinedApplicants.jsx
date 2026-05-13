@@ -12,8 +12,9 @@ function DeclinedApplicants() {
   const statusColors = {
     'New Applicant': 'bg-blue-100 text-blue-600',
     'Under Review': 'bg-yellow-100 text-yellow-600',
-    'Accepted': 'bg-green-100 text-green-600',
-    'Rejected': 'bg-red-100 text-red-600',
+    'Qualified': 'bg-indigo-100 text-indigo-700',
+    'Accepted': 'bg-emerald-100 text-emerald-700',
+    'Rejected': 'bg-rose-100 text-rose-700',
   }
 
   const fetchInfo = async () => {
