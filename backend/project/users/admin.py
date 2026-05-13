@@ -1,29 +1,53 @@
 from django.contrib import admin
-from .models import User, Applicant_infos, ApplicantDocument,AuditLog
+from .models import User, Applicant, Application, Evaluation, ApplicantDocument, AuditLog, SystemSettings
 
-# Register your models here.
 class UserAdmin(admin.ModelAdmin):
-  list_display = ("name","username","role")
+    list_display = ("name", "username", "role", "is_archived")
+    search_fields = ("name", "username")
+    list_filter = ("role", "is_archived")
 
 admin.site.register(User, UserAdmin)
 
-class ApplicantAdmin(admin.ModelAdmin):
-  list_display = ("firstname","lastname","program","latin_honor","name_of_school","email", "rejection_reason","tribe_affiliated","date_graduated","created_at","tracking_code","status")
-  search_fields = ("firstname","lastname","tracking_code","email")
-  list_filter = ("status","program","date_graduated")
+class EvaluationInline(admin.StackedInline):
+    model = Evaluation
+    can_delete = False
+    verbose_name_plural = 'Evaluation Results'
 
-admin.site.register(Applicant_infos, ApplicantAdmin)
+class ApplicationInline(admin.StackedInline):
+    model = Application
+    extra = 0
+    show_change_link = True
+
+class ApplicantAdmin(admin.ModelAdmin):
+    list_display = ("first_name", "last_name", "email", "contact_number", "program", "created_at")
+    search_fields = ("first_name", "last_name", "email", "contact_number")
+    inlines = [ApplicationInline]
+
+admin.site.register(Applicant, ApplicantAdmin)
+
+class ApplicationAdmin(admin.ModelAdmin):
+    list_display = ("tracking_code", "applicant", "status", "scheduled_date", "updated_at")
+    list_filter = ("status", "scheduled_date")
+    search_fields = ("tracking_code", "applicant__first_name", "applicant__last_name")
+    inlines = [EvaluationInline]
+
+admin.site.register(Application, ApplicationAdmin)
 
 class ApplicantDocumentAdmin(admin.ModelAdmin):
-  list_display = ("applicant","document_type","file","uploaded_at")
-  search_fields = ("applicant__firstname","applicant__lastname","document_type")
-  list_filter = ("document_type","uploaded_at")
+    list_display = ("applicant", "document_type", "uploaded_at")
+    list_filter = ("document_type", "uploaded_at")
 
 admin.site.register(ApplicantDocument, ApplicantDocumentAdmin)
 
 class AuditLogAdmin(admin.ModelAdmin):
-  list_display = ["user","action","timestamp"]
-  search_fields = ["user__username","action"]
-  list_filter = ["action"]
+    list_display = ("timestamp", "get_performer", "action", "details")
+    list_filter = ("action", "timestamp")
+    search_fields = ("performer__username", "performer_name", "details")
+
+    def get_performer(self, obj):
+        return obj.performer.username if obj.performer else obj.performer_name
+    get_performer.short_description = 'Performer'
 
 admin.site.register(AuditLog, AuditLogAdmin)
+admin.site.register(SystemSettings)
+admin.site.register(Evaluation)
