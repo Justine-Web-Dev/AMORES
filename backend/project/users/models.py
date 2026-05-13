@@ -43,7 +43,8 @@ class Applicant(models.Model):
     middle_name = models.CharField(max_length=100, blank=True, verbose_name="Middle Name")
     age = models.IntegerField(default=18, verbose_name="Age")
     email = models.EmailField(max_length=200, unique=True, verbose_name="Email Address")
-    contact_number = models.CharField(max_length=11, verbose_name="Contact Number")
+    contact_number = models.CharField(max_length=11, unique=True, verbose_name="Contact Number")
+    gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')], null=True, blank=True, verbose_name="Gender")
     
     # Education
     program = models.CharField(max_length=100, verbose_name="Program/Course")
@@ -52,8 +53,8 @@ class Applicant(models.Model):
     latin_honor = models.CharField(max_length=50, null=True, blank=True, default='N/A', verbose_name="Latin Honor")
     
     # Identity & Personal
-    pag_ibig_number = models.CharField(max_length=15, verbose_name="Pag-IBIG Number")
-    phil_health_id_num = models.CharField(max_length=15, verbose_name="PhilHealth ID")
+    pag_ibig_number = models.CharField(max_length=15, unique=True, verbose_name="Pag-IBIG Number")
+    phil_health_id_num = models.CharField(max_length=15, unique=True, verbose_name="PhilHealth ID")
     height = models.CharField(max_length=10, verbose_name="Height")
     tribe = models.CharField(max_length=100, null=True, blank=True, default='N/A', verbose_name="Tribe Affiliation")
     

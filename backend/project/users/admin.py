@@ -19,8 +19,10 @@ class ApplicationInline(admin.StackedInline):
     show_change_link = True
 
 class ApplicantAdmin(admin.ModelAdmin):
-    list_display = ("first_name", "last_name", "email", "contact_number", "program", "created_at")
+    list_display = ("first_name", "last_name", "gender", "email", "contact_number", "program", "created_at")
+    list_editable = ("gender",)
     search_fields = ("first_name", "last_name", "email", "contact_number")
+    list_filter = ("gender", "program", "created_at")
     inlines = [ApplicationInline]
 
 admin.site.register(Applicant, ApplicantAdmin)
@@ -50,4 +52,9 @@ class AuditLogAdmin(admin.ModelAdmin):
 
 admin.site.register(AuditLog, AuditLogAdmin)
 admin.site.register(SystemSettings)
-admin.site.register(Evaluation)
+class EvaluationAdmin(admin.ModelAdmin):
+    list_display = ("application", "bmi_result", "pat_score", "psychological_result", "medical_result", "final_interview_score")
+    list_filter = ("bmi_result", "psychological_result", "medical_result")
+    search_fields = ("application__tracking_code", "application__applicant__last_name")
+
+admin.site.register(Evaluation, EvaluationAdmin)

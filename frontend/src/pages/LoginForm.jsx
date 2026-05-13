@@ -18,6 +18,20 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
 
+  // Prevent logged-in users from accessing the login page (handles browser back button)
+  React.useEffect(() => {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    
+    if (token) {
+      if (role === 'Admin') {
+        navigate('/Dashboard', { replace: true });
+      } else {
+        navigate('/PersonnelDashboard', { replace: true });
+      }
+    }
+  }, [navigate]);
+
   async function handleLogin(e){
     e.preventDefault()
     if (loading) return;

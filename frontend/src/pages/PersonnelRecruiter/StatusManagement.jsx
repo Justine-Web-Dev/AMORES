@@ -14,6 +14,10 @@ function StatusManagement({applicantId, applicantData, currentStatus, onUpdate,c
   const [drugResult, setDrugResult] = useState(applicantData?.drug_test_result || '')
   const [bmiHeight, setBmiHeight] = useState(applicantData?.bmi_height || '')
   const [bmiWeight, setBmiWeight] = useState(applicantData?.bmi_weight || '')
+  const [patScore, setPatScore] = useState(applicantData?.pat_score || '')
+  const [psychologicalResult, setPsychologicalResult] = useState(applicantData?.psychological_result || '')
+  const [medicalResult, setMedicalResult] = useState(applicantData?.medical_result || '')
+  const [finalInterviewScore, setFinalInterviewScore] = useState(applicantData?.final_interview_score || '')
 
   useEffect(() => {
     setSelectedStatus(currentStatus);
@@ -26,6 +30,10 @@ function StatusManagement({applicantId, applicantData, currentStatus, onUpdate,c
       setDrugResult(applicantData.drug_test_result || '');
       setBmiHeight(applicantData.bmi_height || '');
       setBmiWeight(applicantData.bmi_weight || '');
+      setPatScore(applicantData.pat_score || '');
+      setPsychologicalResult(applicantData.psychological_result || '');
+      setMedicalResult(applicantData.medical_result || '');
+      setFinalInterviewScore(applicantData.final_interview_score || '');
     }
   }, [currentStatus, currentRejectionReason, applicantData]);
 
@@ -51,9 +59,14 @@ function StatusManagement({applicantId, applicantData, currentStatus, onUpdate,c
         drug_test_result: selectedStatus === 'Drug Test' ? drugResult : null,
         bmi_height: selectedStatus === 'Body Mass Index' ? (bmiHeight === '' ? null : bmiHeight) : null,
         bmi_weight: selectedStatus === 'Body Mass Index' ? (bmiWeight === '' ? null : bmiWeight) : null,
+        pat_score: selectedStatus === 'Physical Agility Test' ? (patScore === '' ? null : patScore) : null,
+        psychological_result: selectedStatus === 'Neuro Examination' ? psychologicalResult : null,
+        medical_result: selectedStatus === 'Medical' ? medicalResult : null,
+        final_interview_score: selectedStatus === 'Final Interview' ? (finalInterviewScore === '' ? null : finalInterviewScore) : null,
         // Schedule
         scheduled_date: schDate || null,
         scheduled_time: schTime || null,
+        evaluation_remarks: (selectedStatus === 'Final Interview' || selectedStatus === 'Rejected') ? rejectionReason : null,
       };
 
       await api.put(`users/update_status/${applicantId}/`, dataToSend);
@@ -131,7 +144,7 @@ function StatusManagement({applicantId, applicantData, currentStatus, onUpdate,c
                 type="number" 
                 value={bmiHeight} 
                 onChange={(e)=>setBmiHeight(e.target.value)} 
-                className="w-full p-2 border rounded mt-1 text-sm h-[38px]" 
+                className="w-full p-2 border border-gray-300 rounded mt-1 text-sm h-[38px] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" 
                 placeholder="cm"
               />
             </div>
@@ -141,8 +154,73 @@ function StatusManagement({applicantId, applicantData, currentStatus, onUpdate,c
                 type="number" 
                 value={bmiWeight} 
                 onChange={(e)=>setBmiWeight(e.target.value)} 
-                className="w-full p-2 border rounded mt-1 text-sm h-[38px]" 
+                className="w-full p-2 border border-gray-300 rounded mt-1 text-sm h-[38px] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" 
                 placeholder="kg"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* PAT Specific Options */}
+        {selectedStatus === 'Physical Agility Test' && (
+          <div className="pt-2">
+            <label className="text-xs font-bold text-gray-500 uppercase">PAT Score (%)</label>
+            <input 
+              type="number" 
+              value={patScore} 
+              onChange={(e)=>setPatScore(e.target.value)} 
+              className="w-full p-2 border border-gray-300 rounded mt-1 text-sm h-[38px] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" 
+              placeholder="e.g. 85.5"
+            />
+          </div>
+        )}
+
+        {/* Neuro Examination Specific Option */}
+        {selectedStatus === 'Neuro Examination' && (
+          <div className="pt-2">
+            <label className="text-xs font-bold text-gray-500 uppercase">Neuro/Psychological Findings</label>
+            <textarea 
+              value={psychologicalResult} 
+              onChange={(e)=>setPsychologicalResult(e.target.value)} 
+              className="w-full p-2 border border-gray-300 rounded mt-1 text-sm min-h-[80px] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" 
+              placeholder="Enter psychological examination results..."
+            />
+          </div>
+        )}
+
+        {/* Medical Specific Option */}
+        {selectedStatus === 'Medical' && (
+          <div className="pt-2">
+            <label className="text-xs font-bold text-gray-500 uppercase">Medical Examination Findings</label>
+            <textarea 
+              value={medicalResult} 
+              onChange={(e)=>setMedicalResult(e.target.value)} 
+              className="w-full p-2 border border-gray-300 rounded mt-1 text-sm min-h-[80px] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" 
+              placeholder="Enter medical examination findings..."
+            />
+          </div>
+        )}
+
+        {/* Final Interview Specific Option */}
+        {selectedStatus === 'Final Interview' && (
+          <div className="pt-2 space-y-3">
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase">Final Interview Score (%)</label>
+              <input 
+                type="number" 
+                value={finalInterviewScore} 
+                onChange={(e)=>setFinalInterviewScore(e.target.value)} 
+                className="w-full p-2 border border-gray-300 rounded mt-1 text-sm h-[38px] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" 
+                placeholder="e.g. 92.0"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase">Interview Remarks/Message</label>
+              <textarea 
+                value={rejectionReason} 
+                onChange={(e)=>setRejectionReason(e.target.value)} 
+                className="w-full p-2 border border-gray-300 rounded mt-1 text-sm min-h-[80px] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" 
+                placeholder="Enter interview feedback or recommendation message..."
               />
             </div>
           </div>
@@ -192,10 +270,10 @@ function StatusManagement({applicantId, applicantData, currentStatus, onUpdate,c
 
       {selectedStatus === 'Rejected' && (
         <div className="mt-4">
-          <label className="text-sm font-medium">Reason for Rejection:</label>
+          <label className="text-xs font-bold text-gray-500 uppercase">Reason for Rejection</label>
           <textarea
-            className="w-full mt-1 p-2 border rounded"
-            placeholder="Enter reason..."
+            className="w-full p-2 border border-gray-300 rounded mt-1 text-sm min-h-[80px] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+            placeholder="Enter specific reason for rejection..."
             value={rejectionReason}
             onChange={(e) => setRejectionReason(e.target.value)}
           />
@@ -203,9 +281,9 @@ function StatusManagement({applicantId, applicantData, currentStatus, onUpdate,c
       )}
       <button onClick={handleUpdate}
         disabled={isUpdating}
-        className={`rounded-[4px] text-white cursor-pointer save-changes-btn mt-4 h-10 ${
-          isUpdating ? 'bg-gray-400' : 'bg-[#2C2D86]'
-        }`}>{isUpdating ? 'Saving...' : 'Save Changes'}</button>
+        className={`rounded-[4px] text-white font-semibold cursor-pointer save-changes-btn mt-6 h-11 transition-all active:scale-[0.98] ${
+          isUpdating ? 'bg-gray-400' : 'bg-[#2C2D86] hover:bg-[#1e1f5e] shadow-md hover:shadow-lg'
+        }`}>{isUpdating ? 'Saving Changes...' : 'Save Changes'}</button>
 
       <MessageModal 
         isOpen={modalConfig.isOpen}

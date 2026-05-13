@@ -158,9 +158,13 @@ def register_applicant_form(request):
         return Response({"error": "Email, Contact number, Pag-IBIG number, and PhilHealth ID are required."}, status=status.HTTP_400_BAD_REQUEST)
 
     if Applicant.objects.filter(email__iexact=email).exists():
-        return Response({"error": "Applicant with this email already exists."}, status=status.HTTP_409_CONFLICT)
+        return Response({"error": "An application with this email already exists."}, status=status.HTTP_409_CONFLICT)
     if Applicant.objects.filter(contact_number=contact_number).exists():
-        return Response({"error": "Applicant with this contact number already exists."}, status=status.HTTP_409_CONFLICT)
+        return Response({"error": "An application with this contact number already exists."}, status=status.HTTP_409_CONFLICT)
+    if Applicant.objects.filter(pag_ibig_number=pag_ibig_number).exists():
+        return Response({"error": "An application with this Pag-IBIG number already exists."}, status=status.HTTP_409_CONFLICT)
+    if Applicant.objects.filter(phil_health_id_num=phil_health_id_num).exists():
+        return Response({"error": "An application with this PhilHealth ID already exists."}, status=status.HTTP_409_CONFLICT)
 
     # Use serializer to handle data mapping (standardizes first_name/lastname etc)
     data = request.data.copy()
@@ -280,10 +284,14 @@ def get_applicant_documents(request, applicant_id):
 @api_view(['GET'])
 def get_active_applicants(request):
     # Applicants whose active_application is not 'Rejected'
-    # For simplicity, we filter applicants who have at least one application that is not rejected
-    # but a better way is to check the latest one.
-    # Given the current data, this should be fine:
     applicants = Applicant.objects.exclude(applications__status='Rejected').distinct()
+    serializer = ApplicantFullSerializer(applicants, many=True)
+    return Response(serializer.data)
+
+@api_view(['GET'])
+def get_all_applicants(request):
+    # Fetch all applicants including declined/rejected ones
+    applicants = Applicant.objects.all().order_by('-created_at')
     serializer = ApplicantFullSerializer(applicants, many=True)
     return Response(serializer.data)
 

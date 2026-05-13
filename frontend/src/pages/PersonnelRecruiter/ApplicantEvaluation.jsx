@@ -2,6 +2,9 @@ import React, { useState } from 'react'
 import { api } from '../../../api/api'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import * as XLSX from 'xlsx'
+import { RiFileExcel2Line } from "react-icons/ri"
+import { HiOutlineClipboardCheck } from "react-icons/hi"
 import './ApplicantEval.css'
 
 function ApplicantEvaluation() {
@@ -31,7 +34,7 @@ function ApplicantEvaluation() {
 
   const fetchInfo = async () =>{
       try {
-        const response = await api.get("users/applicants/active")
+        const response = await api.get("users/applicants/all")
         setApplicantInfo(response.data)
         console.log(response.data)
       } catch (err) {
@@ -55,29 +58,107 @@ function ApplicantEvaluation() {
 
   const filteredAndSorted = applicantInfo
   .filter((applicant) => {
-    // 1. Filter by Search Term (Name)
+    // 1. ALWAYS exclude Rejected from the table display as per user request
+    if (applicant.status === 'Rejected') return false;
+
+    // 2. Filter by Search Term (Name)
     const fullName = `${applicant.firstname} ${applicant.lastname} ${applicant.middle_initial || ''}`.toLowerCase();
     const matchesSearch = fullName.includes(searchTerm.toLowerCase());
 
-    // 2. Filter by Status Dropdown
+    // 3. Filter by Status Dropdown
     const matchesStatus = statusFilter === 'All' || applicant.status === statusFilter;
 
     return matchesSearch && matchesStatus;
   })
   .sort((a, b) => {
-    // 3. Sorting Logic
+    // 4. Sorting Logic
     if (sortBy === 'name') {
       const nameA = `${a.firstname} ${a.lastname}`.toLowerCase();
       const nameB = `${b.firstname} ${b.lastname}`.toLowerCase();
       return nameA.localeCompare(nameB);
     } else if (sortBy === 'date') {
-      // Sorts by newest date first (descending)
       const dateA = new Date(a.created_at);
       const dateB = new Date(b.created_at);
       return dateB - dateA;
     }
     return 0;
   });
+
+  const handleExportExcel = () => {
+    // For Excel, we use the FULL list (applicantInfo) including Rejected ones
+    // But we still apply the search/status filters if the user has them set, 
+    // EXCEPT we don't force-exclude Rejected in the file.
+    
+    const dataForExport = applicantInfo.filter(applicant => {
+       const fullName = `${applicant.firstname} ${applicant.lastname} ${applicant.middle_initial || ''}`.toLowerCase();
+       const matchesSearch = fullName.includes(searchTerm.toLowerCase());
+       const matchesStatus = statusFilter === 'All' || applicant.status === statusFilter;
+       return matchesSearch && matchesStatus;
+    });
+
+    const exportData = dataForExport.map(applicant => ({
+      // Personal & Identity
+      'Tracking Code': applicant.tracking_code,
+      'First Name': applicant.firstname,
+      'Last Name': applicant.lastname,
+      'Middle Name': applicant.middle_name || 'N/A',
+      'Age': applicant.age,
+      'Gender': applicant.gender || 'N/A', // If you have this field
+      'Email': applicant.email,
+      'Contact #': applicant.cp_number,
+      'Height': applicant.height,
+      'Tribe': applicant.tribe || 'N/A',
+      'Pag-IBIG No.': applicant.pag_ibig_number,
+      'PhilHealth ID': applicant.phil_health_id_num,
+      
+      // Educational Background
+      'School Name': applicant.name_of_school,
+      'Program/Course': applicant.program,
+      'Date Graduated': applicant.date_graduated,
+      'Latin Honor': applicant.latin_honor || 'N/A',
+      
+      // Application Status & Logistics
+      'Current Status': applicant.status,
+      'Rejection Reason': applicant.rejection_reason || 'N/A',
+      'Next Scheduled Date': applicant.scheduled_date || 'N/A',
+      'Next Scheduled Time': applicant.scheduled_time || 'N/A',
+      'Oath Taking Date': applicant.oath_taking_date || 'N/A',
+      'Evaluation Remarks': applicant.evaluation_remarks || 'N/A',
+      
+      // Screening & Assessment Results
+      'BMI Height (cm)': applicant.bmi_height || 'N/A',
+      'BMI Weight (kg)': applicant.bmi_weight || 'N/A',
+      'BMI Result': applicant.bmi_result || 'N/A',
+      'PAT Score (%)': applicant.pat_score || 'N/A',
+      'Neuro/Psych Results': applicant.psychological_result || 'N/A',
+      'Medical Findings': applicant.medical_result || 'N/A',
+      'Drug Test Result': applicant.drug_test_result || 'N/A',
+      'Final Interview Score (%)': applicant.final_interview_score || 'N/A',
+      
+      // Metadata
+      'Registration Date': applicant.created_at
+    }));
+
+    // Create workbook and worksheet
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Master Applicant List");
+
+    // Comprehensive column widths
+    const wscols = [
+      {wch: 15}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 5}, {wch: 10}, 
+      {wch: 30}, {wch: 15}, {wch: 10}, {wch: 20}, {wch: 15}, {wch: 15},
+      {wch: 30}, {wch: 30}, {wch: 15}, {wch: 15}, 
+      {wch: 25}, {wch: 30}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 40},
+      {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 40}, {wch: 40}, {wch: 15}, {wch: 20},
+      {wch: 15}
+    ];
+    worksheet['!cols'] = wscols;
+
+    // Generate and download
+    const fileName = `Applicant_Master_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
 
   return (
     <div>
@@ -113,6 +194,15 @@ function ApplicantEvaluation() {
             <option value="date">Sort by Date</option>
             <option value="name">Sort by Name</option>
           </select>
+
+          <button 
+            onClick={handleExportExcel}
+            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-all shadow-sm active:scale-95 text-sm font-medium"
+            title="Export to Excel"
+          >
+            <RiFileExcel2Line size={40}/>
+            Export to Excel
+          </button>
         </div>
 
         <div className="shadow sm:rounded-lg border border-gray-200">
@@ -121,6 +211,7 @@ function ApplicantEvaluation() {
               <tr>
                 <th scope="col" className="th">Name</th>
                 <th scope="col" className="th text-center">Age</th>
+                <th scope="col" className="th text-center">Gender</th>
                 <th scope="col" className="th">Program</th>
                 <th scope="col" className="th">Name of School</th>
                 <th scope="col" className="th whitespace-nowrap">Date Graduated</th>
@@ -136,6 +227,7 @@ function ApplicantEvaluation() {
                   <tr key={applicant.id} className="hover:bg-gray-50 transition-colors text-center">
                     <td>{applicant.firstname} {applicant.lastname} {applicant.middle_initial}</td>
                     <td>{applicant.age}</td>
+                    <td>{applicant.gender}</td>
                     <td>{applicant.program}</td>
                     <td>{applicant.name_of_school}</td>
                     <td>{applicant.date_graduated}</td>

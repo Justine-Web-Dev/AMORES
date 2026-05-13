@@ -5,7 +5,7 @@ import './FormCss.css'
 function Form() {
   const navigate = useNavigate()
   const [formData, setFormData] = useState({
-    lastname: '', firstname: '', middle_name: '', age: '',
+    lastname: '', firstname: '', middle_name: '', age: '', gender: '',
     cp_number: '', program: '', name_of_school: '',
     date_graduated: '', email: '', latin_honor: '',
     pag_ibig_number: '', phil_health_id_num: '', height: '', tribe_affiliated: ''
@@ -38,7 +38,7 @@ function Form() {
   }
 
   const requiredFields = [
-    'lastname', 'firstname', 'middle_name', 'age', 'cp_number',
+    'lastname', 'firstname', 'middle_name', 'age', 'gender', 'cp_number',
     'program', 'name_of_school', 'date_graduated', 'email',
     'pag_ibig_number', 'phil_health_id_num', 'height'
   ]
@@ -85,6 +85,21 @@ function Form() {
               value={formData.age}
               onChange={handleChange}
               className="border rounded px-3 py-2 text-sm w-full" type="number" placeholder="Age" required />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-gray-600">Gender</label>
+            <select
+              name='gender'
+              value={formData.gender}
+              onChange={handleChange}
+              className="border rounded px-3 py-2 text-sm w-full bg-white cursor-pointer" required
+            >
+              <option value="">Select Gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
           </div>
 
           <div className="flex flex-col gap-1">
@@ -172,8 +187,7 @@ function Form() {
               className="border rounded px-3 py-2 text-sm w-full" type="text" placeholder="Height" required />
           </div>
 
-          
-          <div className="flex flex-col gap-1 md:col-span-3">
+          <div className="flex flex-col gap-1 md:col-span-2">
             <label className="text-sm text-gray-600">Tribe affiliated <span className='px-2 rounded bg-gray-200'>optional</span></label>
             <input 
               name='tribe_affiliated'
@@ -181,6 +195,8 @@ function Form() {
               onChange={handleChange}
               className="border rounded px-3 py-2 text-sm w-full" type="text" placeholder="Tribe affiliated"  />
           </div>
+
+          
 
           
           <div className="md:col-span-3 flex justify-center md:justify-end mt-4">

@@ -12,8 +12,24 @@ import ViewDetails from '../ViewDetails'
 import Form from '../Form/Form'
 import DocumentSubmission from '../Form/DocumentSubmission'
 import SubmitApplicationModal from '../../Modals/SubmitApplicationModal'
+import { useEffect } from 'react'
 
 function PersonnelDashboard() {
+  // Advanced Double-Buffered History Guard: Prevents exiting to New Tab
+  useEffect(() => {
+    const lockHistory = () => {
+      window.history.forward();
+    };
+
+    // Create the buffer
+    window.history.pushState(null, null, window.location.href);
+    
+    // Listen for back-button attempts
+    window.addEventListener('popstate', lockHistory);
+
+    return () => window.removeEventListener('popstate', lockHistory);
+  }, []);
+
   return (
     <div className='PersonnelDashboard'>
       <SidebarRecruiter />

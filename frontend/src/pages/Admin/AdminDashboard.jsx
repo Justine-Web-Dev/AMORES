@@ -17,6 +17,21 @@ import SubmitApplicationModal from '../../Modals/SubmitApplicationModal'
 import Logout from '../../Modals/Logout'
 
 function AdminDashboard() {
+  // Advanced Double-Buffered History Guard: Prevents exiting to New Tab
+  React.useEffect(() => {
+    const lockHistory = () => {
+      window.history.forward();
+    };
+
+    // Create the buffer
+    window.history.pushState(null, null, window.location.href);
+    
+    // Listen for back-button attempts
+    window.addEventListener('popstate', lockHistory);
+
+    return () => window.removeEventListener('popstate', lockHistory);
+  }, []);
+
   return (
     <div className='AdminDashboard'>
       <Sidebar />

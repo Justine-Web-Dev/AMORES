@@ -83,6 +83,7 @@ function DeclinedApplicants() {
               <tr>
                 <th scope="col" className="th">Name</th>
                 <th scope="col" className="th text-center">Age</th>
+                <th scope="col" className="th text-center">Gender</th>
                 <th scope="col" className="th">Program</th>
                 <th scope="col" className="th">Name of School</th>
                 <th scope="col" className="th whitespace-nowrap">Date Graduated</th>
@@ -99,6 +100,7 @@ function DeclinedApplicants() {
                   <tr key={applicant.id} className="hover:bg-gray-50 transition-colors text-center">
                     <td>{applicant.firstname} {applicant.lastname} {applicant.middle_initial}</td>
                     <td>{applicant.age}</td>
+                    <td>{applicant.gender}</td>
                     <td>{applicant.program}</td>
                     <td>{applicant.name_of_school}</td>
                     <td>{applicant.date_graduated}</td>
