@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { api } from '../../../api/api'
+import MessageModal from '../../Modals/MessageModal'
 
 function SystemSettings() {
   const [isApplicationOpen, setIsApplicationOpen] = useState(true);
@@ -8,6 +9,7 @@ function SystemSettings() {
   const [currentBatch, setCurrentBatch] = useState(1);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showModal, setShowModal] = useState({ show: false, type: 'success', title: '', message: '' });
 
   useEffect(() => {
     fetchSettings();
@@ -46,10 +48,9 @@ function SystemSettings() {
         is_application_open: isApplicationOpen,
         application_start_date: startDate || null,
         application_end_date: endDate || null,
-        performed_by: currentUser // Pass the user explicitly
+        performed_by: currentUser 
       });
       
-      // Update local state with the returned data (including potential batch increment)
       if (response.data) {
         setIsApplicationOpen(response.data.is_application_open);
         setStartDate(response.data.application_start_date || '');
@@ -57,10 +58,20 @@ function SystemSettings() {
         setCurrentBatch(response.data.current_batch || 1);
       }
       
-      alert("Settings saved successfully!");
+      setShowModal({
+        show: true,
+        type: 'success',
+        title: 'Settings Saved',
+        message: 'System settings have been updated successfully.'
+      });
     } catch (error) {
       console.error("Error saving settings:", error);
-      alert("Failed to save settings.");
+      setShowModal({
+        show: true,
+        type: 'error',
+        title: 'Save Failed',
+        message: 'Failed to save system settings. Please try again.'
+      });
     } finally {
       setSaving(false);
     }
@@ -85,9 +96,9 @@ function SystemSettings() {
               <span className="w-2 h-6 bg-[#EB612A] rounded-full"></span>
               Recruitment Management
             </h3>
-            <div className="bg-blue-50 px-4 py-2 rounded-lg border border-blue-100 flex items-center gap-3">
-              <span className="text-blue-600 text-sm font-bold uppercase tracking-wider">Current Active Batch</span>
-              <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-lg font-black shadow-sm">
+            <div className="bg-[#2C2D86]/10 px-4 py-2 rounded-lg border border-[#2C2D86]/20 flex items-center gap-3">
+              <span className="text-[#2C2D86] text-sm font-bold uppercase tracking-wider">Current Active Batch</span>
+              <span className="bg-[#2C2D86] text-white px-3 py-1 rounded-full text-lg font-black shadow-sm">
                 {currentBatch}
               </span>
             </div>
@@ -150,6 +161,14 @@ function SystemSettings() {
         </div>
         </div>
       )}
+
+      <MessageModal 
+        isOpen={showModal.show}
+        onClose={() => setShowModal({ ...showModal, show: false })}
+        type={showModal.type}
+        title={showModal.title}
+        message={showModal.message}
+      />
     </div>
   )
 }

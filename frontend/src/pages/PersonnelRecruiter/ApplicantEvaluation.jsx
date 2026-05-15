@@ -85,6 +85,10 @@ function ApplicantEvaluation() {
       const dateA = new Date(a.created_at);
       const dateB = new Date(b.created_at);
       return dateB - dateA;
+    }else if(sortBy === 'batch1'){
+      return (a.batch || 0) - (b.batch || 0);
+    }else if(sortBy === 'batch2'){
+      return (b.batch || 0) - (a.batch || 0);
     }
     return 0;
   });
@@ -193,9 +197,12 @@ function ApplicantEvaluation() {
             <option value="Oath Taking">Oath Taking</option>
             <option value="Rejected">Rejected</option>
           </select>
+
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="sort-select">
             <option value="date">Sort by Date</option>
             <option value="name">Sort by Name</option>
+            <option value="batch1">Sort by Batch 1</option>
+            <option value="batch2">Sort by Batch 2</option>
           </select>
 
           <button 
