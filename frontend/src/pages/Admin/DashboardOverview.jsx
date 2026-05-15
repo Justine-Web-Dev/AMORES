@@ -13,6 +13,8 @@ function DashboardOverview() {
   // Analytics States
   const [statusData, setStatusData] = useState([])
   const [statusCounts, setStatusCounts] = useState({})
+  const [selectedBatch, setSelectedBatch] = useState('All')
+  const [batches, setBatches] = useState([])
   const [monthlyData, setMonthlyData] = useState([])
   const [metrics, setMetrics] = useState({
     genderData: [],
@@ -34,7 +36,11 @@ function DashboardOverview() {
         setApplicants(applicantsData)
         setUsers(usersRes.data)
         
-        processMetrics(applicantsData)
+        // Extract unique batches
+        const uniqueBatches = [...new Set(applicantsData.map(a => a.batch || 1))].sort((a, b) => b - a)
+        setBatches(uniqueBatches)
+        
+        processMetrics(applicantsData, 'All')
       } catch (err) {
         console.error("Error fetching dashboard overview data:", err)
       } finally {
@@ -44,7 +50,12 @@ function DashboardOverview() {
     fetchDashboardData()
   }, [])
 
-  const processMetrics = (data) => {
+  const processMetrics = (allData, batchFilter) => {
+    let data = allData
+    if (batchFilter !== 'All') {
+      data = allData.filter(a => (a.batch || 1) === parseInt(batchFilter))
+    }
+    
     // 1. Status Breakdown
     const statuses = {
       'New Applicant': 0,
@@ -150,12 +161,32 @@ function DashboardOverview() {
 
   if (loading) return <div className='p-10 text-center'>Loading Dashboard Overview...</div>
 
+  const handleBatchChange = (e) => {
+    const val = e.target.value
+    setSelectedBatch(val)
+    processMetrics(applicants, val)
+  }
+
   return (
     <div className='module-content'>
       <div className="flex justify-between items-center mb-6 lg:mb-8">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
           <p className="text-gray-500">System metrics and recruitment analytics at a glance.</p>
+        </div>
+        
+        <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-lg border border-gray-100">
+          <label className="text-sm font-bold text-gray-600 uppercase tracking-tight">Filter by Batch:</label>
+          <select 
+            value={selectedBatch} 
+            onChange={handleBatchChange}
+            className="bg-white border border-gray-200 rounded px-4 py-1.5 text-sm font-medium outline-none focus:ring-2 focus:ring-[#2C2D86] shadow-sm"
+          >
+            <option value="All">All Batches</option>
+            {batches.map(b => (
+              <option key={b} value={b}>Batch {b}</option>
+            ))}
+          </select>
         </div>
       </div>
 

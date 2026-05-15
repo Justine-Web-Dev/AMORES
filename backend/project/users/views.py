@@ -175,8 +175,11 @@ def register_applicant_form(request):
     serializer = ApplicantSerializer(data=data)
     if serializer.is_valid():
        applicant = serializer.save()
-       # Create initial application
-       application = Application.objects.create(applicant=applicant)
+       # Create initial application with current batch
+       settings_obj = SystemSettings.objects.first()
+       current_batch = settings_obj.current_batch if settings_obj else 1
+       
+       application = Application.objects.create(applicant=applicant, batch=current_batch)
        # Create initial evaluation linked to application
        Evaluation.objects.create(application=application)
        
@@ -304,18 +307,47 @@ def get_all_applicants(request):
 @api_view(['GET'])
 def get_system_settings(request):
     settings_obj, created = SystemSettings.objects.get_or_create(id=1)
+    
+    # Auto-close if end date passed
+    today = datetime.date.today()
+    if settings_obj.is_application_open and settings_obj.application_end_date and today > settings_obj.application_end_date:
+        settings_obj.is_application_open = False
+        settings_obj.save()
+        create_audit_log(None, 'SYSTEM', "Applications automatically closed (End date reached).", performer_name='System')
+
     serializer = SystemSettingsSerializer(settings_obj)
     return Response(serializer.data)
 
 @api_view(['PUT'])
 def update_system_settings(request):
     settings_obj, created = SystemSettings.objects.get_or_create(id=1)
+    
+    # Check for batch increment triggers:
+    # 1. Manual toggle from False to True
+    was_closed = not settings_obj.is_application_open
+    is_opening_manually = request.data.get('is_application_open') == True or request.data.get('is_application_open') == 'true'
+    
+    # 2. Date range change (new start date set after old end date passed)
+    new_start_str = request.data.get('application_start_date')
+    new_start_date = datetime.datetime.strptime(new_start_str, '%Y-%m-%d').date() if new_start_str else None
+    
+    is_new_date_range = False
+    if new_start_date and settings_obj.application_end_date:
+        if new_start_date > settings_obj.application_end_date:
+            is_new_date_range = True
+
+    if (was_closed and is_opening_manually) or is_new_date_range:
+        # Increment batch number
+        settings_obj.current_batch += 1
+        settings_obj.save()
+        create_audit_log(None, 'BATCH_INCREMENT', f"New recruitment batch started: Batch {settings_obj.current_batch}", performer_name='System')
+
     serializer = SystemSettingsSerializer(settings_obj, data=request.data)
     if serializer.is_valid():
         serializer.save()
         performer_username = get_user_from_request(request)
         performer = User.objects.filter(username=performer_username).first()
-        create_audit_log(performer, 'SETTINGS_UPDATE', "System settings updated.", performer_name=performer_username if not performer else None)
+        create_audit_log(performer, 'SETTINGS_UPDATE', f"System settings updated. Current Batch: {settings_obj.current_batch}", performer_name=performer_username if not performer else None)
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

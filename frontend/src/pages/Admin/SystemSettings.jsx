@@ -5,6 +5,7 @@ function SystemSettings() {
   const [isApplicationOpen, setIsApplicationOpen] = useState(true);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [currentBatch, setCurrentBatch] = useState(1);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -18,6 +19,7 @@ function SystemSettings() {
       setIsApplicationOpen(response.data.is_application_open);
       setStartDate(response.data.application_start_date || '');
       setEndDate(response.data.application_end_date || '');
+      setCurrentBatch(response.data.current_batch || 1);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching settings:", error);
@@ -40,12 +42,21 @@ function SystemSettings() {
         }
       }
 
-      await api.put('/users/system-settings/update/', {
+      const response = await api.put('/users/system-settings/update/', {
         is_application_open: isApplicationOpen,
         application_start_date: startDate || null,
         application_end_date: endDate || null,
         performed_by: currentUser // Pass the user explicitly
       });
+      
+      // Update local state with the returned data (including potential batch increment)
+      if (response.data) {
+        setIsApplicationOpen(response.data.is_application_open);
+        setStartDate(response.data.application_start_date || '');
+        setEndDate(response.data.application_end_date || '');
+        setCurrentBatch(response.data.current_batch || 1);
+      }
+      
       alert("Settings saved successfully!");
     } catch (error) {
       console.error("Error saving settings:", error);
@@ -69,10 +80,27 @@ function SystemSettings() {
       ) : (
         <div className="system-settings-container bg-white p-10 rounded-xl shadow-md border border-gray-100 max-w-6xl">
         <div className="settings-section mb-10">
-          <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-[#2C2D86]">
-            <span className="w-2 h-6 bg-[#EB612A] rounded-full"></span>
-            Recruitment Management
-          </h3>
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-lg font-bold flex items-center gap-2 text-[#2C2D86]">
+              <span className="w-2 h-6 bg-[#EB612A] rounded-full"></span>
+              Recruitment Management
+            </h3>
+            <div className="bg-blue-50 px-4 py-2 rounded-lg border border-blue-100 flex items-center gap-3">
+              <span className="text-blue-600 text-sm font-bold uppercase tracking-wider">Current Active Batch</span>
+              <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-lg font-black shadow-sm">
+                {currentBatch}
+              </span>
+            </div>
+          </div>
+          
+          {!isApplicationOpen && (
+            <div className="mb-6 p-4 bg-orange-50 border border-orange-100 rounded-lg flex items-center gap-3 text-orange-700 text-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              <span>Opening the application will automatically start <strong>Batch {currentBatch + 1}</strong>.</span>
+            </div>
+          )}
 
           <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="date-input-group">

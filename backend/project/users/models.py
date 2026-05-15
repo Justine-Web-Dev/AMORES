@@ -102,6 +102,7 @@ class Application(models.Model):
     scheduled_time = models.TimeField(null=True, blank=True, verbose_name="Scheduled Time")
     evaluation_remarks = models.TextField(null=True, blank=True, verbose_name="Evaluation Remarks")
     oath_taking_date = models.DateField(null=True, blank=True, verbose_name="Oath Taking Date")
+    batch = models.IntegerField(default=1, verbose_name="Batch Number")
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -147,6 +148,7 @@ class SystemSettings(models.Model):
     is_application_open = models.BooleanField(default=True, verbose_name="Is Application Open")
     application_start_date = models.DateField(null=True, blank=True, verbose_name="Start Date")
     application_end_date = models.DateField(null=True, blank=True, verbose_name="End Date")
+    current_batch = models.IntegerField(default=1, verbose_name="Current Batch")
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:

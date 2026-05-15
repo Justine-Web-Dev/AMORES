@@ -81,6 +81,7 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
     scheduled_time = serializers.SerializerMethodField()
     evaluation_remarks = serializers.SerializerMethodField()
     oath_taking_date = serializers.SerializerMethodField()
+    batch = serializers.SerializerMethodField()
     
     # Flattened Evaluation Fields (Safely handle missing evaluations)
     bmi_height = serializers.SerializerMethodField()
@@ -101,7 +102,7 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
             'phil_health_id_num', 'height', 'tribe', 'created_at',
             'firstname', 'lastname', 'cp_number', 'middle_initial',
             'status', 'tracking_code', 'rejection_reason', 'scheduled_date', 
-            'scheduled_time', 'evaluation_remarks', 'oath_taking_date',
+            'scheduled_time', 'evaluation_remarks', 'oath_taking_date', 'batch',
             'bmi_height', 'bmi_weight', 'bmi_result', 'pat_score', 
             'psychological_result', 'medical_result', 'drug_test_result', 
             'final_interview_score'
@@ -151,6 +152,10 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
     def get_oath_taking_date(self, obj):
         app = self._get_app(obj)
         return app.oath_taking_date if app else None
+
+    def get_batch(self, obj):
+        app = self._get_app(obj)
+        return app.batch if app else 1
 
     def get_bmi_height(self, obj):
         eval_obj = self._get_eval(obj)

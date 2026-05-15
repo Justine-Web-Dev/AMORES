@@ -121,6 +121,7 @@ function ApplicantEvaluation() {
       
       // Application Status & Logistics
       'Current Status': applicant.status,
+      'Batch': applicant.batch || 1,
       'Rejection Reason': applicant.rejection_reason || 'N/A',
       'Next Scheduled Date': applicant.scheduled_date || 'N/A',
       'Next Scheduled Time': applicant.scheduled_time || 'N/A',
@@ -219,6 +220,7 @@ function ApplicantEvaluation() {
                 <th scope="col" className="th whitespace-nowrap">Date Graduated</th>
                 <th scope="col" className="th text-center">Status</th>
                 <th scope="col" className="th text-center">Applied On</th>
+                <th scope="col" className="th text-center">Batch</th>
                 <th scope="col" className="th">Actions</th>
               </tr>
             </thead>
@@ -226,7 +228,7 @@ function ApplicantEvaluation() {
             <tbody className="divide-y divide-gray-200 bg-white">
               {loading ? (
                 <tr>
-                 <td colSpan="9" className="px-4 py-10">
+                 <td colSpan="10" className="px-4 py-10">
                   <div className="flex justify-center items-center w-full">
                     <div className='border-[4px] border-gray-100 border-t-[#2C2D86] h-[30px] w-[30px] rounded-full animate-spin'></div>
                   </div>
@@ -247,6 +249,7 @@ function ApplicantEvaluation() {
                       </span>
                     </td>
                     <td>{applicant.created_at}</td>
+                    <td className="font-bold text-[#2C2D86]">B{applicant.batch || 1}</td>
                     <td className="px-4 py-4 text-center relative">
                       <div className="flex justify-center items-center">
                         <button 
@@ -280,7 +283,7 @@ function ApplicantEvaluation() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="9" className="py-10 text-gray-500 italic">
+                  <td colSpan="10" className="py-10 text-gray-500 italic">
                     No applicants registered
                   </td>
                 </tr>
