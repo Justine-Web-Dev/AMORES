@@ -6,9 +6,17 @@
 
 .main-content {
   margin-left: 280px;
-  padding: 20px;
+  padding: 25px 30px;
   flex: 1;
   overflow-y: auto;
+  transition: all 0.3s ease;
+}
+
+@media (max-width: 1366px) {
+  .main-content {
+    margin-left: 260px;
+    padding: 20px 25px;
+  }
 }
 
 .module-content {
@@ -63,6 +71,25 @@
   border-left-color: #F43F5E;
 }
 
+.stat-card.bmi {
+  border-left-color: #3B82F6;
+}
+
+.stat-card.pat {
+  border-left-color: #F97316;
+}
+
+.stat-card.drug-test {
+  border-left-color: #F59E0B;
+}
+
+@media (max-width: 1366px) {
+  .stat-card {
+    min-width: 150px !important;
+    padding: 15px !important;
+  }
+}
+
 .stat-card h4 {
   margin: 0 0 10px 0;
   font-size: 0.9rem;
@@ -78,8 +105,15 @@
 .personnel-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 15px;
+  gap: 1.25rem;
   margin-top: 20px;
+}
+
+@media (max-width: 1366px) {
+  .personnel-stats {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
 }
 
 /* Evaluation Dashboard Section */
