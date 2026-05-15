@@ -7,6 +7,7 @@ function DeclinedApplicants() {
   const [sortBy, setSortBy] = useState('date')
   const [applicantInfo, setApplicantInfo] = useState([])
   const [open, setOpen] = useState(null)
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
   const statusColors = {
@@ -17,19 +18,22 @@ function DeclinedApplicants() {
     'Rejected': 'bg-rose-100 text-rose-700',
   }
 
-  const fetchInfo = async () => {
+  const fetchInfo = async (isSilent = false) => {
+    !isSilent && setLoading(true)
     try {
       const response = await api.get('users/get_applicant_info')
       setApplicantInfo(response.data)
     } catch (err) {
       console.error('Error fetching applicant info:', err)
+    }finally{
+      setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchInfo()
+    fetchInfo(false)
     const interval = setInterval(() => {
-      fetchInfo()
+      fetchInfo(true)
     }, 5000)
 
     return () => clearInterval(interval)
@@ -96,7 +100,15 @@ function DeclinedApplicants() {
             </thead>
 
             <tbody className="divide-y divide-gray-200 bg-white">
-              {filteredAndSorted.length > 0 ? (
+              {loading ? (
+                <tr>
+                 <td colSpan="10" className="px-4 py-10">
+                  <div className="flex justify-center items-center w-full">
+                    <div className='border-[4px] border-gray-100 border-t-[#2C2D86] h-[30px] w-[30px] rounded-full animate-spin'></div>
+                  </div>
+                </td>
+                </tr>
+              ) : filteredAndSorted.length > 0 ? (
                 filteredAndSorted.map((applicant) => (
                   <tr key={applicant.id} className="hover:bg-gray-50 transition-colors text-center">
                     <td>{applicant.firstname} {applicant.lastname} {applicant.middle_initial}</td>
@@ -106,15 +118,15 @@ function DeclinedApplicants() {
                     <td>{applicant.name_of_school}</td>
                     <td>{applicant.date_graduated}</td>
                     <td>
-                      <span className={`status-label px-2 py-1 rounded-full text-xs font-semibold ${statusColors[applicant.status] || 'bg-gray-100 text-gray-600'}`}>
+                      <span className={`status-label px-2 py-1 rounded-full text-xs font-semibold ${statusColors[applicant.status] || "bg-gray-100 text-gray-600"}`}>
                         {applicant.status}
                       </span>
                     </td>
-                    <td>{applicant.rejection_reason}</td>
+                    <td>{applicant.rejection_reason || "N/A"}</td>
                     <td>{applicant.created_at}</td>
                     <td className="px-4 py-4 text-center relative">
                       <div className="flex justify-center items-center">
-                        <button
+                        <button 
                           onClick={() => toggleMenu(applicant.id)}
                           className="flex items-center justify-center w-9 h-9 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all duration-200 active:scale-95"
                           title="More Options"
@@ -127,16 +139,14 @@ function DeclinedApplicants() {
                         <div className="absolute right-10 z-10 w-40 bg-white shadow-lg border border-gray-100 rounded-md actions">
                           <ul className="flex flex-col text-[14px] gap-[5px]">
                             <h1 className='font-bold text-black border-b pb-1 border-gray-200 action-title'>Actions</h1>
-                            <button
+                            <button 
                               onClick={() => navigate(`../view-details/${applicant.id}`)}
-                              className="text-left px-2 py-1 cursor-pointer view-details-btn-action"
-                            >
+                              className="text-left px-2 py-1 cursor-pointer view-details-btn-action">
                               View Details
                             </button>
-                            <button
+                            <button 
                               onClick={() => navigate(`../view-details/${applicant.id}`)}
-                              className="text-left cursor-pointer view-details-btn-action"
-                            >
+                              className="text-left  cursor-pointer view-details-btn-action">
                               Update Status
                             </button>
                           </ul>
@@ -147,7 +157,7 @@ function DeclinedApplicants() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" className="py-10 text-gray-500 italic col-8">
+                  <td colSpan="10" className="py-10 text-gray-500 italic">
                     No declined applicants found.
                   </td>
                 </tr>

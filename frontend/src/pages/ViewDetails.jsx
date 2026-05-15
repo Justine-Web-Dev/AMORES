@@ -10,7 +10,7 @@ import StatusManagement from './PersonnelRecruiter/StatusManagement'
 import ApplicantInfoView from './ApplicantInfoView'
 
 import { api } from '../../api/api'
-import { useParams } from 'react-router'
+import { useParams, useLocation } from 'react-router'
 import ViewDocumentSubmitted from '../ViewDocumentSubmitted';
 
 function ViewDetails() {
@@ -51,8 +51,18 @@ function ViewDetails() {
       fetchApplicantDetails()
     },[id]) 
 
+    const location = useLocation();
+    
     const handleBack = () =>{
-      navigate(-1)
+      // If there is history to go back to, use it
+      if (window.history.state && window.history.state.idx > 0) {
+        navigate(-1);
+      } else {
+        // Fallback: determine the correct applications path based on the current dashboard
+        const isDashboard = location.pathname.startsWith('/Dashboard');
+        const fallbackPath = isDashboard ? '/Dashboard/applications' : '/PersonnelDashboard/applications';
+        navigate(fallbackPath);
+      }
     }
 
 
@@ -63,9 +73,9 @@ function ViewDetails() {
     <div className=' ViewDetails'>
         <button
         onClick={handleBack}
-         className='flex items-center justify-between cursor-pointer back-btn'>
+         className='flex items-center gap-1 cursor-pointer back-btn'>
           <HiArrowNarrowLeft size={25}/>
-           Back to Applicants
+            <span className='text-md'>Back to Applications</span>
         </button>
 
       <div className='module-content max-w-7xl mx-auto'>

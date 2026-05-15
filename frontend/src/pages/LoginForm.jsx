@@ -1,4 +1,4 @@
-import React, {  useState } from 'react'
+import React, {  useState, useEffect   } from 'react'
 import './LoginForm.css'
 import {useNavigate} from 'react-router-dom'
 import { api } from '../../api/api'
@@ -19,7 +19,7 @@ function LoginForm() {
   const navigate = useNavigate()
 
   // Prevent logged-in users from accessing the login page (handles browser back button)
-  React.useEffect(() => {
+  useEffect(() => {
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
     

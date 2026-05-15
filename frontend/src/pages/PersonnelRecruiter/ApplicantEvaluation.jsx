@@ -11,6 +11,7 @@ function ApplicantEvaluation() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('All')
   const [sortBy, setSortBy] = useState('name')
+  const [loading,setLoading] = useState(false)
   const navigate = useNavigate()
 
   const statusColors = {
@@ -33,20 +34,23 @@ function ApplicantEvaluation() {
  const [applicantInfo,setApplicantInfo] = useState([])
  const [open,setOpen] = useState(null)
 
-  const fetchInfo = async () =>{
+  const fetchInfo = async (isSilent = false) =>{
+      !isSilent && setLoading(true)
       try {
         const response = await api.get("users/applicants/all")
         setApplicantInfo(response.data)
         console.log(response.data)
       } catch (err) {
         console.error("Error fetching applicant info:", err)
+      }finally{
+        setLoading(false)
       }
     }
 
   useEffect(()=>{
-    fetchInfo()
+    fetchInfo(false)
     const interval = setInterval(()=>{
-      fetchInfo()
+      fetchInfo(true)
     },5000)
 
     return () => clearInterval(interval)
@@ -86,9 +90,6 @@ function ApplicantEvaluation() {
   });
 
   const handleExportExcel = () => {
-    // For Excel, we use the FULL list (applicantInfo) including Rejected ones
-    // But we still apply the search/status filters if the user has them set, 
-    // EXCEPT we don't force-exclude Rejected in the file.
     
     const dataForExport = applicantInfo.filter(applicant => {
        const fullName = `${applicant.firstname} ${applicant.lastname} ${applicant.middle_initial || ''}`.toLowerCase();
@@ -145,7 +146,6 @@ function ApplicantEvaluation() {
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Master Applicant List");
 
-    // Comprehensive column widths
     const wscols = [
       {wch: 15}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 5}, {wch: 10}, 
       {wch: 30}, {wch: 15}, {wch: 10}, {wch: 20}, {wch: 15}, {wch: 15},
@@ -224,7 +224,15 @@ function ApplicantEvaluation() {
             </thead>
 
             <tbody className="divide-y divide-gray-200 bg-white">
-              {filteredAndSorted.length > 0 ? (
+              {loading ? (
+                <tr>
+                 <td colSpan="9" className="px-4 py-10">
+                  <div className="flex justify-center items-center w-full">
+                    <div className='border-[4px] border-gray-100 border-t-[#2C2D86] h-[30px] w-[30px] rounded-full animate-spin'></div>
+                  </div>
+                </td>
+                </tr>
+              ) : filteredAndSorted.length > 0 ? (
                 filteredAndSorted.map((applicant) => (
                   <tr key={applicant.id} className="hover:bg-gray-50 transition-colors text-center">
                     <td>{applicant.firstname} {applicant.lastname} {applicant.middle_initial}</td>

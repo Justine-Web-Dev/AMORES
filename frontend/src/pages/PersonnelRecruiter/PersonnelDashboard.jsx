@@ -2,9 +2,7 @@ import React from 'react'
 import { Routes, Route } from 'react-router-dom'
 import SidebarRecruiter from '../../Components/Sidebar/SidebarRecruiter'
 import ApplicantEvaluation from './ApplicantEvaluation'
-import StatusManagement from './StatusManagement'
 import PersonnelOverview from './PersonnelOverview'
-import TrackingScreening from './TrackingScreening'
 import './PersonnelDashboard.css'
 import DeclinedApplicants from '../DeclinedApplicants'
 import Header from '../../Components/Header/Header'
@@ -15,20 +13,6 @@ import SubmitApplicationModal from '../../Modals/SubmitApplicationModal'
 import { useEffect } from 'react'
 
 function PersonnelDashboard() {
-  // Advanced Double-Buffered History Guard: Prevents exiting to New Tab
-  useEffect(() => {
-    const lockHistory = () => {
-      window.history.forward();
-    };
-
-    // Create the buffer
-    window.history.pushState(null, null, window.location.href);
-    
-    // Listen for back-button attempts
-    window.addEventListener('popstate', lockHistory);
-
-    return () => window.removeEventListener('popstate', lockHistory);
-  }, []);
 
   return (
     <div className='PersonnelDashboard'>
