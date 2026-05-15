@@ -12,6 +12,14 @@
   left: 0;
   top: 0;
   overflow: hidden; /* prevent stale scrollbar on container */
+  transition: width 0.3s ease;
+}
+
+@media (max-width: 1366px) {
+  .Sidebar {
+    width: 260px;
+    padding: 15px;
+  }
 }
 
 .logo-container-side {

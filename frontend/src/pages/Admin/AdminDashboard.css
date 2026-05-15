@@ -6,9 +6,17 @@
 
 .main-content {
   margin-left: 280px;
-  padding: 30px 40px;
+  padding: 25px 30px;
   flex: 1;
   overflow-y: auto;
+  transition: all 0.3s ease;
+}
+
+@media (max-width: 1366px) {
+  .main-content {
+    margin-left: 260px;
+    padding: 20px 25px;
+  }
 }
 
 .module-content {
@@ -27,9 +35,22 @@
 }
 
 .top-summary-cards {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+}
+
+@media (max-width: 1366px) {
+  .top-summary-cards {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+  
+  .admin-summary-card {
+    min-width: 150px !important;
+    height: 80px !important;
+    padding: 0 15px !important;
+  }
 }
 
 .admin-summary-card,
@@ -85,15 +106,51 @@
   border-left-color: #F43F5E;
 }
 
+.admin-summary-card.bmi {
+  border-left-color: #3B82F6;
+}
+
+.admin-summary-card.pat {
+  border-left-color: #F97316;
+}
+
+.admin-summary-card.psych {
+  border-left-color: #8B5CF6;
+}
+
+.admin-summary-card.medical {
+  border-left-color: #EC4899;
+}
+
+.admin-summary-card.drug-test {
+  border-left-color: #F59E0B;
+}
+
+.admin-summary-card.final-interview {
+  border-left-color: #14B8A6;
+}
+
 .stat-card-container .total-applicants {
   border-left-color: #4A4DB8;
 }
 
 .module-content h2 {
   color: #2C2D86;
-  margin-bottom: 20px;
-  font-size: 1.8rem;
+  margin-bottom: 15px;
+  font-size: 1.6rem;
   font-weight: 600;
+}
+
+@media (max-width: 1366px) {
+  .module-content h2 {
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+  }
+  
+  .module-content p {
+    font-size: 0.9rem !important;
+    margin-bottom: 15px !important;
+  }
 }
 .module-content h3{
   margin-bottom: 20px;

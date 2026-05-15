@@ -202,7 +202,7 @@ function ApplicantEvaluation() {
             className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-all shadow-sm active:scale-95 text-sm font-medium"
             title="Export to Excel"
           >
-            <RiFileExcel2Line size={40}/>
+            <RiFileExcel2Line size={24}/>
             Export to Excel
           </button>
         </div>
@@ -280,7 +280,7 @@ function ApplicantEvaluation() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" className="py-10 text-gray-500 italic col-8">
+                  <td colSpan="9" className="py-10 text-gray-500 italic">
                     No applicants registered
                   </td>
                 </tr>

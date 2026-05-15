@@ -1,97 +1,166 @@
 import React, { useEffect, useState } from 'react'
-import {api} from '../../../api/api'
-import { PieChart, Pie, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
+import { api } from '../../../api/api'
+import { 
+  PieChart, Pie, BarChart, Bar, XAxis, YAxis, CartesianGrid, 
+  Tooltip, Legend, ResponsiveContainer, Cell, AreaChart, Area 
+} from 'recharts'
 
 function DashboardOverview() {
   const [users, setUsers] = useState([])
   const [applicants, setApplicants] = useState([])
+  const [loading, setLoading] = useState(true)
+  
+  // Analytics States
   const [statusData, setStatusData] = useState([])
-  const [statusCounts, setStatusCounts] = useState({
-    'New Applicant': 0,
-    'Screening': 0,
-    'Qualified': 0,
-    'Accepted': 0,
-    'Rejected': 0
-  })
+  const [statusCounts, setStatusCounts] = useState({})
   const [monthlyData, setMonthlyData] = useState([])
+  const [metrics, setMetrics] = useState({
+    genderData: [],
+    ageData: [],
+    programData: [],
+    schoolData: [],
+    assessmentData: []
+  })
 
   useEffect(() => {
-    const fetchApplicantLength = async () => {
-      const response = await api.get('users/get_applicant_info/')
-      setApplicants(response.data)
-      
-      const statuses = {
-        'New Applicant': 0,
-        'Screening': 0,
-        'Qualified': 0,
-        'Accepted': 0,
-        'Rejected': 0
+    const fetchDashboardData = async () => {
+      try {
+        const [applicantsRes, usersRes] = await Promise.all([
+          api.get('users/get_applicant_info/'),
+          api.get('users/get_user/')
+        ])
+        
+        const applicantsData = applicantsRes.data
+        setApplicants(applicantsData)
+        setUsers(usersRes.data)
+        
+        processMetrics(applicantsData)
+      } catch (err) {
+        console.error("Error fetching dashboard overview data:", err)
+      } finally {
+        setLoading(false)
       }
-
-      const screeningStages = [
-        'Document Review',
-        'Initial Screening',
-        'Technical Interview'
-      ]
-      
-      response.data.forEach(applicant => {
-        if (applicant.status === 'New Applicant') {
-          statuses['New Applicant']++
-        } else if (screeningStages.includes(applicant.status)) {
-          statuses['Screening']++
-        } else if (applicant.status === 'Qualified') {
-          statuses['Qualified']++
-        } else if (applicant.status === 'Accepted') {
-          statuses['Accepted']++
-        } else if (applicant.status === 'Rejected') {
-          statuses['Rejected']++
-        }
-      })
-      
-      const statusChartData = Object.keys(statuses).map(status => ({
-        name: status,
-        value: statuses[status]
-      }))
-      setStatusData(statusChartData)
-      setStatusCounts(statuses)
-      
-      // Process monthly data
-      const monthlyCount = {}
-      response.data.forEach(applicant => {
-        if (applicant.created_at) {
-          const date = new Date(applicant.created_at)
-          const monthYear = date.toLocaleString('default', { month: 'short', year: 'numeric' })
-          monthlyCount[monthYear] = (monthlyCount[monthYear] || 0) + 1
-        }
-      })
-      
-      const monthlyChartData = Object.keys(monthlyCount).map(month => ({
-        month: month,
-        applicants: monthlyCount[month]
-      }))
-      setMonthlyData(monthlyChartData)
     }
-    fetchApplicantLength()
-
-    const fetchUsers = async () => {
-      const response = await api.get("users/get_user/")
-      setUsers(response.data)
-      console.log(response.data)
-    }
-    fetchUsers()
+    fetchDashboardData()
   }, [])
 
-  const user_length = users.filter(user => user).length
-  const applicant_length = applicants.filter(applicant => applicant).length
+  const processMetrics = (data) => {
+    // 1. Status Breakdown
+    const statuses = {
+      'New Applicant': 0,
+      'Screening': 0,
+      'Qualified': 0,
+      'Accepted': 0,
+      'Rejected': 0
+    }
+    const screeningStages = ['Document Review', 'Initial Screening', 'Technical Interview']
+    
+    data.forEach(a => {
+      if (a.status === 'New Applicant') statuses['New Applicant']++
+      else if (screeningStages.includes(a.status)) statuses['Screening']++
+      else if (a.status === 'Qualified') statuses['Qualified']++
+      else if (a.status === 'Accepted') statuses['Accepted']++
+      else if (a.status === 'Rejected') statuses['Rejected']++
+      else if (a.status === 'Body Mass Index') statuses['BMI'] = (statuses['BMI'] || 0) + 1
+      else if (a.status === 'Physical Agility Test') statuses['PAT'] = (statuses['PAT'] || 0) + 1
+      else if (a.status === 'Neuro Examination') statuses['Psych'] = (statuses['Psych'] || 0) + 1
+      else if (a.status === 'Medical') statuses['Medical'] = (statuses['Medical'] || 0) + 1
+      else if (a.status === 'Drug Test') statuses['Drug Test'] = (statuses['Drug Test'] || 0) + 1
+      else if (a.status === 'Final Interview') statuses['Final Interview'] = (statuses['Final Interview'] || 0) + 1
+    })
+    
+    setStatusData(Object.keys(statuses).map(name => ({ name, value: statuses[name] })))
+    setStatusCounts(statuses)
 
-  const COLORS = ['#2196F3', '#FFC107', '#6366F1', '#10B981', '#F43F5E']
+    // 2. Monthly Registration
+    const monthlyCount = {}
+    data.forEach(a => {
+      if (a.created_at) {
+        const date = new Date(a.created_at)
+        const monthYear = date.toLocaleString('default', { month: 'short', year: 'numeric' })
+        monthlyCount[monthYear] = (monthlyCount[monthYear] || 0) + 1
+      }
+    })
+    setMonthlyData(Object.keys(monthlyCount).map(month => ({ month, applicants: monthlyCount[month] })))
+
+    // 3. Gender Distribution
+    const genderCount = {}
+    data.forEach(a => {
+      const g = a.gender || 'Not Specified'
+      genderCount[g] = (genderCount[g] || 0) + 1
+    })
+    const genderData = Object.keys(genderCount).map(key => ({ name: key, value: genderCount[key] }))
+
+    // 4. Age Distribution
+    const ageGroups = { '18-22': 0, '23-27': 0, '28-32': 0, '33+': 0 }
+    data.forEach(a => {
+      const age = parseInt(a.age)
+      if (age <= 22) ageGroups['18-22']++
+      else if (age <= 27) ageGroups['23-27']++
+      else if (age <= 32) ageGroups['28-32']++
+      else ageGroups['33+']++
+    })
+    const ageData = Object.keys(ageGroups).map(key => ({ range: key, count: ageGroups[key] }))
+
+    // 5. Program & School Distribution (Top 5)
+    const getTop5 = (attr) => {
+      const counts = {}
+      data.forEach(a => {
+        const val = a[attr] || 'Other'
+        counts[val] = (counts[val] || 0) + 1
+      })
+      return Object.keys(counts)
+        .map(name => ({ name, count: counts[name] }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5)
+    }
+
+    // 6. Assessment Pipeline (Cumulative Funnel)
+    const assessmentStages = [
+      { name: 'New', status: 'New Applicant' },
+      { name: 'Docs', status: 'Document Review' },
+      { name: 'Screening', status: 'Initial Screening' },
+      { name: 'Interview', status: 'Technical Interview' },
+      { name: 'BMI', status: 'Body Mass Index' },
+      { name: 'PAT', status: 'Physical Agility Test' },
+      { name: 'Psych', status: 'Neuro Examination' },
+      { name: 'Medical', status: 'Medical' },
+      { name: 'Drug Test', status: 'Drug Test' },
+      { name: 'F. Interview', status: 'Final Interview' }
+    ]
+
+    const assessmentData = assessmentStages.map((stage) => {
+      // Count ONLY applicants whose current status matches this stage
+      const count = data.filter(a => a.status === stage.status).length
+      return { name: stage.name, completed: count }
+    })
+
+    setMetrics({
+      genderData,
+      ageData,
+      programData: getTop5('program'),
+      schoolData: getTop5('name_of_school'),
+      assessmentData
+    })
+  }
+
+  const user_length = users.length
+  const applicant_length = applicants.length
+  const CHART_COLORS = ['#2C2D86', '#EB612A', '#10B981', '#F59E0B', '#6366F1']
+
+  if (loading) return <div className='p-10 text-center'>Loading Dashboard Overview...</div>
 
   return (
     <div className='module-content'>
-      <h2>Dashboard Overview</h2>
+      <div className="flex justify-between items-center mb-6 lg:mb-8">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
+          <p className="text-gray-500">System metrics and recruitment analytics at a glance.</p>
+        </div>
+      </div>
 
-      <div className='System-overview-container mt-8'>
-        <h3>System Overview</h3>
+      <div className='System-overview-container'>
+        <h3 className="text-lg font-semibold mb-4 text-[#2C2D86]">System Summary</h3>
         <div className='stat-card-container top-summary-cards'>
           <div className='admin-summary-card users'>
             <div className='flex flex-col-reverse items-center'>
@@ -135,29 +204,63 @@ function DashboardOverview() {
               <span className='summary-value'>{statusCounts['Rejected']}</span>
             </div>
           </div>
+          <div className='admin-summary-card bmi'>
+            <div className='flex flex-col-reverse items-center'>
+              <span className='summary-label'>BMI</span>
+              <span className='summary-value'>{statusCounts['BMI'] || 0}</span>
+            </div>
+          </div>
+          <div className='admin-summary-card pat'>
+            <div className='flex flex-col-reverse items-center'>
+              <span className='summary-label'>PAT</span>
+              <span className='summary-value'>{statusCounts['PAT'] || 0}</span>
+            </div>
+          </div>
+          <div className='admin-summary-card psych'>
+            <div className='flex flex-col-reverse items-center'>
+              <span className='summary-label'>Psych</span>
+              <span className='summary-value'>{statusCounts['Psych'] || 0}</span>
+            </div>
+          </div>
+          <div className='admin-summary-card medical'>
+            <div className='flex flex-col-reverse items-center'>
+              <span className='summary-label'>Medical</span>
+              <span className='summary-value'>{statusCounts['Medical'] || 0}</span>
+            </div>
+          </div>
+          <div className='admin-summary-card drug-test'>
+            <div className='flex flex-col-reverse items-center'>
+              <span className='summary-label'>Drug Test</span>
+              <span className='summary-value'>{statusCounts['Drug Test'] || 0}</span>
+            </div>
+          </div>
+          <div className='admin-summary-card final-interview'>
+            <div className='flex flex-col-reverse items-center'>
+              <span className='summary-label'>Final Interview</span>
+              <span className='summary-value'>{statusCounts['Final Interview'] || 0}</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Charts Section */}
-      <div className='charts-container grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8'>
+      {/* Main Charts Section */}
+      <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 mt-6 lg:mt-8'>
         
-        {/* Pie Chart for Applicant Status */}
-        <div className='chart-card bg-white p-6 rounded-xl shadow-md border border-gray-100'>
-          <h3 className='mb-4 text-[#2C2D86] font-semibold text-lg'>Applicant Status Distribution</h3>
+        {/* Row 1: Status and Monthly */}
+        <div className='chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100'>
+          <h3 className='mb-4 text-[#2C2D86] font-semibold'>Applicant Status Distribution</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
                 data={statusData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, value }) => `${name}: ${value}`}
-                outerRadius={80}
-                fill="#8884d8"
+                cx="50%" cy="50%"
+                innerRadius={60} outerRadius={100}
+                paddingAngle={5}
                 dataKey="value"
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
               >
                 {statusData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip />
@@ -165,26 +268,116 @@ function DashboardOverview() {
           </ResponsiveContainer>
         </div>
 
-        {/* Bar Chart for Monthly Applicants */}
-        <div className='chart-card bg-white p-6 rounded-xl shadow-md border border-gray-100'>
-          <h3 className='mb-4 text-[#2C2D86] font-semibold text-lg'>Monthly Applicant Registration</h3>
+        <div className='chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100'>
+          <h3 className='mb-4 text-[#2C2D86] font-semibold'>Monthly Applicant Registration</h3>
           <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={monthlyData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+            <BarChart data={monthlyData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="month" />
               <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar 
-                dataKey="applicants" 
-                fill="#2C2D86" 
-                name="Applicants" 
-                radius={[4, 4, 0, 0]} 
-                barSize={40}
-              />
+              <Tooltip cursor={{fill: '#f3f4f6'}} />
+              <Bar dataKey="applicants" fill="#2C2D86" radius={[4, 4, 0, 0]} barSize={40} />
             </BarChart>
           </ResponsiveContainer>
         </div>
+
+        {/* Row 2: Demographics */}
+        <div className='chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100'>
+          <h3 className='mb-4 text-[#2C2D86] font-semibold'>Gender Distribution</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={metrics.genderData}
+                cx="50%" cy="50%"
+                outerRadius={100}
+                dataKey="value"
+                label={({ name, value }) => `${name}: ${value}`}
+              >
+                {metrics.genderData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className='chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100'>
+          <h3 className='mb-4 text-[#2C2D86] font-semibold'>Age Distribution</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={metrics.ageData}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis dataKey="range" />
+              <YAxis />
+              <Tooltip cursor={{fill: '#f3f4f6'}} />
+              <Bar dataKey="count" fill="#EB612A" radius={[4, 4, 0, 0]} barSize={50} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Row 3: Education (Top 5) */}
+        <div className='chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100'>
+          <h3 className='mb-4 text-[#2C2D86] font-semibold'>Top 5 Programs</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={metrics.programData} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+              <XAxis type="number" />
+              <YAxis dataKey="name" type="category" width={100} tick={{fontSize: 11}} />
+              <Tooltip cursor={{fill: '#f3f4f6'}} />
+              <Bar dataKey="count" fill="#2C2D86" radius={[0, 4, 4, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className='chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100'>
+          <h3 className='mb-4 text-[#2C2D86] font-semibold'>Top 5 Schools</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={metrics.schoolData} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+              <XAxis type="number" />
+              <YAxis dataKey="name" type="category" width={100} tick={{fontSize: 11}} />
+              <Tooltip cursor={{fill: '#f3f4f6'}} />
+              <Bar dataKey="count" fill="#6366F1" radius={[0, 4, 4, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Full Width: Pipeline */}
+        <div className='chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2'>
+          <h3 className='mb-2 text-[#2C2D86] font-semibold'>Assessment Pipeline Progress</h3>
+          <p className="text-sm text-gray-500 mb-6">Volume of applicants processed through key assessment stages.</p>
+          <ResponsiveContainer width="100%" height={350}>
+            <AreaChart data={metrics.assessmentData}>
+              <defs>
+                <linearGradient id="colorComp" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#2C2D86" stopOpacity={0.1}/>
+                  <stop offset="95%" stopColor="#2C2D86" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis 
+                dataKey="name" 
+                interval={0} 
+                angle={-45} 
+                textAnchor="end" 
+                height={60} 
+                tick={{fontSize: 12}}
+              />
+              <YAxis />
+              <Tooltip />
+              <Area 
+                type="monotone" 
+                dataKey="completed" 
+                stroke="#2C2D86" 
+                strokeWidth={3} 
+                fillOpacity={1} 
+                fill="url(#colorComp)" 
+                name="Applicants"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
       </div>
     </div>
   )
