@@ -86,9 +86,14 @@ function ViewDetails() {
               <p className="text-sm text-gray-500">Reference Code: {applicant.tracking_code}</p>
 
 
-              <span className={`${statusColors[applicant.status]} status-detail-text`}>
-                {applicant.status}
-              </span>
+              <div className="flex items-center gap-3 mt-2">
+                <span className={`${statusColors[applicant.status]} status-detail-text`}>
+                  {applicant.status}
+                </span>
+                <span className="bg-[#2C2D86] text-white px-3 py-1 text-xs rounded-full font-black shadow-sm mt-2">
+                  BATCH {applicant.batch || 1}
+                </span>
+              </div>
             </div>
 
             <div className="flex justify-between items-center text-sm text-gray-700 border-t email-section">

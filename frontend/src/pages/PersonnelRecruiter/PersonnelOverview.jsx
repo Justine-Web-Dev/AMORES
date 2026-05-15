@@ -6,19 +6,23 @@ import {
 } from 'recharts'
 
 function PersonnelOverview() {
-  const [applications, setApplications] = useState([])
+  const [applicants, setApplicants] = useState([])
   const [loading, setLoading] = useState(true)
   
   // Analytics States
   const [statusData, setStatusData] = useState([])
   const [statusCounts, setStatusCounts] = useState({})
+  const [selectedBatch, setSelectedBatch] = useState('All')
+  const [batches, setBatches] = useState([])
   const [monthlyData, setMonthlyData] = useState([])
   const [metrics, setMetrics] = useState({
     genderData: [],
     ageData: [],
     programData: [],
     schoolData: [],
-    assessmentData: []
+    assessmentData: [],
+    pendingEvaluations: 0,
+    scheduledToday: 0
   })
 
   useEffect(() => {
@@ -26,8 +30,13 @@ function PersonnelOverview() {
       try {
         const response = await api.get('users/get_applicant_info/')
         const data = response.data
-        setApplications(data)
-        processMetrics(data)
+        setApplicants(data)
+        
+        // Extract unique batches
+        const uniqueBatches = [...new Set(data.map(a => a.batch || 1))].sort((a, b) => b - a)
+        setBatches(uniqueBatches)
+        
+        processMetrics(data, 'All')
       } catch (err) {
         console.error('Error fetching personnel overview data:', err)
       } finally {
@@ -37,7 +46,12 @@ function PersonnelOverview() {
     fetchPersonnelData()
   }, [])
 
-  const processMetrics = (data) => {
+  const processMetrics = (allData, batchFilter) => {
+    let data = allData
+    if (batchFilter !== 'All') {
+      data = allData.filter(a => (a.batch || 1) === parseInt(batchFilter))
+    }
+    
     // 1. Status Breakdown
     const statuses = {
       'New Applicant': 0,
@@ -67,6 +81,13 @@ function PersonnelOverview() {
       else if (a.status === 'Drug Test') statuses['Drug Test']++
       else if (a.status === 'Final Interview') statuses['Final Interview']++
     })
+    
+    // 1.5 Workload Metrics (Actionable)
+    const today = new Date().toISOString().split('T')[0]
+    const pendingEvaluations = data.filter(a => 
+      ['Body Mass Index', 'Physical Agility Test', 'Neuro Examination', 'Medical', 'Drug Test', 'Final Interview'].includes(a.status)
+    ).length
+    const scheduledToday = data.filter(a => a.scheduled_date === today).length
     
     setStatusData(Object.keys(statuses)
       .filter(key => statuses[key] > 0 || ['New Applicant', 'Screening', 'Qualified', 'Accepted', 'Rejected'].includes(key))
@@ -141,13 +162,21 @@ function PersonnelOverview() {
       ageData,
       programData: getTop5('program'),
       schoolData: getTop5('name_of_school'),
-      assessmentData
+      assessmentData,
+      pendingEvaluations,
+      scheduledToday
     })
   }
 
   const CHART_COLORS = ['#2C2D86', '#EB612A', '#10B981', '#F59E0B', '#6366F1']
 
   if (loading) return <div className='p-10 text-center'>Loading Personnel Overview...</div>
+
+  const handleBatchChange = (e) => {
+    const val = e.target.value
+    setSelectedBatch(val)
+    processMetrics(applicants, val)
+  }
 
   return (
     <div className='module-content'>
@@ -156,13 +185,27 @@ function PersonnelOverview() {
           <h2 className="text-2xl font-bold text-gray-800">Personnel Dashboard Overview</h2>
           <p className="text-gray-500">Recruitment progress and applicant analytics.</p>
         </div>
+        
+        <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-lg border border-gray-100">
+          <label className="text-sm font-bold text-gray-600 uppercase tracking-tight">Filter by Batch:</label>
+          <select 
+            value={selectedBatch} 
+            onChange={handleBatchChange}
+            className="bg-white border border-gray-200 rounded px-4 py-1.5 text-sm font-medium outline-none focus:ring-2 focus:ring-[#2C2D86] shadow-sm"
+          >
+            <option value="All">All Batches</option>
+            {batches.map(b => (
+              <option key={b} value={b}>Batch {b}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className='personnel-stats'>
         <div className='stat-card total-applications'>
           <div className='flex flex-col-reverse items-center'>
             <span className='summary-label'>Total Applications</span>
-            <span className='summary-value text-xl font-bold'>{applications.length}</span>
+            <span className='summary-value text-xl font-bold'>{applicants.length}</span>
           </div>
         </div>
         
