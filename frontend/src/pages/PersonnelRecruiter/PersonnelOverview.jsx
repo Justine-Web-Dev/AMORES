@@ -170,7 +170,17 @@ function PersonnelOverview() {
 
   const CHART_COLORS = ['#2C2D86', '#EB612A', '#10B981', '#F59E0B', '#6366F1']
 
-  if (loading) return <div className='p-10 text-center'>Loading Personnel Overview...</div>
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[450px] p-8 bg-white rounded-2xl shadow-sm border border-gray-100">
+        <div className="relative flex items-center justify-center w-16 h-16 mb-4">
+          <div className="absolute inset-0 border-4 border-[#2C2D86]/10 rounded-full"></div>
+          <div className="absolute inset-0 border-4 border-t-[#2C2D86] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+        </div>
+        <p className="text-[#2C2D86] font-medium tracking-wide">Loading Dashboard Overview...</p>
+      </div>
+    )
+  }
 
   const handleBatchChange = (e) => {
     const val = e.target.value
