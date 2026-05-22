@@ -4,7 +4,7 @@ Group Members:
   Maynes, Carl Benedict G.
   Ramirez, Justine B.
 
-Users to be logged in:
+# Users to login:
   # Administrator
   Username: admin
   Password: admin
