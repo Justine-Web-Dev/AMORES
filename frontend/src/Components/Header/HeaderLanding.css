@@ -60,3 +60,17 @@
 .about-us:hover::before{
   width: 100%;
 }
+
+.login-staff-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.login-staff-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0px 4px 10px rgba(44, 45, 134, 0.15);
+}
+
+.login-staff-btn:active {
+  transform: translateY(0);
+  opacity: 0.9;
+}

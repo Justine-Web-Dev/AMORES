@@ -40,27 +40,35 @@ function HeaderLanding({ isApplicationOpen = true }) {
           <h3 className="text-[#2C2D86] font-bold text-base">PNP-AMORES</h3>
         </div>
 
-        <div className="hidden md:flex items-center gap-10">
-          <nav className="flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-6">
+          <nav className="flex items-center gap-6">
             <Link to={'/'} className="text-sm  home">Home</Link>
             <a href="#about-us" onClick={handleAboutClick} className="text-sm about-us">About Us</a>
             <Link to={'/track-application'} className="text-sm track-app">Track Application</Link>
           </nav>
           
-          {isApplicationOpen ? (
-            <Link to={'/form-application'} 
-            className="flex justify-center items-center bg-[#2C2D86] h-[40px] w-[160px] text-sm text-white rounded cursor-pointer apply-btn hover:bg-[#1a1b5c] transition-all"
+          <div className="flex items-center gap-3">
+            <Link to={'/LoginUsers'} 
+              className="flex justify-center items-center border border-[#2C2D86] text-[#2C2D86] font-semibold h-[40px] px-5 text-sm rounded cursor-pointer login-staff-btn hover:bg-[#2C2D86] hover:text-white transition-all"
             >
-              Apply Now
+              Personnel Login
             </Link>
-          ) : (
-            <button 
-            disabled
-            className="flex justify-center items-center bg-gray-400 h-[40px] w-[160px] text-sm text-white rounded cursor-not-allowed opacity-70"
-            >
-              Closed
-            </button>
-          )}
+
+            {isApplicationOpen ? (
+              <Link to={'/form-application'} 
+              className="flex justify-center items-center bg-[#2C2D86] h-[40px] w-[140px] text-sm text-white rounded cursor-pointer apply-btn hover:bg-[#1a1b5c] transition-all"
+              >
+                Apply Now
+              </Link>
+            ) : (
+              <button 
+              disabled
+              className="flex justify-center items-center bg-gray-400 h-[40px] w-[140px] text-sm text-white rounded cursor-not-allowed opacity-70"
+              >
+                Closed
+              </button>
+            )}
+          </div>
         </div>
 
         <button
@@ -74,12 +82,19 @@ function HeaderLanding({ isApplicationOpen = true }) {
         </button>
       </div>
 
-      <div className={`md:hidden overflow-hidden transition-all duration-300 ${menuOpen ? "max-h-64" : "max-h-0"}`}>
+      <div className={`md:hidden overflow-hidden transition-all duration-300 ${menuOpen ? "max-h-[350px]" : "max-h-0"}`}>
         <nav className="flex flex-col items-center gap-4 px-6 pb-5 pt-2 border-t border-gray-100 bg-white">
           <Link to={'/'} className="text-sm w-full text-center py-2 home" onClick={() => setMenuOpen(false)}>Home</Link>
           <a href="#about-us" className="text-sm w-full text-center py-2 about-us" onClick={handleAboutClick}>About Us</a>
           <Link to={'/track-application'} className="text-sm w-full text-center py-2 track-app" onClick={() => setMenuOpen(false)}>Track Application</Link>
           
+          <Link to={'/LoginUsers'} 
+            className="flex justify-center items-center border border-[#2C2D86] text-[#2C2D86] h-[40px] w-full text-sm font-semibold rounded cursor-pointer login-staff-btn hover:bg-[#2C2D86] hover:text-white transition-all"
+            onClick={() => setMenuOpen(false)}
+          >
+            Personnel Login
+          </Link>
+
           {isApplicationOpen ? (
             <Link to={'/form-application'} 
             className="flex justify-center items-center bg-[#2C2D86] h-[40px] w-full text-sm text-white rounded cursor-pointer apply-btn"
