@@ -177,7 +177,7 @@ function PersonnelOverview() {
           <div className="absolute inset-0 border-4 border-[#2C2D86]/10 rounded-full"></div>
           <div className="absolute inset-0 border-4 border-t-[#2C2D86] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
         </div>
-        <p className="text-[#2C2D86] font-medium tracking-wide">Loading Dashboard Overview...</p>
+        <p className="text-[#2C2D86] font-medium tracking-wide">Loading Personnel Overview...</p>
       </div>
     )
   }
