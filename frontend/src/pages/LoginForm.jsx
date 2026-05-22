@@ -1,6 +1,6 @@
 import React, {  useState, useEffect   } from 'react'
 import './LoginForm.css'
-import {useNavigate} from 'react-router-dom'
+import {useNavigate, Navigate} from 'react-router-dom'
 import { api } from '../../api/api'
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
@@ -17,20 +17,6 @@ function LoginForm() {
   const [errorMessage, setErrorMessage] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
-
-  // Prevent logged-in users from accessing the login page (handles browser back button)
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
-    
-    if (token) {
-      if (role === 'Admin') {
-        navigate('/Dashboard', { replace: true });
-      } else {
-        navigate('/PersonnelDashboard', { replace: true });
-      }
-    }
-  }, [navigate]);
 
   async function handleLogin(e){
     e.preventDefault()
@@ -72,6 +58,14 @@ function LoginForm() {
     setLoading(false)
   }
 }
+
+  // Synchronous route guard to prevent layout/paint flash (blink)
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
+
+  if (token && (role === 'Admin' || role === 'Personnel')) {
+    return <Navigate to={role === 'Admin' ? '/Dashboard' : '/PersonnelDashboard'} replace />;
+  }
 
   return (
     <div className='LoginForm'>

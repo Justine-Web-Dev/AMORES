@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Routes, Route, useNavigate } from 'react-router'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { api } from '../../../api/api'
 import LandingPage from './LandingPage'
 import AboutUs from './AboutUs'
@@ -12,20 +12,6 @@ import NotFound from '../../NotFound'
 function LandingpageMain() {
   const [isApplicationOpen, setIsApplicationOpen] = useState(true);
   const [appDates, setAppDates] = useState({ start: null, end: null });
-  const navigate = useNavigate();
-
-  // Redirect logged-in users away from landing page
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
-    if (token) {
-      if (role === 'Admin') {
-        navigate('/Dashboard', { replace: true });
-      } else {
-        navigate('/PersonnelDashboard', { replace: true });
-      }
-    }
-  }, [navigate]);
 
   useEffect(() => {
     fetchApplicationStatus();
@@ -67,6 +53,14 @@ function LandingpageMain() {
       console.error("Error fetching application status:", error);
     }
   };
+
+  // Synchronous route guard to prevent layout/paint flash (blink)
+  const token = localStorage.getItem('token');
+  const role = localStorage.getItem('role');
+
+  if (token && (role === 'Admin' || role === 'Personnel')) {
+    return <Navigate to={role === 'Admin' ? '/Dashboard' : '/PersonnelDashboard'} replace />;
+  }
 
   return (
     <div className='bg-gray-100'>

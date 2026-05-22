@@ -20,13 +20,13 @@ function PersonnelDashboard() {
       <div className='main-content'>
         <Header />
         <Routes>
-          <Route path="/" element={<PersonnelOverview />} />
-          <Route path="/applications" element={<ApplicantEvaluation />} />
-          <Route path="/declined-applicants" element={<DeclinedApplicants />} />
-          <Route path='/view-details/:id' element={<ViewDetails />}/>
-          <Route path='/application-form' element={<Form/>}/>
-          <Route path='/document-submission' element={<DocumentSubmission/>}/>
-          <Route path='/success-submit' element={<SubmitApplicationModal/>}/>
+          <Route index element={<PersonnelOverview />} />
+          <Route path="applications" element={<ApplicantEvaluation />} />
+          <Route path="declined-applicants" element={<DeclinedApplicants />} />
+          <Route path='view-details/:id' element={<ViewDetails />}/>
+          <Route path='application-form' element={<Form/>}/>
+          <Route path='document-submission' element={<DocumentSubmission/>}/>
+          <Route path='success-submit' element={<SubmitApplicationModal/>}/>
         </Routes>
       </div>
     </div>
