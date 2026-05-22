@@ -1,6 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { api } from '../../../api/api'
-import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import * as XLSX from 'xlsx'
 import { RiFileExcel2Line } from "react-icons/ri"
@@ -51,7 +50,7 @@ function ApplicantEvaluation() {
     fetchInfo(false)
     const interval = setInterval(()=>{
       fetchInfo(true)
-    },5000)
+    },15000)
 
     return () => clearInterval(interval)
   },[])
@@ -61,37 +60,32 @@ function ApplicantEvaluation() {
   }
 
 
-  const filteredAndSorted = applicantInfo
-  .filter((applicant) => {
-    // 1. ALWAYS exclude Rejected from the table display as per user request
-    if (applicant.status === 'Rejected') return false;
-
-    // 2. Filter by Search Term (Name)
-    const fullName = `${applicant.firstname} ${applicant.lastname} ${applicant.middle_initial || ''}`.toLowerCase();
-    const matchesSearch = fullName.includes(searchTerm.toLowerCase());
-
-    // 3. Filter by Status Dropdown
-    const matchesStatus = statusFilter === 'All' || applicant.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
-  })
-  .sort((a, b) => {
-    // 4. Sorting Logic
-    if (sortBy === 'name') {
-      const nameA = `${a.firstname} ${a.lastname}`.toLowerCase();
-      const nameB = `${b.firstname} ${b.lastname}`.toLowerCase();
-      return nameA.localeCompare(nameB);
-    } else if (sortBy === 'date') {
-      const dateA = new Date(a.created_at);
-      const dateB = new Date(b.created_at);
-      return dateB - dateA;
-    }else if(sortBy === 'batch1'){
-      return (a.batch || 0) - (b.batch || 0);
-    }else if(sortBy === 'batch2'){
-      return (b.batch || 0) - (a.batch || 0);
-    }
-    return 0;
-  });
+  const filteredAndSorted = useMemo(() => {
+    return applicantInfo
+    .filter((applicant) => {
+      if (applicant.status === 'Rejected') return false;
+      const fullName = `${applicant.firstname} ${applicant.lastname} ${applicant.middle_initial || ''}`.toLowerCase();
+      const matchesSearch = fullName.includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter === 'All' || applicant.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'name') {
+        const nameA = `${a.firstname} ${a.lastname}`.toLowerCase();
+        const nameB = `${b.firstname} ${b.lastname}`.toLowerCase();
+        return nameA.localeCompare(nameB);
+      } else if (sortBy === 'date') {
+        const dateA = new Date(a.created_at);
+        const dateB = new Date(b.created_at);
+        return dateB - dateA;
+      } else if (sortBy === 'batch1') {
+        return (a.batch || 0) - (b.batch || 0);
+      } else if (sortBy === 'batch2') {
+        return (b.batch || 0) - (a.batch || 0);
+      }
+      return 0;
+    });
+  }, [applicantInfo, searchTerm, statusFilter, sortBy]);
 
   const handleExportExcel = () => {
     

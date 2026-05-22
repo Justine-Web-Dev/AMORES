@@ -31,18 +31,18 @@ function LoginForm() {
 
     const data = response.data;
 
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("role", data.role || (data.username === "Admin" ? "Admin" : "Personnel"));
     setIsLoggedIn(true)
+
+    setUsername("");
+    setPassword("");
 
     setTimeout(()=>{
       setIsLoggedIn(false)
     },3000)
 
-    setUsername("");
-    setPassword("");
-
     setTimeout(() => {
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role || (data.username === "Admin" ? "Admin" : "Personnel"));
       if (data.role === "Admin" || data.username === "Admin") {
         navigate("/Dashboard")
       } else {

@@ -119,6 +119,8 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
         return None
 
     def _get_app(self, obj):
+        if hasattr(obj, 'prefetched_applications'):
+            return obj.prefetched_applications[0] if obj.prefetched_applications else None
         return obj.active_application
 
     def _get_eval(self, obj):

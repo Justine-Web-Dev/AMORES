@@ -4,6 +4,7 @@
   justify-content: center;
   align-items: center;
   background: #f5f6fa; /* optional soft background */
+  position: relative;
 }
 
 .form {

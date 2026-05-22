@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { api } from '../../api/api'
 import { useNavigate } from 'react-router-dom'
 
@@ -34,7 +34,7 @@ function DeclinedApplicants() {
     fetchInfo(false)
     const interval = setInterval(() => {
       fetchInfo(true)
-    }, 5000)
+    }, 15000)
 
     return () => clearInterval(interval)
   }, [])
@@ -43,24 +43,26 @@ function DeclinedApplicants() {
     setOpen(open === id ? null : id)
   }
 
-  const filteredAndSorted = applicantInfo
-    .filter((applicant) => applicant.status === 'Rejected')
-    .filter((applicant) => {
-      const fullName = `${applicant.firstname} ${applicant.lastname} ${applicant.middle_initial || ''}`.toLowerCase()
-      return fullName.includes(searchTerm.toLowerCase())
-    })
-    .sort((a, b) => {
-      if (sortBy === 'name') {
-        const nameA = `${a.firstname} ${a.lastname}`.toLowerCase()
-        const nameB = `${b.firstname} ${b.lastname}`.toLowerCase()
-        return nameA.localeCompare(nameB)
-      } else if (sortBy === 'date') {
-        const dateA = new Date(a.created_at)
-        const dateB = new Date(b.created_at)
-        return dateB - dateA
-      }
-      return 0
-    })
+  const filteredAndSorted = useMemo(() => {
+    return applicantInfo
+      .filter((applicant) => applicant.status === 'Rejected')
+      .filter((applicant) => {
+        const fullName = `${applicant.firstname} ${applicant.lastname} ${applicant.middle_initial || ''}`.toLowerCase()
+        return fullName.includes(searchTerm.toLowerCase())
+      })
+      .sort((a, b) => {
+        if (sortBy === 'name') {
+          const nameA = `${a.firstname} ${a.lastname}`.toLowerCase()
+          const nameB = `${b.firstname} ${b.lastname}`.toLowerCase()
+          return nameA.localeCompare(nameB)
+        } else if (sortBy === 'date') {
+          const dateA = new Date(a.created_at)
+          const dateB = new Date(b.created_at)
+          return dateB - dateA
+        }
+        return 0
+      })
+  }, [applicantInfo, searchTerm, sortBy])
 
   return (
     <div>

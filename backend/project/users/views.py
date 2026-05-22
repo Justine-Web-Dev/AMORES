@@ -17,6 +17,7 @@ import os
 from django.conf import settings
 from django.http import FileResponse
 from django.db import connections
+from django.db.models import Prefetch
 
 # Create your views here.
 
@@ -118,9 +119,18 @@ def update_user(request, pk):
     create_audit_log(performer, 'USER_ARCHIVE', f"User '{username}' archived.", performer_name=performer_username if not performer else None)
     return Response(status=status.HTTP_204_NO_CONTENT)
 
+def get_applicant_queryset():
+  return Applicant.objects.prefetch_related(
+    Prefetch(
+      'applications',
+      queryset=Application.objects.select_related('evaluation').order_by('-created_at'),
+      to_attr='prefetched_applications'
+    )
+  )
+
 @api_view(['GET'])
 def get_applicant_form(request):
-  applicants = Applicant.objects.all()
+  applicants = get_applicant_queryset()
   serializer = ApplicantFullSerializer(applicants, many=True)
   return Response(serializer.data)
 
@@ -293,14 +303,14 @@ def get_applicant_documents(request, applicant_id):
 @api_view(['GET'])
 def get_active_applicants(request):
     # Applicants whose active_application is not 'Rejected'
-    applicants = Applicant.objects.exclude(applications__status='Rejected').distinct()
+    applicants = get_applicant_queryset().exclude(applications__status='Rejected').distinct()
     serializer = ApplicantFullSerializer(applicants, many=True)
     return Response(serializer.data)
 
 @api_view(['GET'])
 def get_all_applicants(request):
     # Fetch all applicants including declined/rejected ones
-    applicants = Applicant.objects.all().order_by('-created_at')
+    applicants = get_applicant_queryset().order_by('-created_at')
     serializer = ApplicantFullSerializer(applicants, many=True)
     return Response(serializer.data)
 
