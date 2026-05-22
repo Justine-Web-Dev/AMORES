@@ -1,16 +1,38 @@
-# React + Vite
+Group Members:
+  De Guzman, Uriel York A.
+  De Leon, Lorenzo B. Jr.
+  Maynes, Carl Benedict G.
+  Ramirez, Justine B.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Users to be logged in:
+  # Administrator
+  Username: admin
+  Password: admin
 
-Currently, two official plugins are available:
+  # Recruitment Personnel
+  Username: carl
+  Password: 12345
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+  System Title:
+    APPLICANT MANAGEMENT AND ONLINE RECRUITMENT SYSTEM (AMORES)
+     - The Applicant Management and Online Recruitment Evaluation System (AMORES) is a secure, cloud-enabled, mobile-responsive web application specifically designed for the Philippine National Police Regional Recruitment and Selection Unit 1 (RRSU 1). The system automates and centralizes the entire law enforcement recruitment lifecycle—spanning digital application entry, physical attribute screening, and multi-stage evaluation tracking (Physical Agility, Medical, and Neuro-Psychiatric phases). 
+     
+    # Features:
+      Administrator: 
+        - User Management - Can add and edit system users and set their permissions and roles.
+        - System Utilities:
+          - Audit logs - View system logs and track user activity.
+          - Backup and Restore - Can backup and restore the system database.
+          - Database Export and Import - Can export and import the system database.
+      
+      Recruitment Personnel: 
+        - Applicant Evaluation - Can view applicant information.
+        - Fail Safe Verification - Displayed the summarixe information of the applicants.
+        - Status Management - Can edit the status of applicants.
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+      Applicants:
+        - Form Entry - Can fill up the application form.
+        - Document Submission - Can upload the required documents.
+        - Status Tracking - Can view the status of their application.
+      
+        
