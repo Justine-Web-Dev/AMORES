@@ -13,10 +13,6 @@ function LandingpageMain() {
   const [isApplicationOpen, setIsApplicationOpen] = useState(true);
   const [appDates, setAppDates] = useState({ start: null, end: null });
 
-  useEffect(() => {
-    fetchApplicationStatus();
-  }, []);
-
   const fetchApplicationStatus = async () => {
     try {
       const response = await api.get('/users/system-settings/');
@@ -26,25 +22,27 @@ function LandingpageMain() {
         application_end_date 
       } = response.data;
 
-      // Logic to determine if application is actually open
       let isOpen = is_application_open;
 
-      if (isOpen && application_start_date && application_end_date) {
+      // If dates are set, use date-based logic (date-driven)
+      // This means: if today is within the date range, the application is open
+      if (application_start_date && application_end_date) {
         const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        // Create date at midnight in local timezone for comparison
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         
         const parseDate = (dateStr) => {
           const [year, month, day] = dateStr.split('-').map(Number);
-          return new Date(year, month - 1, day).getTime();
+          // Create date at midnight in local timezone
+          return new Date(year, month - 1, day);
         };
 
         const start = parseDate(application_start_date);
         const end = parseDate(application_end_date);
 
-        // Check if today is within the range [start, end]
-        if (today < start || today > end) {
-          isOpen = false;
-        }
+        // Check if today is within the date range
+        // Button will be enabled if today >= start AND today <= end
+        isOpen = today >= start && today <= end;
       }
 
       setIsApplicationOpen(isOpen);
@@ -53,6 +51,29 @@ function LandingpageMain() {
       console.error("Error fetching application status:", error);
     }
   };
+
+  useEffect(() => {
+    // Initial fetch
+    fetchApplicationStatus();
+
+    // Set up polling - fetch every 30 seconds to check for updates
+    const pollInterval = setInterval(fetchApplicationStatus, 30000);
+
+    // Also re-fetch when page becomes visible (user returns to tab)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchApplicationStatus();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Cleanup on unmount
+    return () => {
+      clearInterval(pollInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   // Synchronous route guard to prevent layout/paint flash (blink)
   const token = localStorage.getItem('token');
@@ -68,8 +89,10 @@ function LandingpageMain() {
         {/* Routes WITH Header */}
         <Route path="/" element={<><HeaderLanding isApplicationOpen={isApplicationOpen} /><LandingPage isApplicationOpen={isApplicationOpen} appDates={appDates} /></>} />
         <Route path="/track-application" element={<><HeaderLanding isApplicationOpen={isApplicationOpen} /><TrackApplication /></>} />
-        <Route path="/form-application" element={<><HeaderLanding isApplicationOpen={isApplicationOpen} /><Form /></>} />
-        <Route path="/document-submission" element={<><HeaderLanding isApplicationOpen={isApplicationOpen} /><DocumentSubmission /></>} />
+        
+        {/* FIXED: Passed props down to Form and DocumentSubmission */}
+        <Route path="/form-application" element={<><HeaderLanding isApplicationOpen={isApplicationOpen} /><Form isApplicationOpen={isApplicationOpen} /></>} />
+        <Route path="/document-submission" element={<><HeaderLanding isApplicationOpen={isApplicationOpen} /><DocumentSubmission isApplicationOpen={isApplicationOpen} /></>} />
 
         {/* Route WITHOUT Header (404) */}
         <Route path="*" element={<NotFound />} />

@@ -41,7 +41,6 @@ function App() {
         {/* Landing Page & Sub-routes (Track, Form, etc.) handled by LandingpageMain */}
         <Route path='/*' element={<LandingpageMain />} />
 
-        {/* Global Catch-all for 404 */}
         <Route path='*' element={<NotFound />} />
       </Routes>
     </>

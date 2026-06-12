@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useScrollFade } from "../../useScrollFade";
-import axios from "axios";
 import "./LandingPageCss.css";
 import AboutUs from "./AboutUs";
 import Disclaimer from "../../Disclaimer";
@@ -57,6 +56,15 @@ const LandingPage = ({ isApplicationOpen, appDates }) => {
   const scrollToRequirements = () => {
     requirementsRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  // Helper function to safely parse YYYY-MM-DD to a localized Date object
+  const getSafeDate = (dateStr) => {
+    if (!dateStr) return null;
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  };
+
+  const endDateObject = getSafeDate(appDates?.end);
 
   return (
     <div className="bg-gray-100 mt-10 home-landing-page ">
@@ -153,16 +161,12 @@ const LandingPage = ({ isApplicationOpen, appDates }) => {
             <div className="flex items-center gap-4 stat-item">
               <div className="min-w-[80px] md:min-w-[120px]">
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-none uppercase text-[#EB612A]">
-                  {appDates?.end
-                    ? new Date(appDates.end).toLocaleString("en-US", {
-                        month: "long",
-                      })
-                    : ""}
+                  {endDateObject
+                    ? endDateObject.toLocaleString("en-US", { month: "long" })
+                    : "TBA"}
                 </h2>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-none uppercase text-[#EB612A]">
-                  {appDates?.end
-                    ? `'${new Date(appDates.end).getDate().toString().slice(-2)}`
-                    : ""}
+                  {endDateObject ? endDateObject.getDate() : ""}
                 </h2>
               </div>
               <p className="text-xs md:text-sm text-gray-200 italic">
@@ -180,29 +184,22 @@ const LandingPage = ({ isApplicationOpen, appDates }) => {
         </div>
       </section>
 
+      {/* Dynamic Text Ticker */}
       <div className="bg-gray-100 ticker">
         <div className="ticker-track">
-          <div className="ticker-item">Applications Now Open</div>
-          <div className="ticker-item">
-            Philippine National Police Recruitment 2026
-          </div>
-          <div className="ticker-item">Serve Your Country</div>
-          <div className="ticker-item">Be a Force for Good</div>
-          <div className="ticker-item">· You Aspire We Inspire</div>
-          <div className="ticker-item">Applications Now Open</div>
-          <div className="ticker-item">
-            Philippine National Police Recruitment 2026
-          </div>
-          <div className="ticker-item">Serve Your Country</div>
-          <div className="ticker-item">Be a Force for Good</div>
-          <div className="ticker-item">· You Aspire We Inspire</div>
-          <div className="ticker-item">Applications Now Open</div>
-          <div className="ticker-item">
-            Philippine National Police Recruitment 2026
-          </div>
-          <div className="ticker-item">Serve Your Country</div>
-          <div className="ticker-item">Be a Force for Good</div>
-          <div className="ticker-item">· You Aspire We Inspire</div>
+          {[...Array(3)].map((_, i) => (
+            <React.Fragment key={i}>
+              <div className="ticker-item text-[#2C2D88]">
+                {isApplicationOpen ? "🟢 Applications Now Open" : "🔴 Applications Closed"}
+              </div>
+              <div className="ticker-item">
+                Philippine National Police Recruitment 2026
+              </div>
+              <div className="ticker-item">Serve Your Country</div>
+              <div className="ticker-item">Be a Force for Good</div>
+              <div className="ticker-item">· You Aspire We Inspire</div>
+            </React.Fragment>
+          ))}
         </div>
       </div>
 

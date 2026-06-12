@@ -7,8 +7,6 @@ export const api = axios.create({
   }
 })
 
-// Add a request interceptor to attach the JWT token
-// We use a custom header to avoid conflicts with Django's default SimpleJWT middleware
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');

@@ -78,7 +78,7 @@
   margin-top: 0.5rem;
   padding: 1.5rem;
   border:1px solid rgba(128, 128, 128, 0.281) ;
-  background-color: #2c2d861e;
+  background-color: #f5f6fa;
 }
 .title-app-details{
   margin-bottom: 0.5rem;
@@ -117,4 +117,4 @@
     border: none;
     overflow-y: auto;
   }
-}
+}

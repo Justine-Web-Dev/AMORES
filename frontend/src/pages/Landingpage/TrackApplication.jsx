@@ -112,7 +112,7 @@ function TrackApplication() {
         {error && <div className="w-full p-4 text-red-700 bg-red-100 rounded error-msg">{error}</div>}
 
         {application && (
-          <div className='w-full animate-fade-in rounded app-details'>
+          <div className='w-full  animate-fade-in rounded app-details'>
             <div className="flex justify-between items-center mb-6">
               <h3 className='text-xl font-bold title-app-details'>Application Progress</h3>
               <span className={`px-3 py-1 rounded-full text-xs font-bold ${statusColors[application.status] || "bg-gray-100 text-gray-600"}`}>

@@ -48,11 +48,11 @@ function HeaderLanding({ isApplicationOpen = true }) {
           </nav>
           
           <div className="flex items-center gap-3">
-            <Link to={'/LoginUsers'} 
+            {/* <Link to={'/LoginUsers'} 
               className="flex justify-center items-center border border-[#2C2D86] text-[#2C2D86] font-semibold h-[40px] px-5 text-sm rounded cursor-pointer login-staff-btn hover:bg-[#2C2D86] hover:text-white transition-all"
             >
               Personnel Login
-            </Link>
+            </Link> */}
 
             {isApplicationOpen ? (
               <Link to={'/form-application'} 
