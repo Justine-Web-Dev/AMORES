@@ -45,7 +45,6 @@ function TrackApplication() {
     "Oath Taking"
   ];
 
-  // Determine which stages to show based on application status
   const isPostAccepted = application && (
     application.status === 'Qualified' || 
     application.status === 'Accepted' || 

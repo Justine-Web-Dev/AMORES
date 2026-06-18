@@ -10,7 +10,7 @@ function HeaderLanding({ isApplicationOpen = true }) {
 
     const handleAboutClick = (e) => {
         e.preventDefault();
-        const headerHeight = 80; // Approximate height of fixed header
+        const headerHeight = 80; 
 
         const scrollToSection = () => {
             const section = document.getElementById('about-us');
@@ -88,12 +88,12 @@ function HeaderLanding({ isApplicationOpen = true }) {
           <a href="#about-us" className="text-sm w-full text-center py-2 about-us" onClick={handleAboutClick}>About Us</a>
           <Link to={'/track-application'} className="text-sm w-full text-center py-2 track-app" onClick={() => setMenuOpen(false)}>Track Application</Link>
           
-          <Link to={'/LoginUsers'} 
+          {/* <Link to={'/LoginUsers'} 
             className="flex justify-center items-center border border-[#2C2D86] text-[#2C2D86] h-[40px] w-full text-sm font-semibold rounded cursor-pointer login-staff-btn hover:bg-[#2C2D86] hover:text-white transition-all"
             onClick={() => setMenuOpen(false)}
           >
             Personnel Login
-          </Link>
+          </Link> */}
 
           {isApplicationOpen ? (
             <Link to={'/form-application'} 
