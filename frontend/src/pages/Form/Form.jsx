@@ -32,8 +32,6 @@ function Form() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // Navigate to document submission with form data
-    // Using relative path to stay within current dashboard context if applicable
     navigate('../document-submission', { state: { formData }, relative: 'path' })
   }
 
@@ -196,9 +194,6 @@ function Form() {
               className="border rounded px-3 py-2 text-sm w-full" type="text" placeholder="Tribe affiliated"  />
           </div>
 
-          
-
-          
           <div className="md:col-span-3 flex justify-center md:justify-end mt-4">
             <button
               className="w-full md:w-[220px] h-10 rounded bg-[#2C2D86] text-white font-bold text-sm cursor-pointer hover:bg-[#3a3b9e] transition-colors submit-application-btn"

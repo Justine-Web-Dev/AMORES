@@ -71,6 +71,15 @@ function ApplicantInfoView({ data }) {
             Assessment & Screening Results
           </h1>
           <div className="grid-layout">
+            {(data.scheduled_date || data.scheduled_time) && (
+              <div className="info-item">
+                <label className="text-blue-600">BMI Schedule</label>
+                <p className="font-bold text-blue-800">
+                  {data.scheduled_date || "No date set"}{" "}
+                  {data.scheduled_time ? `/ ${data.scheduled_time}` : ""}
+                </p>
+              </div>
+            )}
             {data.bmi_height && (
               <div className="info-item">
                 <label>BMI Data</label>
@@ -85,6 +94,18 @@ function ApplicantInfoView({ data }) {
                 <p>{data.pat_score}</p>
               </div>
             )}
+            {data.psychological_result && (
+            <div className="info-item mt-4">
+              <label>Neurological Examination</label>
+              <p className="whitespace-pre-wrap">{data.psychological_result}</p>
+            </div>
+          )}
+          {data.medical_result && (
+            <div className="info-item mt-4">
+              <label>Medical Findings</label>
+              <p className="whitespace-pre-wrap">{data.medical_result}</p>
+            </div>
+          )}
             {data.drug_test_result && (
               <div className="info-item">
                 <label>Drug Test</label>
@@ -104,15 +125,7 @@ function ApplicantInfoView({ data }) {
                 <p>{data.oath_taking_date}</p>
               </div>
             )}
-            {(data.scheduled_date || data.scheduled_time) && (
-              <div className="info-item">
-                <label className="text-blue-600">Next Scheduled Step</label>
-                <p className="font-bold text-blue-800">
-                  {data.scheduled_date || "No date set"}{" "}
-                  {data.scheduled_time ? `@ ${data.scheduled_time}` : ""}
-                </p>
-              </div>
-            )}
+            
           </div>
           {data.evaluation_remarks && (
             <div className="info-item mt-4">
@@ -120,18 +133,7 @@ function ApplicantInfoView({ data }) {
               <p className="whitespace-pre-wrap">{data.evaluation_remarks}</p>
             </div>
           )}
-          {data.psychological_result && (
-            <div className="info-item mt-4">
-              <label>Psychological Findings</label>
-              <p className="whitespace-pre-wrap">{data.psychological_result}</p>
-            </div>
-          )}
-          {data.medical_result && (
-            <div className="info-item mt-4">
-              <label>Medical Findings</label>
-              <p className="whitespace-pre-wrap">{data.medical_result}</p>
-            </div>
-          )}
+          
         </section>
       )}
     </div>

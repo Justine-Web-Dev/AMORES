@@ -193,23 +193,14 @@ function TrackApplication() {
               {application?.scheduled_date && (
                 <>
                   <div className="flex flex-col gap-1">
-                    <span className="text-[10px] uppercase font-bold text-gray-400">Scheduled Date</span>
+                    <span className="text-[10px] uppercase font-bold text-gray-400">BMI Scheduled Date</span>
                     <p className="font-bold text-blue-800">{new Date(application.scheduled_date).toLocaleDateString(undefined, { dateStyle: 'long' })}</p>
                   </div>
                   <div className="flex flex-col gap-1">
-                    <span className="text-[10px] uppercase font-bold text-gray-400">Scheduled Time</span>
+                    <span className="text-[10px] uppercase font-bold text-gray-400">BMI Scheduled Time</span>
                     <p className="font-bold text-blue-800">{application.scheduled_time || 'TBA'}</p>
                   </div>
                 </>
-              )}
-              
-              {application?.drug_test_result && (
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] uppercase font-bold text-gray-400">Drug Test Result</span>
-                  <p className={`font-bold ${application.drug_test_result === 'Positive' ? 'text-red-600' : 'text-green-600'}`}>
-                    {application.drug_test_result}
-                  </p>
-                </div>
               )}
 
               {application?.bmi_height && (
@@ -219,7 +210,7 @@ function TrackApplication() {
                 </div>
               )}
 
-              {application?.pat_score && (
+               {application?.pat_score && (
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase font-bold text-gray-400">Physical Agility Test Result</span>
                   <p className="font-bold text-gray-800">{application.pat_score}</p>
@@ -237,6 +228,15 @@ function TrackApplication() {
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase font-bold text-gray-400">Medical Examination Result</span>
                   <p className="font-bold text-gray-800">{application.medical_result}</p>
+                </div>
+              )}
+
+              {application?.drug_test_result && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold text-gray-400">Drug Test Result</span>
+                  <p className={`font-bold ${application.drug_test_result === 'Positive' ? 'text-red-600' : 'text-green-600'}`}>
+                    {application.drug_test_result}
+                  </p>
                 </div>
               )}
 

@@ -63,7 +63,7 @@ function AddNewUserForm({ onClose, user }) {
       }
 
       if (user) {
-        const { password, ...updateData } = formData;
+        const {...updateData } = formData;
         updateData.performed_by = currentUser;
 
         await api.put(`users/update_user/${user.id}/`, updateData);
