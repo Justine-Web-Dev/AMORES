@@ -51,6 +51,7 @@ function Header() {
     if (path.includes('application-form')) return 'Recruitment Form';
     if (path.includes('document-submission')) return 'Document Portal';
     if (path.includes('view-details')) return 'Applicant Profile';
+    if (path.includes('generate-report')) return 'Generate Report';
     if (path.includes('success-submit')) return 'Submission Success';
     
     return 'Dashboard Overview';
