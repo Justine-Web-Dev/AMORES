@@ -9,8 +9,8 @@ import './ApplicantEval.css'
 function ApplicantEvaluation() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('All')
-  const [sortBy, setSortBy] = useState('name')
-  const [loading,setLoading] = useState(false)
+  const [sortBy, setSortBy] = useState('date') // Defaulted to date for FIFO view
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
   const statusColors = {
@@ -30,94 +30,88 @@ function ApplicantEvaluation() {
     "Oath Taking": "bg-emerald-100 text-emerald-600",
   };
 
- const [applicantInfo,setApplicantInfo] = useState([])
- const [open,setOpen] = useState(null)
+  const [applicantInfo, setApplicantInfo] = useState([])
+  const [open, setOpen] = useState(null)
 
-  const fetchInfo = async (isSilent = false) =>{
-      !isSilent && setLoading(true)
-      try {
-        const response = await api.get("users/applicants/all")
-        setApplicantInfo(response.data)
-        console.log(response.data)
-      } catch (err) {
-        console.error("Error fetching applicant info:", err)
-      }finally{
-        setLoading(false)
-      }
+  const fetchInfo = async (isSilent = false) => {
+    !isSilent && setLoading(true)
+    try {
+      const response = await api.get("users/applicants/all")
+      setApplicantInfo(response.data)
+      console.log(response.data)
+    } catch (err) {
+      console.error("Error fetching applicant info:", err)
+    } finally {
+      setLoading(false)
     }
+  }
 
-  useEffect(()=>{
+  useEffect(() => {
     fetchInfo(false)
-    const interval = setInterval(()=>{
+    const interval = setInterval(() => {
       fetchInfo(true)
-    },15000)
+    }, 15000)
 
     return () => clearInterval(interval)
-  },[])
+  }, [])
 
-  const toggleMenu = (id) =>{
+  const toggleMenu = (id) => {
     setOpen(open === id ? null : id)
   }
 
-
   const filteredAndSorted = useMemo(() => {
     return applicantInfo
-    .filter((applicant) => {
-      if (applicant.status === 'Rejected') return false;
+      .filter((applicant) => {
+        if (applicant.status === 'Rejected') return false;
+        const fullName = `${applicant.firstname} ${applicant.lastname} ${applicant.middle_initial || ''}`.toLowerCase();
+        const matchesSearch = fullName.includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === 'All' || applicant.status === statusFilter;
+        return matchesSearch && matchesStatus;
+      })
+      .sort((a, b) => {
+        if (sortBy === 'name') {
+          const nameA = `${a.firstname} ${a.lastname}`.toLowerCase();
+          const nameB = `${b.firstname} ${b.lastname}`.toLowerCase();
+          return nameA.localeCompare(nameB);
+        } else if (sortBy === 'date') {
+          const dateA = new Date(a.created_at);
+          const dateB = new Date(b.created_at);
+          // Changed from (dateB - dateA) to (dateA - dateB) for First-In, First-Out (Chronological Order)
+          return dateA - dateB;
+        } else if (sortBy === 'batch1') {
+          return (a.batch || 0) - (b.batch || 0);
+        } else if (sortBy === 'batch2') {
+          return (b.batch || 0) - (a.batch || 0);
+        }
+        return 0;
+      });
+  }, [applicantInfo, searchTerm, statusFilter, sortBy]);
+
+  const handleExportExcel = () => {
+    const dataForExport = applicantInfo.filter(applicant => {
       const fullName = `${applicant.firstname} ${applicant.lastname} ${applicant.middle_initial || ''}`.toLowerCase();
       const matchesSearch = fullName.includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === 'All' || applicant.status === statusFilter;
       return matchesSearch && matchesStatus;
-    })
-    .sort((a, b) => {
-      if (sortBy === 'name') {
-        const nameA = `${a.firstname} ${a.lastname}`.toLowerCase();
-        const nameB = `${b.firstname} ${b.lastname}`.toLowerCase();
-        return nameA.localeCompare(nameB);
-      } else if (sortBy === 'date') {
-        const dateA = new Date(a.created_at);
-        const dateB = new Date(b.created_at);
-        return dateB - dateA;
-      } else if (sortBy === 'batch1') {
-        return (a.batch || 0) - (b.batch || 0);
-      } else if (sortBy === 'batch2') {
-        return (b.batch || 0) - (a.batch || 0);
-      }
-      return 0;
-    });
-  }, [applicantInfo, searchTerm, statusFilter, sortBy]);
-
-  const handleExportExcel = () => {
-    
-    const dataForExport = applicantInfo.filter(applicant => {
-       const fullName = `${applicant.firstname} ${applicant.lastname} ${applicant.middle_initial || ''}`.toLowerCase();
-       const matchesSearch = fullName.includes(searchTerm.toLowerCase());
-       const matchesStatus = statusFilter === 'All' || applicant.status === statusFilter;
-       return matchesSearch && matchesStatus;
     });
 
     const exportData = dataForExport.map(applicant => ({
-      // Personal & Identity
       'Tracking Code': applicant.tracking_code,
       'First Name': applicant.firstname,
       'Last Name': applicant.lastname,
       'Middle Name': applicant.middle_name || 'N/A',
       'Age': applicant.age,
-      'Gender': applicant.gender || 'N/A', // If you have this field
+      'Gender': applicant.gender || 'N/A',
       'Email': applicant.email,
       'Contact #': applicant.cp_number,
       'Height': applicant.height,
       'Tribe': applicant.tribe || 'N/A',
       'Pag-IBIG No.': applicant.pag_ibig_number,
       'PhilHealth ID': applicant.phil_health_id_num,
-      
-      // Educational Background
       'School Name': applicant.name_of_school,
       'Program/Course': applicant.program,
       'Date Graduated': applicant.date_graduated,
       'Latin Honor': applicant.latin_honor || 'N/A',
-      
-      // Application Status & Logistics
       'Current Status': applicant.status,
       'Batch': applicant.batch || 1,
       'Rejection Reason': applicant.rejection_reason || 'N/A',
@@ -125,8 +119,6 @@ function ApplicantEvaluation() {
       'Next Scheduled Time': applicant.scheduled_time || 'N/A',
       'Oath Taking Date': applicant.oath_taking_date || 'N/A',
       'Evaluation Remarks': applicant.evaluation_remarks || 'N/A',
-      
-      // Screening & Assessment Results
       'BMI Height (cm)': applicant.bmi_height || 'N/A',
       'BMI Weight (kg)': applicant.bmi_weight || 'N/A',
       'BMI Result': applicant.bmi_result || 'N/A',
@@ -135,12 +127,9 @@ function ApplicantEvaluation() {
       'Medical Findings': applicant.medical_result || 'N/A',
       'Drug Test Result': applicant.drug_test_result || 'N/A',
       'Final Interview Score (%)': applicant.final_interview_score || 'N/A',
-      
-      // Metadata
       'Registration Date': applicant.created_at
     }));
 
-    // Create workbook and worksheet
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Master Applicant List");
@@ -155,7 +144,6 @@ function ApplicantEvaluation() {
     ];
     worksheet['!cols'] = wscols;
 
-    // Generate and download
     const fileName = `Applicant_Master_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(workbook, fileName);
   };
@@ -229,11 +217,11 @@ function ApplicantEvaluation() {
             <tbody className="divide-y divide-gray-200 bg-white">
               {loading ? (
                 <tr>
-                 <td colSpan="10" className="px-4 py-10">
-                  <div className="flex justify-center items-center w-full">
-                    <div className='border-[4px] border-gray-100 border-t-[#2C2D86] h-[30px] w-[30px] rounded-full animate-spin'></div>
-                  </div>
-                </td>
+                  <td colSpan="10" className="px-4 py-10">
+                    <div className="flex justify-center items-center w-full">
+                      <div className='border-[4px] border-gray-100 border-t-[#2C2D86] h-[30px] w-[30px] rounded-full animate-spin'></div>
+                    </div>
+                  </td>
                 </tr>
               ) : filteredAndSorted.length > 0 ? (
                 filteredAndSorted.map((applicant) => (
@@ -273,7 +261,7 @@ function ApplicantEvaluation() {
                             </button>
                             <button 
                               onClick={() => navigate(`../view-details/${applicant.id}`)}
-                              className="text-left  cursor-pointer view-details-btn-action">
+                              className="text-left cursor-pointer view-details-btn-action">
                               Update Status
                             </button>
                           </ul>
@@ -291,8 +279,7 @@ function ApplicantEvaluation() {
               )}
             </tbody>
           </table>
-          </div>
-
+        </div>
       </div>
     </div>
   )

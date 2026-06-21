@@ -155,6 +155,34 @@ def track_status(request, code):
         }, status=status.HTTP_200_OK)
     except Application.DoesNotExist:
         return Response({"error": "Application not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(['POST'])
+def validate_applicant_form(request):
+    """Validate form data without registering the applicant"""
+    email = request.data.get('email', '').strip().lower()
+    contact_number = request.data.get('cp_number', '').strip() or request.data.get('contact_number', '').strip()
+    pag_ibig_number = request.data.get('pag_ibig_number', '').strip()
+    phil_health_id_num = request.data.get('phil_health_id_num', '').strip()
+
+    errors = []
+
+    if not email or not contact_number or not pag_ibig_number or not phil_health_id_num:
+        return Response({"error": "Email, Contact number, Pag-IBIG number, and PhilHealth ID are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    if Applicant.objects.filter(email__iexact=email).exists():
+        errors.append("An application with this email already exists.")
+    if Applicant.objects.filter(contact_number=contact_number).exists():
+        errors.append("An application with this contact number already exists.")
+    if Applicant.objects.filter(pag_ibig_number=pag_ibig_number).exists():
+        errors.append("An application with this Pag-IBIG number already exists.")
+    if Applicant.objects.filter(phil_health_id_num=phil_health_id_num).exists():
+        errors.append("An application with this PhilHealth ID already exists.")
+
+    if errors:
+        return Response({"errors": errors}, status=status.HTTP_409_CONFLICT)
+
+    return Response({"valid": True, "message": "Form data is valid."}, status=status.HTTP_200_OK)
+
 
 @api_view(['POST'])
 def register_applicant_form(request):

@@ -131,7 +131,6 @@ function DashboardOverview() {
       { name: 'New', status: 'New Applicant' },
       { name: 'Docs', status: 'Document Review' },
       { name: 'Screening', status: 'Initial Screening' },
-      { name: 'Interview', status: 'Technical Interview' },
       { name: 'BMI', status: 'Body Mass Index' },
       { name: 'PAT', status: 'Physical Agility Test' },
       { name: 'Psych', status: 'Neuro Examination' },
