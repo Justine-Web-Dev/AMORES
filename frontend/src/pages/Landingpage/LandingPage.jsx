@@ -63,7 +63,6 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
   };
 
   const endDateObject = getSafeDate(appDates?.end);
-  const startDateObject = getSafeDate(appDates?.start);
 
   return (
     <div className="bg-slate-50 min-h-screen font-sans overflow-x-hidden">

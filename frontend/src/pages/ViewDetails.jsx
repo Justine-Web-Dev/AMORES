@@ -78,9 +78,9 @@ function ViewDetails() {
             <span className='text-md'>Back to Applications</span>
         </button>
 
-      <div className='module-content max-w-7xl mx-auto'>
-        <div className='flex flex-col lg:flex-row gap-10'>
-          <div className="flex-1 max-w-3xl bg-[#F9FAFB] rounded-xl shadow-sm card-detail">
+      <div className='module-content mx-auto'>
+        <div className='flex flex-col lg:flex-row gap-1'>
+          <div className="flex-1 max-w-8xl bg-[#F9FAFB] rounded-xl shadow-sm card-detail">
             <div className="top-section">
               <h1 className="text-xl font-semibold text-gray-800"> Name: {applicant.firstname} {applicant.lastname}</h1>
               <p className="text-sm text-gray-500">Reference Code: {applicant.tracking_code}</p>
@@ -113,7 +113,10 @@ function ViewDetails() {
               <p>{applicant.created_at}</p>
             </div>
           </div> 
-          {/* Update Status */}
+        </div>
+        <ApplicantInfoView data={applicant}/>
+        <ViewDocumentSubmitted applicantId={id}/>
+        {/* Update Status */}
           <StatusManagement 
             applicantId={id}
             applicantData={applicant}
@@ -121,9 +124,6 @@ function ViewDetails() {
             onUpdate={fetchApplicantDetails}
             currentRejectionReason={applicant.rejection_reason}
           />
-        </div>
-        <ApplicantInfoView data={applicant}/>
-        <ViewDocumentSubmitted applicantId={id}/>
       </div>
     </div>
   )

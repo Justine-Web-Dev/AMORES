@@ -19,6 +19,8 @@ function StatusManagement({applicantId, applicantData, currentStatus, onUpdate,c
   const [medicalResult, setMedicalResult] = useState(applicantData?.medical_result || '')
   const [finalInterviewScore, setFinalInterviewScore] = useState(applicantData?.final_interview_score || '')
 
+  const isAccepted = "Accepted"
+
   useEffect(() => {
     setSelectedStatus(currentStatus);
     setRejectionReason(currentRejectionReason || "");
@@ -94,7 +96,6 @@ function StatusManagement({applicantId, applicantData, currentStatus, onUpdate,c
     "Document Review",
     "Initial Screening",
     "Qualified",
-    "Accepted",
     "Rejected"
   ];
 
@@ -111,7 +112,6 @@ function StatusManagement({applicantId, applicantData, currentStatus, onUpdate,c
     "Rejected"
   ];
 
-  // Determine which list to show
   // If current status is 'Qualified' or any of the post-acceptance stages, show the second list
   const isPostAcceptance = currentStatus === 'Qualified' || currentStatus === 'Accepted' || POST_ACCEPTANCE_STATUSES.includes(currentStatus);
   const statusOptions = isPostAcceptance ? POST_ACCEPTANCE_STATUSES : INITIAL_STATUSES;
@@ -133,7 +133,10 @@ function StatusManagement({applicantId, applicantData, currentStatus, onUpdate,c
           >
             <option value="" disabled>Select Status</option>
             {statusOptions.map(status => (
-              <option key={status} value={status}>{status}</option>
+              <option 
+              disabled={isAccepted}
+              key={status}
+              value={status}>{status}</option>
             ))}
           </select>
         </div>
