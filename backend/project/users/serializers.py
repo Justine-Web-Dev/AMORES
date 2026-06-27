@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import User, Applicant, Application, Evaluation, ApplicantDocument, SystemSettings, AuditLog
 from django.utils.dateparse import parse_datetime
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password, identify_hasher
 
 class FlexibleDateField(serializers.DateField):
     def to_internal_value(self, data):
@@ -29,12 +29,18 @@ class UsersSerializers(serializers.ModelSerializer):
 
     def create(self, validated_data):
         if 'password' in validated_data:
-            validated_data['password'] = make_password(validated_data['password'])
+            try:
+                identify_hasher(validated_data['password'])
+            except ValueError:
+                validated_data['password'] = make_password(validated_data['password'])
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
         if 'password' in validated_data:
-            validated_data['password'] = make_password(validated_data['password'])
+            try:
+                identify_hasher(validated_data['password'])
+            except ValueError:
+                validated_data['password'] = make_password(validated_data['password'])
         return super().update(instance, validated_data)
 
 class EvaluationSerializer(serializers.ModelSerializer):

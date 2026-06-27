@@ -1,43 +1,86 @@
 from .models import AuditLog, User
+import datetime
 import os
+import shutil
 import sqlite3
-from django.db import transaction
+import subprocess
+import tempfile
+from django.core.management import call_command
+from django.db import connections, transaction
 from django.db import models as db_models
 from django.contrib.auth.hashers import make_password
 
+BACKUP_APP_LABEL = 'users'
+RESTORE_DELETE_ORDER = [
+    'AuditLog',
+    'ApplicantDocument',
+    'Evaluation',
+    'Application',
+    'Applicant',
+    'SystemSettings',
+    'User',
+]
+RESTORE_IMPORT_MODELS = [
+    'User',
+    'Applicant',
+    'Application',
+    'Evaluation',
+    'ApplicantDocument',
+    'SystemSettings',
+    'AuditLog',
+]
 
-def build_database_backup_command(backup_path, db_settings):
+
+def _postgres_connection_uri(db_settings):
+    return 'postgresql://{user}:{password}@{host}:{port}/{name}'.format(
+        user=db_settings.get('USER', ''),
+        password=db_settings.get('PASSWORD', ''),
+        host=db_settings.get('HOST') or 'localhost',
+        port=db_settings.get('PORT') or '5432',
+        name=db_settings.get('NAME', ''),
+    )
+
+
+def find_pg_binary(binary_name):
+    """Locate pg_dump or psql on PATH or in common PostgreSQL install directories."""
+    path = shutil.which(binary_name)
+    if path:
+        return path
+
+    if os.name == 'nt':
+        search_roots = [
+            os.environ.get('ProgramFiles', r'C:\Program Files'),
+            os.environ.get('ProgramFiles(x86)', r'C:\Program Files (x86)'),
+        ]
+        for root in search_roots:
+            pg_root = os.path.join(root, 'PostgreSQL')
+            if not os.path.isdir(pg_root):
+                continue
+            for version_dir in os.listdir(pg_root):
+                candidate = os.path.join(pg_root, version_dir, 'bin', f'{binary_name}.exe')
+                if os.path.isfile(candidate):
+                    return candidate
+    return None
+
+
+def build_database_backup_command(backup_path, db_settings, pg_dump='pg_dump'):
     """Build a PostgreSQL backup command for the configured database."""
     if db_settings.get('ENGINE', '').endswith('postgresql'):
-        cmd = ['pg_dump', '--dbname=postgresql://{user}:{password}@{host}:{port}/{name}'.format(
-            user=db_settings.get('USER', ''),
-            password=db_settings.get('PASSWORD', ''),
-            host=db_settings.get('HOST', 'localhost'),
-            port=db_settings.get('PORT', '5432'),
-            name=db_settings.get('NAME', ''),
-        )]
-        if db_settings.get('HOST'):
-            cmd.append('-f')
-            cmd.append(backup_path)
-        else:
-            cmd.append('-f')
-            cmd.append(backup_path)
-        return cmd
+        return [
+            pg_dump,
+            f'--dbname={_postgres_connection_uri(db_settings)}',
+            '-f',
+            backup_path,
+        ]
     return []
 
 
-def build_database_restore_command(backup_path, db_settings):
+def build_database_restore_command(backup_path, db_settings, psql='psql'):
     """Build a PostgreSQL restore command for the configured database."""
     if db_settings.get('ENGINE', '').endswith('postgresql'):
         return [
-            'psql',
-            '--dbname=postgresql://{user}:{password}@{host}:{port}/{name}'.format(
-                user=db_settings.get('USER', ''),
-                password=db_settings.get('PASSWORD', ''),
-                host=db_settings.get('HOST', 'localhost'),
-                port=db_settings.get('PORT', '5432'),
-                name=db_settings.get('NAME', ''),
-            ),
+            psql,
+            f'--dbname={_postgres_connection_uri(db_settings)}',
             '-f',
             backup_path,
         ]
@@ -45,13 +88,90 @@ def build_database_restore_command(backup_path, db_settings):
 
 
 def detect_backup_format(file_name):
-    """Detect whether the uploaded backup is a SQLite or PostgreSQL dump."""
+    """Detect whether the uploaded backup is SQLite, PostgreSQL, or Django JSON."""
     name = (file_name or '').lower()
     if name.endswith(('.sqlite3', '.sqlite', '.db')):
         return 'sqlite'
     if name.endswith(('.sql', '.dump', '.backup')):
         return 'postgresql'
+    if name.endswith('.json'):
+        return 'json'
     return None
+
+
+def create_database_backup(db_settings):
+    """Create a database backup file and return (backup_path, content_type)."""
+    timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+    backup_dir = tempfile.gettempdir()
+    engine = db_settings.get('ENGINE', '')
+
+    if engine.endswith('sqlite3'):
+        from django.conf import settings
+
+        db_path = db_settings.get('NAME')
+        if not os.path.isabs(db_path):
+            db_path = str(settings.BASE_DIR / db_path)
+        backup_path = os.path.join(backup_dir, f'amores_backup_{timestamp}.sqlite3')
+        shutil.copy2(db_path, backup_path)
+        return backup_path, 'application/x-sqlite3'
+
+    if engine.endswith('postgresql'):
+        pg_dump = find_pg_binary('pg_dump')
+        if pg_dump:
+            backup_path = os.path.join(backup_dir, f'amores_backup_{timestamp}.sql')
+            command = build_database_backup_command(backup_path, db_settings, pg_dump=pg_dump)
+            try:
+                result = subprocess.run(command, check=True, capture_output=True, text=True)
+                if result.stderr:
+                    print(f"[BACKUP] pg_dump stderr: {result.stderr}")
+                return backup_path, 'application/sql'
+            except (FileNotFoundError, subprocess.CalledProcessError) as exc:
+                print(f"[BACKUP] pg_dump failed, falling back to dumpdata: {exc}")
+
+        backup_path = os.path.join(backup_dir, f'amores_backup_{timestamp}.json')
+        with open(backup_path, 'w', encoding='utf-8') as backup_file:
+            call_command('dumpdata', BACKUP_APP_LABEL, indent=2, stdout=backup_file)
+        return backup_path, 'application/json'
+
+    raise ValueError('Unsupported database engine.')
+
+
+def restore_database_backup(backup_path, backup_format, db_settings, model_classes):
+    """Restore the database from a backup file."""
+    engine = db_settings.get('ENGINE', '')
+
+    if backup_format == 'json':
+        if not engine.endswith('postgresql'):
+            raise ValueError('JSON restore is only supported for PostgreSQL databases.')
+        connections.close_all()
+        with transaction.atomic():
+            for model_name in RESTORE_DELETE_ORDER:
+                model_classes[model_name].objects.all().delete()
+            call_command('loaddata', backup_path, verbosity=0)
+        return
+
+    if backup_format == 'sqlite':
+        if not engine.endswith('postgresql'):
+            raise ValueError('SQLite restore is only supported when importing into PostgreSQL.')
+        import_sqlite_backup_to_postgres(backup_path, [model_classes[name] for name in RESTORE_IMPORT_MODELS])
+        return
+
+    if backup_format == 'postgresql':
+        if not engine.endswith('postgresql'):
+            raise ValueError('PostgreSQL restore is only supported for PostgreSQL databases.')
+        psql = find_pg_binary('psql')
+        if not psql:
+            raise FileNotFoundError(
+                'psql was not found. Install PostgreSQL client tools or restore a .json backup instead.'
+            )
+        connections.close_all()
+        restore_command = build_database_restore_command(backup_path, db_settings, psql=psql)
+        result = subprocess.run(restore_command, check=True, capture_output=True, text=True)
+        if result.stderr:
+            print(f"[RESTORE] psql stderr: {result.stderr}")
+        return
+
+    raise ValueError('Invalid backup file.')
 
 
 def import_sqlite_backup_to_postgres(sqlite_path, model_classes):

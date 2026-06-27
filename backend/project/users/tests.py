@@ -5,7 +5,13 @@ import tempfile
 from django.test import SimpleTestCase, TestCase
 
 from .models import Applicant, Application
-from .utils import build_database_backup_command, build_database_restore_command, detect_backup_format, import_sqlite_backup_to_postgres
+from .utils import (
+    build_database_backup_command,
+    build_database_restore_command,
+    detect_backup_format,
+    import_sqlite_backup_to_postgres,
+    create_database_backup,
+)
 
 
 class DatabaseBackupRestoreCommandTests(SimpleTestCase):
@@ -14,6 +20,9 @@ class DatabaseBackupRestoreCommandTests(SimpleTestCase):
 
     def test_detects_postgresql_backup(self):
         self.assertEqual(detect_backup_format('backup.sql'), 'postgresql')
+
+    def test_detects_json_backup(self):
+        self.assertEqual(detect_backup_format('backup.json'), 'json')
 
     def test_builds_postgres_backup_command(self):
         db_settings = {
@@ -30,6 +39,7 @@ class DatabaseBackupRestoreCommandTests(SimpleTestCase):
         self.assertEqual(command[0], 'pg_dump')
         self.assertTrue(any('amores' in item for item in command))
         self.assertEqual(command[-1], '/tmp/amores.sql')
+        self.assertTrue(command[1].startswith('--dbname=postgresql://'))
 
     def test_builds_postgres_restore_command(self):
         db_settings = {

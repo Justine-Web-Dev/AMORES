@@ -8,6 +8,30 @@ function BackupRestore() {
   const [selectedFile, setSelectedFile] = useState(null)
   const [modalConfig, setModalConfig] = useState({ isOpen: false, type: 'success', title: '', message: '' })
 
+  const getBackupErrorMessage = async (error) => {
+    const data = error.response?.data
+    if (data instanceof Blob) {
+      try {
+        const text = await data.text()
+        const parsed = JSON.parse(text)
+        return parsed.error || 'There was an error generating your backup. Please try again.'
+      } catch {
+        return 'There was an error generating your backup. Please try again.'
+      }
+    }
+    return data?.error || 'There was an error generating your backup. Please try again.'
+  }
+
+  const getDownloadFilename = (response) => {
+    const disposition = response.headers['content-disposition'] || ''
+    const match = disposition.match(/filename="([^"]+)"/i)
+    if (match?.[1]) {
+      return match[1]
+    }
+    const date = new Date().toISOString().split('T')[0]
+    return `amores_backup_${date}.json`
+  }
+
   const handleBackup = async () => {
     setLoading(true)
     try {
@@ -15,11 +39,11 @@ function BackupRestore() {
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      const date = new Date().toISOString().split('T')[0];
-      link.setAttribute('download', `amores_backup_${date}.sqlite3`);
+      link.setAttribute('download', getDownloadFilename(response));
       document.body.appendChild(link);
       link.click();
       link.remove();
+      window.URL.revokeObjectURL(url);
       
       setModalConfig({
         isOpen: true,
@@ -29,11 +53,12 @@ function BackupRestore() {
       })
     } catch (error) {
       console.error("Backup failed:", error)
+      const message = await getBackupErrorMessage(error)
       setModalConfig({
         isOpen: true,
         type: 'error',
         title: 'Backup Failed',
-        message: 'There was an error generating your backup. Please try again.'
+        message
       })
     } finally {
       setLoading(false)
@@ -42,14 +67,14 @@ function BackupRestore() {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file && /\.(sqlite3|sqlite|db|sql|dump|backup)$/i.test(file.name)) {
+    if (file && /\.(sqlite3|sqlite|db|sql|dump|backup|json)$/i.test(file.name)) {
       setSelectedFile(file);
     } else {
       setModalConfig({
         isOpen: true,
         type: 'error',
         title: 'Invalid File',
-        message: 'Please select a valid backup file (.sqlite3, .sql, .dump, or .backup).'
+        message: 'Please select a valid backup file (.sqlite3, .sql, .json, .dump, or .backup).'
       });
       e.target.value = null;
     }
@@ -129,7 +154,7 @@ function BackupRestore() {
           <div className="w-full mb-4">
             <input 
               type="file" 
-              accept=".sqlite3" 
+              accept=".sqlite3,.sql,.json,.dump,.backup" 
               onChange={handleFileChange}
               id="restore-file"
               className="hidden"

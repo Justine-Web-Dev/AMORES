@@ -19,7 +19,7 @@ function StatusManagement({applicantId, applicantData, currentStatus, onUpdate,c
   const [medicalResult, setMedicalResult] = useState(applicantData?.medical_result || '')
   const [finalInterviewScore, setFinalInterviewScore] = useState(applicantData?.final_interview_score || '')
 
-  const isAccepted = "Accepted"
+  const isAccepted = currentStatus === 'Accepted'
 
   useEffect(() => {
     setSelectedStatus(currentStatus);

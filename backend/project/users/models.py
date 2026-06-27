@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password, identify_hasher
 
 import string
 import random
@@ -37,7 +37,11 @@ class User(models.Model):
     is_archived = models.BooleanField(default=False, verbose_name="Is Archived")
 
     def save(self, *args, **kwargs):
-        self.password = make_password(self.password)
+        if self.password:
+            try:
+                identify_hasher(self.password)
+            except ValueError:
+                self.password = make_password(self.password)
         super().save(*args, **kwargs)
 
     def __str__(self):

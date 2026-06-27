@@ -73,6 +73,9 @@ from corsheaders.defaults import default_headers
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "x-user-token",
 ]
+CORS_EXPOSE_HEADERS = [
+    "content-disposition",
+]
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
