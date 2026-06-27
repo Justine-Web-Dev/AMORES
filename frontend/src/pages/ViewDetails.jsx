@@ -71,13 +71,6 @@ function ViewDetails() {
 
   return (
     <div className=' ViewDetails'>
-        <button
-        onClick={handleBack}
-         className='flex items-center gap-1 cursor-pointer back-btn'>
-          <HiArrowNarrowLeft size={25}/>
-            <span className='text-md'>Back to Applications</span>
-        </button>
-
       <div className='module-content mx-auto'>
         <div className='flex flex-col lg:flex-row gap-1'>
           <div className="flex-1 max-w-8xl bg-[#F9FAFB] rounded-xl shadow-sm card-detail">
@@ -125,6 +118,12 @@ function ViewDetails() {
             currentRejectionReason={applicant.rejection_reason}
           />
       </div>
+      <button
+        onClick={handleBack}
+         className='flex items-center gap-1 cursor-pointer back-btn'>
+          <HiArrowNarrowLeft size={25}/>
+            <span className='text-md'>Back to Applications</span>
+        </button>
     </div>
   )
 }
