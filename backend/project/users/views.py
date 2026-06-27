@@ -5,7 +5,7 @@ from .serializers import (
     SystemSettingsSerializer, AuditLogSerializer
 )
 from .models import User, Applicant, Application, Evaluation, ApplicantDocument, SystemSettings, AuditLog
-from .utils import create_audit_log, get_user_from_request
+from .utils import create_audit_log, get_user_from_request, detect_backup_format, import_sqlite_backup_to_postgres
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
 from rest_framework import status
@@ -18,6 +18,8 @@ from django.conf import settings
 from django.http import FileResponse
 from django.db import connections
 from django.db.models import Prefetch
+import subprocess
+import tempfile
 
 # Create your views here.
 
@@ -397,31 +399,77 @@ def get_audit_logs(request):
 
 @api_view(['GET'])
 def backup_database(request):
-    db_path = os.path.join(settings.BASE_DIR, 'db.sqlite3')
-    if os.path.exists(db_path):
-        response = FileResponse(open(db_path, 'rb'), content_type='application/x-sqlite3')
-        response['Content-Disposition'] = f'attachment; filename="backup_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.sqlite3"'
-        performer_username = get_user_from_request(request)
-        performer = User.objects.filter(username=performer_username).first()
-        create_audit_log(performer, 'BACKUP', "System database backup exported.", performer_name=performer_username if not performer else None)
-        return response
-    return Response({"error": "Database file not found"}, status=status.HTTP_404_NOT_FOUND)
+    db_settings = settings.DATABASES.get('default', {})
+    if db_settings.get('ENGINE', '').endswith('postgresql'):
+        backup_dir = tempfile.gettempdir()
+        backup_path = os.path.join(backup_dir, f"amores_backup_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.sql")
+        try:
+            command = ['pg_dump', '--dbname=postgresql://{user}:{password}@{host}:{port}/{name}'.format(
+                user=db_settings.get('USER', ''),
+                password=db_settings.get('PASSWORD', ''),
+                host=db_settings.get('HOST', 'localhost'),
+                port=db_settings.get('PORT', '5432'),
+                name=db_settings.get('NAME', ''),
+            ), '-f', backup_path]
+            subprocess.run(command, check=True, capture_output=True, text=True)
+            with open(backup_path, 'rb') as backup_file:
+                response = FileResponse(backup_file, content_type='application/sql')
+                response['Content-Disposition'] = f'attachment; filename="{os.path.basename(backup_path)}"'
+                performer_username = get_user_from_request(request)
+                performer = User.objects.filter(username=performer_username).first()
+                create_audit_log(performer, 'BACKUP', "System database backup exported.", performer_name=performer_username if not performer else None)
+                return response
+        except Exception as e:
+            return Response({"error": f"Backup failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    return Response({"error": "PostgreSQL database configuration not found."}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser])
 def restore_database(request):
     file_obj = request.FILES.get('backup_file')
-    if not file_obj or not file_obj.name.endswith('.sqlite3'):
+    if not file_obj:
+        return Response({"error": "No backup file provided."}, status=status.HTTP_400_BAD_REQUEST)
+
+    backup_format = detect_backup_format(file_obj.name)
+    if backup_format is None:
         return Response({"error": "Invalid backup file."}, status=status.HTTP_400_BAD_REQUEST)
-    db_path = os.path.join(settings.BASE_DIR, 'db.sqlite3')
+
+    db_settings = settings.DATABASES.get('default', {})
+    if not db_settings.get('ENGINE', '').endswith('postgresql'):
+        return Response({"error": "This restore flow only supports PostgreSQL databases."}, status=status.HTTP_400_BAD_REQUEST)
+
+    temp_dir = tempfile.gettempdir()
+    temp_backup_path = os.path.join(temp_dir, file_obj.name)
     try:
-        connections.close_all()
-        with open(db_path, 'wb+') as destination:
+        with open(temp_backup_path, 'wb+') as destination:
             for chunk in file_obj.chunks():
                 destination.write(chunk)
+
+        if backup_format == 'postgresql':
+            connections.close_all()
+            restore_command = ['psql', '--dbname=postgresql://{user}:{password}@{host}:{port}/{name}'.format(
+                user=db_settings.get('USER', ''),
+                password=db_settings.get('PASSWORD', ''),
+                host=db_settings.get('HOST', 'localhost'),
+                port=db_settings.get('PORT', '5432'),
+                name=db_settings.get('NAME', ''),
+            ), '-f', temp_backup_path]
+            subprocess.run(restore_command, check=True, capture_output=True, text=True)
+        else:
+            import_sqlite_backup_to_postgres(temp_backup_path, [
+                User,
+                Applicant,
+                Application,
+                Evaluation,
+                ApplicantDocument,
+                SystemSettings,
+                AuditLog,
+            ])
+
         performer_username = get_user_from_request(request)
         performer = User.objects.filter(username=performer_username).first()
         create_audit_log(performer, 'RESTORE', "System database restored.", performer_name=performer_username if not performer else None)
         return Response({"message": "Database restored successfully."}, status=status.HTTP_200_OK)
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"error": f"Restore failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

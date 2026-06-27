@@ -42,14 +42,14 @@ function BackupRestore() {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file && file.name.endsWith('.sqlite3')) {
+    if (file && /\.(sqlite3|sqlite|db|sql|dump|backup)$/i.test(file.name)) {
       setSelectedFile(file);
     } else {
       setModalConfig({
         isOpen: true,
         type: 'error',
         title: 'Invalid File',
-        message: 'Please select a valid .sqlite3 database file.'
+        message: 'Please select a valid backup file (.sqlite3, .sql, .dump, or .backup).'
       });
       e.target.value = null;
     }
@@ -123,7 +123,7 @@ function BackupRestore() {
           </div>
           <h3 className="text-xl font-bold text-slate-800 mb-2">Restore Data</h3>
           <p className="text-sm text-slate-500 mb-8">
-            Upload a previously saved .sqlite3 backup file to restore the system to that specific point in time.
+            Upload a previously saved SQLite or PostgreSQL backup file to restore the system to that specific point in time.
           </p>
           
           <div className="w-full mb-4">
@@ -138,7 +138,7 @@ function BackupRestore() {
               htmlFor="restore-file"
               className="block w-full py-2 px-4 border-2 border-dashed border-gray-300 rounded-xl text-sm text-gray-600 cursor-pointer hover:border-[#2C2D86] transition-colors truncate"
             >
-              {selectedFile ? selectedFile.name : 'Select .sqlite3 file'}
+              {selectedFile ? selectedFile.name : 'Select backup file'}
             </label>
           </div>
 
