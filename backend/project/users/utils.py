@@ -78,10 +78,25 @@ def import_sqlite_backup_to_postgres(sqlite_path, model_classes):
                     instance = model_class()
                     for field in model_class._meta.fields:
                         column_name = field.column
-                        if column_name not in row.keys() or column_name == 'id':
+                        
+                        if column_name == 'id':
                             continue
-
-                        value = row[column_name]
+                            
+                        if column_name not in row.keys():
+                            value = None
+                        else:
+                            value = row[column_name]
+                            if isinstance(value, str):
+                                value = value.strip()
+                        
+                        # Handle empty strings for unique fields (like email) to prevent constraint errors in Postgres
+                        if (value == '' or value is None) and getattr(field, 'unique', False) and isinstance(field, (db_models.CharField, db_models.EmailField)):
+                            row_id = row['id'] if 'id' in row.keys() else 'unknown'
+                            if isinstance(field, db_models.EmailField):
+                                value = f"empty_{row_id}_{column_name}@example.com"
+                            else:
+                                value = f"empty_{row_id}_{column_name}"
+                                
                         if value is None:
                             continue
 
@@ -92,13 +107,40 @@ def import_sqlite_backup_to_postgres(sqlite_path, model_classes):
                                 related_instance = related_model(pk=value)
                                 related_instance.save()
                             setattr(instance, field.name, related_instance)
+                        elif field.name in {'created_at', 'updated_at'} and isinstance(value, str):
+                            try:
+                                setattr(instance, field.name, field.to_python(value))
+                            except Exception:
+                                setattr(instance, field.name, None)
+                        elif field.name == 'created_at' and isinstance(value, str):
+                            try:
+                                setattr(instance, field.name, field.to_python(value))
+                            except Exception:
+                                setattr(instance, field.name, None)
                         else:
                             setattr(instance, field.name, field.to_python(value))
 
                     if 'id' in row.keys():
                         instance.id = row['id']
 
-                    instance.save()
+                    # Capture original dates that Django's auto_now / auto_now_add will overwrite on save
+                    auto_date_values = {}
+                    for field in model_class._meta.fields:
+                        if getattr(field, 'auto_now', False) or getattr(field, 'auto_now_add', False):
+                            if hasattr(instance, field.name) and getattr(instance, field.name) is not None:
+                                auto_date_values[field.name] = getattr(instance, field.name)
+
+                    if hasattr(instance, 'email') and instance.email == '':
+                        raise ValueError(f"Email is empty before save! Instance dict: {instance.__dict__}")
+
+                    try:
+                        instance.save(force_insert=True)
+                    except Exception:
+                        instance.save()
+
+                    # Bypassing the save() method to apply the original auto dates via UPDATE
+                    if auto_date_values:
+                        model_class.objects.filter(pk=instance.pk).update(**auto_date_values)
 
 
 def get_user_from_request(request):

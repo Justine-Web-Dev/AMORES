@@ -10,6 +10,7 @@ from rest_framework.decorators import api_view, parser_classes
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.contrib.auth.hashers import check_password, make_password
 
 import jwt
 import datetime
@@ -66,7 +67,15 @@ def login_user(request):
   except User.DoesNotExist:
     return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
   
-  if user.password != password:
+  is_password_valid = False
+  if user.password == password:
+      is_password_valid = True
+      user.password = make_password(password)
+      user.save()
+  elif check_password(password, user.password):
+      is_password_valid = True
+
+  if not is_password_valid:
     return Response({'error': 'Invalid password'}, status=status.HTTP_400_BAD_REQUEST)
   
   payload = {
