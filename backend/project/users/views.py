@@ -475,7 +475,7 @@ def restore_database(request):
                 SystemSettings,
                 AuditLog,
             ])
-
+            
         performer_username = get_user_from_request(request)
         performer = User.objects.filter(username=performer_username).first()
         create_audit_log(performer, 'RESTORE', "System database restored.", performer_name=performer_username if not performer else None)

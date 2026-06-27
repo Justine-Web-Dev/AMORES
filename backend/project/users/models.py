@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.hashers import make_password
+
 import string
 import random
 
@@ -33,6 +35,10 @@ class User(models.Model):
     password = models.CharField(max_length=128, verbose_name="Password") # Increased length for potential hashing
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='Recruiter', verbose_name="Role")
     is_archived = models.BooleanField(default=False, verbose_name="Is Archived")
+
+    def save(self, *args, **kwargs):
+        self.password = make_password(self.password)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name} (@{self.username})"

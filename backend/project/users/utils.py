@@ -3,6 +3,7 @@ import os
 import sqlite3
 from django.db import transaction
 from django.db import models as db_models
+from django.contrib.auth.hashers import make_password
 
 
 def build_database_backup_command(backup_path, db_settings):
@@ -130,7 +131,7 @@ def import_sqlite_backup_to_postgres(sqlite_path, model_classes):
                             if hasattr(instance, field.name) and getattr(instance, field.name) is not None:
                                 auto_date_values[field.name] = getattr(instance, field.name)
 
-                    if hasattr(instance, 'email') and instance.email == '':
+                    if hasattr(instance, 'email') and getattr(instance, 'email', None) == '':
                         raise ValueError(f"Email is empty before save! Instance dict: {instance.__dict__}")
 
                     try:
