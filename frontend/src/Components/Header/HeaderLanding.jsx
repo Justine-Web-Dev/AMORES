@@ -31,9 +31,9 @@ function HeaderLanding({ isApplicationOpen = true }) {
     };
     
   return (
-    <header className="fixed top-0 left-0 right-0 shadow w-full my-header z-[100]">
+    <header className="fixed top-0 left-0 right-0 w-full my-header z-[120]">
       {/* Top bar */}
-      <div className="max-w-7xl mx-auto flex justify-between items-center px-6 py-2">
+      <div className="max-w-7xl mx-auto flex justify-between items-center px-4 sm:px-6 py-2">
         {/* Logo + Name */}
         <div className="flex items-center gap-2">
           <img src={logo} alt="Logo" className="h-14" />
@@ -83,7 +83,7 @@ function HeaderLanding({ isApplicationOpen = true }) {
       </div>
 
       <div className={`md:hidden overflow-hidden transition-all duration-300 ${menuOpen ? "max-h-[350px]" : "max-h-0"}`}>
-        <nav className="flex flex-col items-center gap-4 px-6 pb-5 pt-2 border-t border-gray-100 bg-white">
+        <nav className="flex flex-col items-center gap-4 px-6 pb-5 pt-2 border-t border-gray-100 bg-white/95 backdrop-blur-md">
           <Link to={'/'} className="text-sm w-full text-center py-2 home" onClick={() => setMenuOpen(false)}>Home</Link>
           <a href="#about-us" className="text-sm w-full text-center py-2 about-us" onClick={handleAboutClick}>About Us</a>
           <Link to={'/track-application'} className="text-sm w-full text-center py-2 track-app" onClick={() => setMenuOpen(false)}>Track Application</Link>
