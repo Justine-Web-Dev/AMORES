@@ -70,7 +70,7 @@ function SidebarRecruiter() {
             <li>
               <Link className={linkClass('/PersonnelDashboard/declined-applicants')} to="/PersonnelDashboard/declined-applicants">
                 <RiUserUnfollowLine size={18} className={isActive('/PersonnelDashboard/declined-applicants') ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'} />
-                <span>Declined Applicants</span>
+                <span>Failed Applicants</span>
               </Link>
             </li>
 

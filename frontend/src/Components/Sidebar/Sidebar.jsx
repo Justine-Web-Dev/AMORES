@@ -98,7 +98,7 @@ function Sidebar() {
             <li>
               <Link className={linkClass('/Dashboard/declined-applicant')} to="/Dashboard/declined-applicant">
                 <RiUserUnfollowLine size={18} className={isActive('/Dashboard/declined-applicant') ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'} />
-                <span>Declined Applicants</span>
+                <span>Failed Applicants</span>
               </Link>
             </li>
 

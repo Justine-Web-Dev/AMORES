@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { api } from '../../../api/api'
 import { 
   PieChart, Pie, BarChart, Bar, XAxis, YAxis, CartesianGrid, 
-  Tooltip, Legend, ResponsiveContainer, Cell, AreaChart, Area 
+  Tooltip, ResponsiveContainer, Cell, AreaChart, Area 
 } from 'recharts'
 
 function DashboardOverview() {
@@ -71,7 +71,8 @@ function DashboardOverview() {
       'Screening': 0,
       'Qualified': 0,
       'Accepted': 0,
-      'Rejected': 0
+      'Rejected': 0,
+      'Oath Taking': 0 // Added Oath Taking tracker
     }
     const screeningStages = ['Document Review', 'Initial Screening', 'Technical Interview']
     
@@ -81,6 +82,7 @@ function DashboardOverview() {
       else if (a.status === 'Qualified') statuses['Qualified']++
       else if (a.status === 'Accepted') statuses['Accepted']++
       else if (a.status === 'Rejected') statuses['Rejected']++
+      else if (a.status === 'Oath Taking') statuses['Oath Taking']++ // Processes explicit Oath Taking values
       else if (a.status === 'Body Mass Index') statuses['BMI'] = (statuses['BMI'] || 0) + 1
       else if (a.status === 'Physical Agility Test') statuses['PAT'] = (statuses['PAT'] || 0) + 1
       else if (a.status === 'Neuro Examination') statuses['Neuro'] = (statuses['Neuro'] || 0) + 1
@@ -145,7 +147,8 @@ function DashboardOverview() {
       { name: 'Neuro', status: 'Neuro Examination' },
       { name: 'Medical', status: 'Medical' },
       { name: 'Drug Test', status: 'Drug Test' },
-      { name: 'F. Interview', status: 'Final Interview' }
+      { name: 'F. Interview', status: 'Final Interview' },
+      { name: 'Oath Taking', status: 'Oath Taking' } // Linked to the end of the pipeline progress flow
     ]
 
     const assessmentData = assessmentStages.map((stage) => {
@@ -164,7 +167,9 @@ function DashboardOverview() {
 
   const user_length = users.length
   const applicant_length = applicants.length
-  const CHART_COLORS = ['#2C2D86', '#EB612A', '#10B981', '#F59E0B', '#6366F1']
+  
+  // Expanded CHART_COLORS to support the extra status category smoothly
+  const CHART_COLORS = ['#2C2D86', '#EB612A', '#10B981', '#F59E0B', '#6366F1', '#8B5CF6']
 
   if (loading) {
     return (
@@ -248,8 +253,15 @@ function DashboardOverview() {
           </div>
           <div className='admin-summary-card rejected'>
             <div className='flex flex-col-reverse items-center'>
-              <span className='summary-label'>Rejected</span>
+              <span className='summary-label'>Failed</span>
               <span className='summary-value'>{statusCounts['Rejected']}</span>
+            </div>
+          </div>
+          {/* New Oath Taking visual metric card block */}
+          <div className='admin-summary-card oath-taking'>
+            <div className='flex flex-col-reverse items-center'>
+              <span className='summary-label'>Oath Taking</span>
+              <span className='summary-value'>{statusCounts['Oath Taking'] || 0}</span>
             </div>
           </div>
           <div className='admin-summary-card bmi'>
