@@ -13,8 +13,8 @@ function DashboardOverview() {
   // Analytics States
   const [statusData, setStatusData] = useState([])
   const [statusCounts, setStatusCounts] = useState({})
-  const [selectedBatch, setSelectedBatch] = useState('All')
-  const [batches, setBatches] = useState([])
+  const [selectedYear, setSelectedYear] = useState('All')
+  const [years, setYears] = useState([])
   const [monthlyData, setMonthlyData] = useState([])
   const [metrics, setMetrics] = useState({
     genderData: [],
@@ -36,10 +36,16 @@ function DashboardOverview() {
         setApplicants(applicantsData)
         setUsers(usersRes.data)
         
-        // Extract unique batches
-        const uniqueBatches = [...new Set(applicantsData.map(a => a.batch || 1))].sort((a, b) => b - a)
-        setBatches(uniqueBatches)
+        // Extract unique years from created_at timestamp
+        const uniqueYears = [
+          ...new Set(
+            applicantsData
+              .map(a => a.created_at ? new Date(a.created_at).getFullYear() : null)
+              .filter(Boolean)
+          )
+        ].sort((a, b) => b - a)
         
+        setYears(uniqueYears)
         processMetrics(applicantsData, 'All')
       } catch (err) {
         console.error("Error fetching dashboard overview data:", err)
@@ -50,10 +56,13 @@ function DashboardOverview() {
     fetchDashboardData()
   }, [])
 
-  const processMetrics = (allData, batchFilter) => {
+  const processMetrics = (allData, yearFilter) => {
     let data = allData
-    if (batchFilter !== 'All') {
-      data = allData.filter(a => (a.batch || 1) === parseInt(batchFilter))
+    if (yearFilter !== 'All') {
+      data = allData.filter(a => {
+        if (!a.created_at) return false
+        return new Date(a.created_at).getFullYear() === parseInt(yearFilter)
+      })
     }
     
     // 1. Status Breakdown
@@ -74,7 +83,7 @@ function DashboardOverview() {
       else if (a.status === 'Rejected') statuses['Rejected']++
       else if (a.status === 'Body Mass Index') statuses['BMI'] = (statuses['BMI'] || 0) + 1
       else if (a.status === 'Physical Agility Test') statuses['PAT'] = (statuses['PAT'] || 0) + 1
-      else if (a.status === 'Neuro Examination') statuses['Psych'] = (statuses['Psych'] || 0) + 1
+      else if (a.status === 'Neuro Examination') statuses['Neuro'] = (statuses['Neuro'] || 0) + 1
       else if (a.status === 'Medical') statuses['Medical'] = (statuses['Medical'] || 0) + 1
       else if (a.status === 'Drug Test') statuses['Drug Test'] = (statuses['Drug Test'] || 0) + 1
       else if (a.status === 'Final Interview') statuses['Final Interview'] = (statuses['Final Interview'] || 0) + 1
@@ -133,14 +142,13 @@ function DashboardOverview() {
       { name: 'Screening', status: 'Initial Screening' },
       { name: 'BMI', status: 'Body Mass Index' },
       { name: 'PAT', status: 'Physical Agility Test' },
-      { name: 'Psych', status: 'Neuro Examination' },
+      { name: 'Neuro', status: 'Neuro Examination' },
       { name: 'Medical', status: 'Medical' },
       { name: 'Drug Test', status: 'Drug Test' },
       { name: 'F. Interview', status: 'Final Interview' }
     ]
 
     const assessmentData = assessmentStages.map((stage) => {
-      // Count ONLY applicants whose current status matches this stage
       const count = data.filter(a => a.status === stage.status).length
       return { name: stage.name, completed: count }
     })
@@ -170,10 +178,9 @@ function DashboardOverview() {
     )
   }
 
-
-  const handleBatchChange = (e) => {
+  const handleYearChange = (e) => {
     const val = e.target.value
-    setSelectedBatch(val)
+    setSelectedYear(val)
     processMetrics(applicants, val)
   }
 
@@ -186,15 +193,15 @@ function DashboardOverview() {
         </div>
         
         <div className="flex items-center gap-3 bg-gray-50 p-2 rounded-lg border border-gray-100">
-          <label className="text-sm font-bold text-gray-600 uppercase tracking-tight">Filter by Batch:</label>
+          <label className="text-sm font-bold text-gray-600 uppercase tracking-tight">Filter by Year:</label>
           <select 
-            value={selectedBatch} 
-            onChange={handleBatchChange}
+            value={selectedYear} 
+            onChange={handleYearChange}
             className="bg-white border border-gray-200 rounded px-4 py-1.5 text-sm font-medium outline-none focus:ring-2 focus:ring-[#2C2D86] shadow-sm"
           >
-            <option value="All">All Batches</option>
-            {batches.map(b => (
-              <option key={b} value={b}>Batch {b}</option>
+            <option value="All">All Years</option>
+            {years.map(year => (
+              <option key={year} value={year}>{year}</option>
             ))}
           </select>
         </div>
@@ -259,8 +266,8 @@ function DashboardOverview() {
           </div>
           <div className='admin-summary-card psych'>
             <div className='flex flex-col-reverse items-center'>
-              <span className='summary-label'>Psych</span>
-              <span className='summary-value'>{statusCounts['Psych'] || 0}</span>
+              <span className='summary-label'>Neuro</span>
+              <span className='summary-value'>{statusCounts['Neuro'] || 0}</span>
             </div>
           </div>
           <div className='admin-summary-card medical'>
