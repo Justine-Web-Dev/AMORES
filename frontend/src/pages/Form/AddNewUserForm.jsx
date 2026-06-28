@@ -26,7 +26,7 @@ function AddNewUserForm({ onClose, user }) {
       setFormData({
         name: user.name || "",
         username: user.username || "",
-        password: "",
+        password: "", // Kept blank to avoid tracking old security values locally
         role: user.role || "Recruiter",
       });
     } else {
@@ -63,7 +63,8 @@ function AddNewUserForm({ onClose, user }) {
       }
 
       if (user) {
-        const {...updateData } = formData;
+        // FIX: Extract password out so it is not sent as an empty string to the backend
+        const { password, ...updateData } = formData; 
         updateData.performed_by = currentUser;
 
         await api.put(`users/update_user/${user.id}/`, updateData);
@@ -121,6 +122,7 @@ function AddNewUserForm({ onClose, user }) {
             value={formData.name}
             onChange={handleChange}
             placeholder="Name"
+            required
           />
 
           <label htmlFor="">Username</label>
@@ -130,6 +132,7 @@ function AddNewUserForm({ onClose, user }) {
             value={formData.username}
             onChange={handleChange}
             placeholder="Username"
+            required
           />
 
           {!isEditMode && (

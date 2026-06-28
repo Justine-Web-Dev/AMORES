@@ -13,19 +13,19 @@ import RestoreModal from '../../Modals/RestoreModal'
 import MessageModal from '../../Modals/MessageModal'
 
 function UserManagement() {
-  const [users,setUsers] = useState([])
-  const [toggleModal,setToggleModal] = useState(false)
-  const [selectedUser,setSelectedUser] = useState(null)
+  const [users, setUsers] = useState([])
+  const [toggleModal, setToggleModal] = useState(false)
+  const [selectedUser, setSelectedUser] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [activeSearchTerm, setActiveSearchTerm] = useState('')
-  const [open,setOpen] = useState(null)
+  const [open, setOpen] = useState(null)
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [showRestoreModal, setShowRestoreModal] = useState(false)
   const [userToArchive, setUserToArchive] = useState(null)
   const [userToRestore, setUserToRestore] = useState(null)
   const [modalConfig, setModalConfig] = useState({ isOpen: false, type: 'success', title: '', message: '' })
 
-  const [activeTab, setActiveTab] = useState('active') // 'active' or 'archived'
+  const [activeTab, setActiveTab] = useState('active')
 
   const fetchUsers = async () => {
     try {
@@ -37,14 +37,14 @@ function UserManagement() {
     }
   }
 
-  useEffect(()=>{
+  useEffect(() => {
     fetchUsers()
   }, [activeTab])
 
-  const handleEdit = (user) =>{
+  const handleEdit = (user) => {
     setSelectedUser(user)
     setToggleModal(true)
-    setOpen(null)
+    setOpen(null) // Closes the action dropdown list layout cleanly
   }
 
   const handleArchive = (user) => {
@@ -110,16 +110,20 @@ function UserManagement() {
 
   const filteredAndSorted = users
   .filter((user) => {
-    // 1. Filter by Search Term (Name)
     const fullName = `${user.name} ${user.username}`.toLowerCase();
     const matchesSearch = fullName.includes(activeSearchTerm.toLowerCase());
-
     return matchesSearch;
   })
   
-
-  const toggleMenu = (id) =>{
+  const toggleMenu = (id) => {
     setOpen(open === id ? null : id)
+  }
+
+  // Extracted logic to re-verify state cleanly on closure changes
+  const handleCloseUserForm = () => {
+    setToggleModal(false)
+    setSelectedUser(null)
+    fetchUsers() // CRITICAL FIX: Pulls down updated row info from database after submission saves
   }
 
   return (
@@ -130,11 +134,11 @@ function UserManagement() {
           <p>Manage system users, roles, and permissions.</p>
         </div>
          <button 
-         onClick={()=> {
-          setSelectedUser(null)
-          setToggleModal(true)
-         }}
-          className='flex justify-evenly items-center w-[150px] h-[40px] bg-[#2C2D86] text-white rounded cursor-pointer hover:-translate-y-[2px] hover:shadow-lg transition'>
+           onClick={() => {
+             setSelectedUser(null)
+             setToggleModal(true)
+           }}
+           className='flex justify-evenly items-center w-[150px] h-[40px] bg-[#2C2D86] text-white rounded cursor-pointer hover:-translate-y-[2px] hover:shadow-lg transition'>
             <IoIosAddCircleOutline size={20}/>
              Add New User
           </button>
@@ -161,14 +165,13 @@ function UserManagement() {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
           />
-          <button onClick={()=> setActiveSearchTerm(searchTerm)}
+          <button onClick={() => setActiveSearchTerm(searchTerm)}
           className='flex items-center px-10 bg-[#2C2D86] text-white cursor-pointer rounded search-btn'><CiSearch size={30} /> Search</button>
       </div>
 
       <hr className='border-gray-300 my-4'/>
 
       <div className='my-4'>
-
         <table className="w-full text-sm text-center text-gray-500">
             <thead className="text-xs text-gray-700 uppercase bg-gray-100 ">
               <tr>
@@ -182,7 +185,7 @@ function UserManagement() {
             <tbody className="divide-y divide-gray-200 bg-white">
               {
                 filteredAndSorted.length > 0 ? (
-                  filteredAndSorted.map((user)=>(
+                  filteredAndSorted.map((user) => (
                   <tr key={user.id}>
                     <td>{user.name}</td>
                     <td>{user.username}</td>
@@ -203,7 +206,7 @@ function UserManagement() {
                           <ul className="flex flex-col text-[14px] gap-[5px]">
                             <h1 className='font-bold text-black border-b pb-1 border-gray-200 action-title'>Actions</h1>
                             <button 
-                              onClick={()=>handleEdit(user)}
+                              onClick={() => handleEdit(user)}
                               className="text-left px-2 py-1 cursor-pointer view-details-btn-action">
                               Edit
                             </button>
@@ -223,26 +226,27 @@ function UserManagement() {
                           </ul>
                         </div>
                       )}
-                      
                     </td>
                   </tr>
-                ))):(
+                ))) : (
                   <tr>
-                  <td colSpan="8" className="py-10 text-gray-500 italic col-8">
+                  <td colSpan="4" className="py-10 text-gray-500 italic col-8">
                     No {activeTab} users found
                   </td>
                 </tr>
                 )
               }
-              
             </tbody>
           </table> 
       </div>
       
-        {toggleModal && <AddNewUserForm onClose={()=>{
-          setToggleModal(false)
-          setSelectedUser(null)
-        }} user={selectedUser}/>}
+        {/* Updated toggle modal block with handleCloseUserForm callback structural change */}
+        {toggleModal && (
+          <AddNewUserForm 
+            onClose={handleCloseUserForm} 
+            user={selectedUser}
+          />
+        )}
 
         <ConfirmationModal 
           isOpen={showConfirmModal}
