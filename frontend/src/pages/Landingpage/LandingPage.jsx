@@ -70,6 +70,8 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
         <Disclaimer onAccept={handleAccept} onCancel={handleCancel} />
       )}
 
+      
+
       {/* Hero Section */}
       <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8">
