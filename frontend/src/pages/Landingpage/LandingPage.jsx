@@ -272,32 +272,34 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
       </section>
 
       {/* Dynamic Infinite Text Ticker Loop */}
-      <div className="bg-white border-y border-gray-200 py-3 overflow-hidden shadow-sm select-none ticker">
-        <div className="flex whitespace-nowrap animate-ticker inline-block ticker-track">
-          {[...Array(4)].map((_, idx) => (
-            <div
-              key={idx}
-              className="flex items-center space-x-12 mx-6 text-sm font-semibold tracking-wide uppercase text-gray-600 "
-            >
-              <span
-                className={`inline-flex items-center gap-1.5 font-bold ${isApplicationOpen && endDateObject ? "text-emerald-600" : "text-rose-600"}`}
-              >
-                {isApplicationOpen && endDateObject
-                  ? "🟢 Applications Active Now"
-                  : "🔴 Applications Offline"}
-              </span>
-              <span>·</span>
-              <span className="text-[#2C2D88]">
-                Philippine National Police Recruitment Cycle 2026
-              </span>
-              <span>·</span>
-              <span>Serve Your Fellow Citizens</span>
-              <span>·</span>
-              <span className="text-[#EB612A]">Protect With Honor</span>
-            </div>
-          ))}
-        </div>
+     <div className="bg-white border-y border-gray-200 py-3 overflow-hidden shadow-sm select-none ticker">
+  <div className="flex whitespace-nowrap animate-ticker inline-block ticker-track">
+    {[...Array(4)].map((_, idx) => (
+      <div
+        key={idx}
+        className="flex items-center space-x-12 mx-6 text-sm font-semibold tracking-wide uppercase text-gray-600"
+      >
+        <span className="inline-flex items-center gap-1.5 font-bold">
+          {isApplicationOpen && endDateObject ? (
+            <span className="text-emerald-600"> 🟢 Applications Active Now</span>
+          ) : !endDateObject ? (
+            <span className="text-amber-500"> 🟡 Applications TBA</span>
+          ) : (
+            <span className="text-rose-600"> 🔴 Applications Offline</span>
+          )}
+        </span>
+        <span>·</span>
+        <span className="text-[#2C2D88]">
+          Philippine National Police Recruitment Cycle 2026
+        </span>
+        <span>·</span>
+        <span>Serve Your Fellow Citizens</span>
+        <span>·</span>
+        <span className="text-[#EB612A]">Protect With Honor</span>
       </div>
+    ))}
+  </div>
+</div>
 
       {/* Scroll Sections Container */}
       <main className="space-y-4">
