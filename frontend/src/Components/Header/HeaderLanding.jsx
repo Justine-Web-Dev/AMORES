@@ -46,7 +46,7 @@ function HeaderLanding({ isApplicationOpen = true, appDates }) {
           <img src={logo} alt="Logo" className="h-14" />
           <h3 className="text-[#2C2D86] font-bold text-base">PNP-AMORES</h3>
         </div>
-
+        
         <div className="hidden md:flex items-center gap-6">
           <nav className="flex items-center gap-6">
             <Link to={'/'} className="text-sm  home">Home</Link>

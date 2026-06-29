@@ -37,9 +37,9 @@ function ViewDocumentSubmitted({applicantId}) {
           {documents.map((doc) => (
             <div key={doc.id} className="border rounded-lg shadow-sm bg-[#fff] overflow-hidden image-docs-container">
               
-              <a href={doc.file} target="_blank" rel="noopener noreferrer">
+              <a href={doc.file_url || doc.file} target="_blank" rel="noopener noreferrer">
                 <img
-                  src={doc.file}
+                  src={doc.file_url || doc.file}
                   alt={doc.document_type}
                   className="w-full h-48 object-cover hover:opacity-80 transition-opacity cursor-pointer"
                 />

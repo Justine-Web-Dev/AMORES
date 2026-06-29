@@ -54,11 +54,9 @@ function ViewDetails() {
     const location = useLocation();
     
     const handleBack = () =>{
-      // If there is history to go back to, use it
       if (window.history.state && window.history.state.idx > 0) {
         navigate(-1);
       } else {
-        // Fallback: determine the correct applications path based on the current dashboard
         const isDashboard = location.pathname.startsWith('/Dashboard');
         const fallbackPath = isDashboard ? '/Dashboard/applications' : '/PersonnelDashboard/applications';
         navigate(fallbackPath);
