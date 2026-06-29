@@ -62,7 +62,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://192.168.100.148:5173",
-    "https://amores-git-main-justine-rmairezs-projects.vercel.app"
+    "https://amores-two.vercel.app"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
