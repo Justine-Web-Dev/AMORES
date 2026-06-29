@@ -27,8 +27,10 @@ SECRET_KEY = os.environ.get("SECRETKEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.100.148']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.100.148','.onrender.com']
 
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Application definition
 
@@ -103,7 +105,10 @@ DATABASES = {
         'USER': os.environ.get("USER"),
         'PASSWORD': os.environ.get("PASSWORD"),
         'HOST': os.environ.get("HOST"),
-        'PORT': os.environ.get("PORT")
+        'PORT': os.environ.get("PORT"),
+        'OPTIONS': {
+            'connect_timeout': 10,  
+        },
     }
 }
 
