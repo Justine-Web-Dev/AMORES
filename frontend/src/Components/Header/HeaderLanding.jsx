@@ -3,10 +3,17 @@ import logo from '../../assets/RRSU1 logo.png'
 import './HeaderLanding.css'
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-function HeaderLanding({ isApplicationOpen = true }) {
+function HeaderLanding({ isApplicationOpen = true, appDates }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
+
+    const getSafeDate = (dateStr) => {
+        if (!dateStr) return null;
+        const [year, month, day] = dateStr.split('-').map(Number);
+        return new Date(year, month - 1, day);
+    };
+    const endDateObject = getSafeDate(appDates?.end);
 
     const handleAboutClick = (e) => {
         e.preventDefault();
@@ -54,7 +61,7 @@ function HeaderLanding({ isApplicationOpen = true }) {
               Personnel Login
             </Link>
 
-            {isApplicationOpen ? (
+            {isApplicationOpen && endDateObject ? (
               <Link to={'/form-application'} 
               className="flex justify-center items-center bg-[#2C2D86] h-[40px] w-[140px] text-sm text-white rounded cursor-pointer apply-btn hover:bg-[#1a1b5c] transition-all"
               >
@@ -65,7 +72,7 @@ function HeaderLanding({ isApplicationOpen = true }) {
               disabled
               className="flex justify-center items-center bg-gray-400 h-[40px] w-[140px] text-sm text-white rounded cursor-not-allowed opacity-70"
               >
-                Closed
+                {endDateObject ? "Closed" : "TBA"}
               </button>
             )}
           </div>
@@ -95,7 +102,7 @@ function HeaderLanding({ isApplicationOpen = true }) {
             Personnel Login
           </Link> */}
 
-          {isApplicationOpen ? (
+          {isApplicationOpen && endDateObject ? (
             <Link to={'/form-application'} 
             className="flex justify-center items-center bg-[#2C2D86] h-[40px] w-full text-sm text-white rounded cursor-pointer apply-btn"
             onClick={() => setMenuOpen(false)}
@@ -107,7 +114,7 @@ function HeaderLanding({ isApplicationOpen = true }) {
             disabled
             className="flex justify-center items-center bg-gray-400 h-[40px] w-full text-sm text-white rounded cursor-not-allowed opacity-70"
             >
-              Closed
+              {endDateObject ? "Closed" : "TBA"}
             </button>
           )}
         </nav>

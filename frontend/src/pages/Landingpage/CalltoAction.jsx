@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router';
 
-const CalltoAction = ({ isApplicationOpen = true }) => {
+const CalltoAction = ({ isApplicationOpen = true, endDateObject }) => {
   const navigate = useNavigate()
 
   const handleApply = () =>{
@@ -44,8 +44,8 @@ const CalltoAction = ({ isApplicationOpen = true }) => {
           {/* The Subtitle (Text Color - Blue) */}
           <p className="text-[#2C2D86]/90 text-xl font-medium max-w-2xl mb-16 leading-relaxed">
             Your decision to join the Philippine National Police is a commitment to
-            something greater than yourself. {isApplicationOpen ? 'Applications for 2026 are now open —' : 'Applications are currently closed —'}
-            {isApplicationOpen ? " don't miss this opportunity to become a guardian of peace." : " please check back later for updates on the next recruitment cycle."}
+            something greater than yourself. {isApplicationOpen && endDateObject ? 'Applications for 2026 are now open —' : (endDateObject ? 'Applications are currently closed —' : 'Application dates are currently to be announced —')}
+            {isApplicationOpen && endDateObject ? " don't miss this opportunity to become a guardian of peace." : " please check back later for updates on the next recruitment cycle."}
           </p>
   
           {/* Button Container (Flexbox) */}
@@ -54,14 +54,14 @@ const CalltoAction = ({ isApplicationOpen = true }) => {
             {/* Primary CTA (Filled - Accent Color) */}
             <button
               onClick={handleApply}
-              disabled={!isApplicationOpen}
+              disabled={!(isApplicationOpen && endDateObject)}
               className={`text-center px-10 py-5 rounded-lg text-lg font-extrabold uppercase tracking-wide transition-all shadow-md ${
-                isApplicationOpen 
+                isApplicationOpen && endDateObject 
                   ? "bg-[#EB612A] text-white hover:bg-[#EB612A]/90 cursor-pointer hover:-translate-y-1 active:translate-y-0" 
                   : "bg-gray-400 text-gray-100 cursor-not-allowed opacity-70"
               }`}
             >
-              {isApplicationOpen ? "APPLY ONLINE NOW" : "APPLICATIONS CLOSED"}
+              {isApplicationOpen && endDateObject ? "APPLY ONLINE NOW" : (endDateObject ? "APPLICATIONS CLOSED" : "APPLICATIONS TBA")}
             </button>
   
             {/* Secondary CTA (Outlined - Text Color) */}

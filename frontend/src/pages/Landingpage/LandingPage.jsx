@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useScrollFade } from "../../useScrollFade";
-import { HiOutlineCalendar, HiOutlineClipboardList, HiOutlineShieldCheck, HiArrowDown } from "react-icons/hi";
+import {
+  HiOutlineCalendar,
+  HiOutlineClipboardList,
+  HiOutlineShieldCheck,
+  HiArrowDown,
+} from "react-icons/hi";
 import "./LandingPageCss.css";
 import AboutUs from "./AboutUs";
 import Disclaimer from "../../Disclaimer";
@@ -45,14 +50,18 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
   const backgroundImages = [bg1, bg2, bg3, bg4, bg5, bg6, bg7, bg8, bg9];
 
   useEffect(() => {
-    const sessionAccepted = sessionStorage.getItem("disclaimer_accepted_session");
+    const sessionAccepted = sessionStorage.getItem(
+      "disclaimer_accepted_session",
+    );
     if (!sessionAccepted) {
       setShowDisclaimer(true);
     }
 
     // Rotates the hero background image every 5 seconds
     const bgTimer = setInterval(() => {
-      setCurrentBgIndex((prevIndex) => (prevIndex + 1) % backgroundImages.length);
+      setCurrentBgIndex(
+        (prevIndex) => (prevIndex + 1) % backgroundImages.length,
+      );
     }, 5000);
 
     return () => clearInterval(bgTimer);
@@ -74,12 +83,15 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
   };
 
   const scrollToRequirements = () => {
-    requirementsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    requirementsRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
 
   const getSafeDate = (dateStr) => {
     if (!dateStr) return null;
-    const [year, month, day] = dateStr.split('-').map(Number);
+    const [year, month, day] = dateStr.split("-").map(Number);
     return new Date(year, month - 1, day);
   };
 
@@ -93,7 +105,6 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
 
       {/* Vibrant Light Background Hero Section */}
       <section className="relative min-h-[90vh] lg:min-h-screen flex items-center pt-24 pb-16 overflow-hidden bg-slate-100">
-        
         {/* Dynamic Image Layers at higher clarity opacity */}
         {backgroundImages.map((bgImage, index) => (
           <div
@@ -114,7 +125,6 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
         {/* Content Wrapper */}
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-20">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-8">
-            
             {/* Left Column: Core Message */}
             <div className="flex flex-col items-center lg:items-start text-center lg:text-left w-full lg:w-1/2 space-y-6">
               <div className="inline-flex items-center gap-3 px-3 py-1 bg-[#2C2D88]/10 backdrop-blur-sm rounded-full border border-[#2C2D88]/20 shadow-sm">
@@ -126,21 +136,24 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
 
               <div className="space-y-4">
                 <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight text-[#2C2D88] italic uppercase leading-none drop-shadow-sm select-none">
-                  <span>Serve.</span><br />
-                  <span className="text-[#EB612A]">Protect.</span><br />
+                  <span>Serve.</span>
+                  <br />
+                  <span className="text-[#EB612A]">Protect.</span>
+                  <br />
                   <span>Honor.</span>
                 </h1>
 
                 <p className="text-gray-800 font-medium text-base md:text-lg max-w-lg leading-relaxed bg-white/60 backdrop-blur-xs p-3 rounded-xl border border-white/40 shadow-xs">
-                  Join the Philippine National Police force today. We are looking for honorable, 
-                  dedicated, and disciplined citizens committed to protecting public safety and 
-                  upholding justice across our nation.
+                  Join the Philippine National Police force today. We are
+                  looking for honorable, dedicated, and disciplined citizens
+                  committed to protecting public safety and upholding justice
+                  across our nation.
                 </p>
               </div>
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto pt-2">
-                {isApplicationOpen ? (
+                {isApplicationOpen && endDateObject ? (
                   <button
                     onClick={handleStartApp}
                     className="w-full sm:w-auto px-8 py-4 bg-[#EB612A] hover:bg-[#d55320] text-white font-bold text-sm tracking-wider uppercase rounded-lg shadow-md hover:shadow-xl transition-all duration-200 active:scale-95 focus:outline-none focus:ring-4 focus:ring-orange-300"
@@ -153,14 +166,18 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
                       disabled
                       className="w-full sm:w-auto px-8 py-4 bg-gray-300 text-gray-500 font-bold text-sm tracking-wider uppercase rounded-lg cursor-not-allowed opacity-75"
                     >
-                      Applications Closed
+                      {endDateObject
+                        ? "Applications Closed"
+                        : "Applications TBA"}
                     </button>
                     <span className="text-[10px] text-rose-600 font-bold tracking-wider uppercase mt-1">
-                      Registration portal is currently inactive
+                      {endDateObject
+                        ? "Registration portal is currently inactive"
+                        : "Application dates are to be announced"}
                     </span>
                   </div>
                 )}
-                
+
                 <button
                   onClick={scrollToRequirements}
                   className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/80 hover:bg-white border border-gray-300 text-[#2C2D88] font-bold text-sm tracking-wider uppercase rounded-lg transition-all duration-200 active:scale-95 shadow-sm backdrop-blur-xs"
@@ -176,12 +193,14 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
               <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
                 <HiOutlineShieldCheck className="w-40 h-40" />
               </div>
-              
+
               <div>
                 <h3 className="text-[#EB612A] uppercase tracking-widest text-xs font-bold mb-1">
                   Recruitment Timeline & Target
                 </h3>
-                <p className="text-xs text-gray-300">National standard qualifications review panel indicators</p>
+                <p className="text-xs text-gray-300">
+                  National standard qualifications review panel indicators
+                </p>
               </div>
 
               <div className="space-y-4">
@@ -189,8 +208,13 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
                 <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-white/5 transition-colors">
                   <HiOutlineClipboardList className="w-6 h-6 text-[#EB612A] shrink-0 mt-1" />
                   <div>
-                    <h4 className="text-2xl md:text-3xl font-black tracking-tight text-[#EB612A]">2,400+</h4>
-                    <p className="text-xs text-gray-200 font-medium">Available regular quotas allocated for qualified candidates nationwide.</p>
+                    <h4 className="text-2xl md:text-3xl font-black tracking-tight text-[#EB612A]">
+                      2,400+
+                    </h4>
+                    <p className="text-xs text-gray-200 font-medium">
+                      Available regular quotas allocated for qualified
+                      candidates nationwide.
+                    </p>
                   </div>
                 </div>
 
@@ -200,8 +224,13 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
                 <div className="flex items-start gap-4 p-3 rounded-lg hover:bg-white/5 transition-colors">
                   <HiOutlineShieldCheck className="w-6 h-6 text-[#EB612A] shrink-0 mt-1" />
                   <div>
-                    <h4 className="text-2xl md:text-3xl font-black tracking-tight text-[#EB612A]">16 Regional</h4>
-                    <p className="text-xs text-gray-200 font-medium">Police Offices actively evaluating documentation channels simultaneously.</p>
+                    <h4 className="text-2xl md:text-3xl font-black tracking-tight text-[#EB612A]">
+                      16 Regional
+                    </h4>
+                    <p className="text-xs text-gray-200 font-medium">
+                      Police Offices actively evaluating documentation channels
+                      simultaneously.
+                    </p>
                   </div>
                 </div>
 
@@ -212,9 +241,17 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
                   <HiOutlineCalendar className="w-6 h-6 text-[#EB612A] shrink-0 mt-1" />
                   <div>
                     <h4 className="text-2xl md:text-3xl font-black tracking-tight text-[#EB612A] uppercase">
-                      {endDateObject ? endDateObject.toLocaleString("en-US", { month: "long", day: "numeric" }) : "TBA"}
+                      {endDateObject
+                        ? endDateObject.toLocaleString("en-US", {
+                            month: "long",
+                            day: "numeric",
+                          })
+                        : "TBA"}
                     </h4>
-                    <p className="text-xs text-gray-200 font-medium">Strict statutory deadline for completing original documentation uploads.</p>
+                    <p className="text-xs text-gray-200 font-medium">
+                      Strict statutory deadline for completing original
+                      documentation uploads.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -222,12 +259,14 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
               {/* Strategic Banner Tagline */}
               <div className="bg-white/5 border-l-4 border-[#EB612A] p-4 rounded-r-lg">
                 <p className="text-xs md:text-sm italic text-slate-200 leading-relaxed">
-                  <span className="font-bold text-white block not-italic mb-0.5">"Serbisyo sa Bayan"</span>
-                  Our enduring sacred vow to defend, secure, and serve our communities with utmost discipline.
+                  <span className="font-bold text-white block not-italic mb-0.5">
+                    "Serbisyo sa Bayan"
+                  </span>
+                  Our enduring sacred vow to defend, secure, and serve our
+                  communities with utmost discipline.
                 </p>
               </div>
             </div>
-
           </div>
         </div>
       </section>
@@ -236,12 +275,21 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
       <div className="bg-white border-y border-gray-200 py-3 overflow-hidden shadow-sm select-none ticker">
         <div className="flex whitespace-nowrap animate-ticker inline-block ticker-track">
           {[...Array(4)].map((_, idx) => (
-            <div key={idx} className="flex items-center space-x-12 mx-6 text-sm font-semibold tracking-wide uppercase text-gray-600 ">
-              <span className={`inline-flex items-center gap-1.5 font-bold ${isApplicationOpen ? 'text-emerald-600' : 'text-rose-600'}`}>
-                {isApplicationOpen ? "🟢 Applications Active Now" : "🔴 Applications Offline"}
+            <div
+              key={idx}
+              className="flex items-center space-x-12 mx-6 text-sm font-semibold tracking-wide uppercase text-gray-600 "
+            >
+              <span
+                className={`inline-flex items-center gap-1.5 font-bold ${isApplicationOpen && endDateObject ? "text-emerald-600" : "text-rose-600"}`}
+              >
+                {isApplicationOpen && endDateObject
+                  ? "🟢 Applications Active Now"
+                  : "🔴 Applications Offline"}
               </span>
               <span>·</span>
-              <span className="text-[#2C2D88]">Philippine National Police Recruitment Cycle 2026</span>
+              <span className="text-[#2C2D88]">
+                Philippine National Police Recruitment Cycle 2026
+              </span>
               <span>·</span>
               <span>Serve Your Fellow Citizens</span>
               <span>·</span>
@@ -268,7 +316,10 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
         </FadeInSection>
 
         <FadeInSection>
-          <CalltoAction isApplicationOpen={isApplicationOpen} />
+          <CalltoAction
+            isApplicationOpen={isApplicationOpen}
+            endDateObject={endDateObject}
+          />
         </FadeInSection>
       </main>
 

@@ -100,7 +100,7 @@ function LandingpageMain() {
           path="/"
           element={
             <>
-              <HeaderLanding isApplicationOpen={isApplicationOpen} />
+              <HeaderLanding isApplicationOpen={isApplicationOpen} appDates={appDates} />
               <LandingPage
                 isApplicationOpen={isApplicationOpen}
                 appDates={appDates}
@@ -112,7 +112,7 @@ function LandingpageMain() {
           path="/track-application"
           element={
             <>
-              <HeaderLanding isApplicationOpen={isApplicationOpen} />
+              <HeaderLanding isApplicationOpen={isApplicationOpen} appDates={appDates} />
               <TrackApplication />
             </>
           }
@@ -123,7 +123,7 @@ function LandingpageMain() {
           path="/form-application"
           element={
             <>
-              <HeaderLanding isApplicationOpen={isApplicationOpen} />
+              <HeaderLanding isApplicationOpen={isApplicationOpen} appDates={appDates} />
               <Form isApplicationOpen={isApplicationOpen} />
             </>
           }
@@ -132,7 +132,7 @@ function LandingpageMain() {
           path="/document-submission"
           element={
             <>
-              <HeaderLanding isApplicationOpen={isApplicationOpen} />
+              <HeaderLanding isApplicationOpen={isApplicationOpen} appDates={appDates} />
               <DocumentSubmission isApplicationOpen={isApplicationOpen} />
             </>
           }
