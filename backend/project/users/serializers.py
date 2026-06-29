@@ -218,9 +218,15 @@ class ApplicantDocumentSerializer(serializers.ModelSerializer):
         read_only_fields = ['uploaded_at']
 
     def get_file_url(self, obj):
-        request = self.context.get('request')
-        if obj.file and request:
-            return request.build_absolute_uri(obj.file.url)
+        if obj.file:
+            url = obj.file.url
+            # Cloudinary returns absolute URLs directly; for local files,
+            # try to build an absolute URI using the request context.
+            if url.startswith('http'):
+                return url
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(url)
         return None
 
 class SystemSettingsSerializer(serializers.ModelSerializer):
