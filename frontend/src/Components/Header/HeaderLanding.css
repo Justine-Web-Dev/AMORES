@@ -16,7 +16,6 @@
   border-bottom: 1px solid rgba(148, 163, 184, 0.22);
   box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
   
-  /* For Safari support */
   -webkit-backdrop-filter: blur(12px);
 }
 .home,.track-app,.about-us{
