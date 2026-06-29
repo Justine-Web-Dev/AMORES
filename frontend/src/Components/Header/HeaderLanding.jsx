@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import logo from '../../assets/RRSU1 logo.png'
-import '../Header/Headerlanding.css'
+import './Headerlanding.css'
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 function HeaderLanding({ isApplicationOpen = true }) {
