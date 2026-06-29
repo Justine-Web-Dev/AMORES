@@ -54,11 +54,6 @@ function DocumentSubmission() {
       const applicantId = response.data.id;
       const code = response.data.tracking_code;
 
-    navigate('../success-submit', { 
-      state: { trackingCode: code },
-      replace: true,
-      relative: 'path'
-    });
 
       // 2. Prepare document uploads
       const uploadPromises = []
