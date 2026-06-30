@@ -69,7 +69,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://192.168.100.148:5173", # Trust the frontend IP for data submission
+    "http://192.168.100.148:5173",
 ]
 
 from corsheaders.defaults import default_headers
