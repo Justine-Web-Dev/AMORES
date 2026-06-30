@@ -64,7 +64,7 @@ function ViewDetails() {
     }
 
 
-    if (loading) return <div className="p-10 text-center loading-applicant-details">Loading Applicant Details...</div>
+    if (loading) return <div className="border-4 h-[40px] w-[40px] rounded-full border-gray-100 border-t-[#2C2D86] animate-spin m-auto "></div>
     if (!applicant) return <div className="p-10 text-center">Applicant not found.</div>
 
   return (
