@@ -44,25 +44,35 @@ const SECTIONS = [
   },
 ]
 
-const DocCard = ({ doc, label }) => (
-  <div className="border rounded-lg shadow-sm bg-white overflow-hidden image-docs-container">
-    <a href={doc.file_url || doc.file} target="_blank" rel="noopener noreferrer">
-      <img
-        src={doc.file_url || doc.file}
-        alt={doc.document_type}
-        className="w-full h-48 object-cover hover:opacity-80 transition-opacity cursor-pointer"
-      />
-    </a>
-    <div className="p-3">
-      <p className="text-xs font-semibold text-gray-800 uppercase tracking-wide">
-        {label || DOC_LABELS[doc.document_type] || doc.document_type}
-      </p>
-      <p className="text-[10px] mt-1 text-gray-400">
-        Uploaded: {new Date(doc.uploaded_at).toLocaleDateString()}
-      </p>
+const DocCard = ({ doc, label }) => {
+  let imgUrl = doc.file_url || doc.file;
+  if (imgUrl && !imgUrl.startsWith('http')) {
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
+    const cleanBaseUrl = baseUrl.endsWith('/api') ? baseUrl.slice(0, -4) : baseUrl;
+    imgUrl = imgUrl.startsWith('/') ? `${cleanBaseUrl}${imgUrl}` : `${cleanBaseUrl}/${imgUrl}`;
+  }
+
+  return (
+    <div className="border rounded-lg shadow-sm bg-white overflow-hidden image-docs-container">
+      <a href={imgUrl} target="_blank" rel="noopener noreferrer">
+        <img
+          src={imgUrl}
+          alt={doc.document_type}
+          className="w-full h-48 object-cover hover:opacity-80 transition-opacity cursor-pointer"
+          referrerPolicy="no-referrer"
+        />
+      </a>
+      <div className="p-3">
+        <p className="text-xs font-semibold text-gray-800 uppercase tracking-wide">
+          {label || DOC_LABELS[doc.document_type] || doc.document_type}
+        </p>
+        <p className="text-[10px] mt-1 text-gray-400">
+          Uploaded: {new Date(doc.uploaded_at).toLocaleDateString()}
+        </p>
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
 function ViewDocumentSubmitted({ applicantId }) {
   const [documents, setDocuments] = useState([])
