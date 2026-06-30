@@ -62,7 +62,6 @@ class Applicant(models.Model):
     name_of_school = models.CharField(max_length=200, verbose_name="Name of School")
     latin_honor = models.CharField(max_length=50, null=True, blank=True, default='N/A', verbose_name="Latin Honor")
     
-    # Identity & Personal
     pag_ibig_number = models.CharField(max_length=15, unique=True, verbose_name="Pag-IBIG Number")
     phil_health_id_num = models.CharField(max_length=15, unique=True, verbose_name="PhilHealth ID")
     height = models.CharField(max_length=10, verbose_name="Height")
@@ -141,13 +140,29 @@ class Evaluation(models.Model):
 class ApplicantDocument(models.Model):
     applicant = models.ForeignKey(Applicant, on_delete=models.CASCADE, related_name='documents', verbose_name="Applicant")
     DOCUMENT_TYPES = [
+        # PSA
+        ('BIRTH_CERT', 'Birth Certificate'),
+        # Scholastic
+        ('OTR', 'Official Transcript of Records (OTR)'),
+        ('DIPLOMA', 'Diploma'),
+        # Clearances
+        ('BRGY_CLEARANCE', 'Barangay Clearance'),
+        ('POLICE_CLEARANCE', 'National Police Clearance'),
+        ('PROS_CLEARANCE', "Prosecutor's Clearance"),
+        ('NBI_CLEARANCE', 'NBI Clearance'),
+        # Eligibilities
+        ('PRC', 'PRC License'),
+        ('NAPOLCOM', 'Napolcom Entrance Rating'),
+        ('PD907', 'PD907 (Honor Graduate)'),
+        ('CS_PROF', 'CS Professional Eligibility'),
+        # Legacy / broad categories (for backward compatibility)
         ('PSA', 'PSA Birth Certificate'),
         ('ELIGIBILITY', 'Eligibilities'),
         ('SCHOLASTIC', 'Scholastic Records (Diploma/OTR)'),
         ('CLEARANCE', 'Clearances'),
     ]
 
-    document_type = models.CharField(max_length=20, choices=DOCUMENT_TYPES, verbose_name="Document Type")
+    document_type = models.CharField(max_length=25, choices=DOCUMENT_TYPES, verbose_name="Document Type")
     file = models.ImageField(upload_to='applicant_docs/', verbose_name="Document File")
     uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Date Uploaded")
 

@@ -57,10 +57,8 @@ function LandingpageMain() {
   };
 
   useEffect(() => {
-    // Initial fetch
     fetchApplicationStatus();
 
-    // Set up polling - fetch every 30 seconds to check for updates
     const pollInterval = setInterval(fetchApplicationStatus, 30000);
 
     // Also re-fetch when page becomes visible (user returns to tab)
@@ -72,14 +70,12 @@ function LandingpageMain() {
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    // Cleanup on unmount
     return () => {
       clearInterval(pollInterval);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, []);
 
-  // Synchronous route guard to prevent layout/paint flash (blink)
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
 
@@ -95,7 +91,6 @@ function LandingpageMain() {
   return (
     <div className="bg-gray-100">
       <Routes>
-        {/* Routes WITH Header */}
         <Route
           path="/"
           element={
@@ -133,12 +128,13 @@ function LandingpageMain() {
           element={
             <>
               <HeaderLanding isApplicationOpen={isApplicationOpen} appDates={appDates} />
-              <DocumentSubmission isApplicationOpen={isApplicationOpen} />
+              <div className="mt-20">
+                <DocumentSubmission isApplicationOpen={isApplicationOpen} />
+              </div>
             </>
           }
         />
 
-        {/* Route WITHOUT Header (404) */}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>

@@ -137,7 +137,6 @@ function DashboardOverview() {
         .slice(0, 5)
     }
 
-    // 6. Assessment Pipeline (Cumulative Funnel)
     const assessmentStages = [
       { name: 'New', status: 'New Applicant' },
       { name: 'Docs', status: 'Document Review' },
@@ -148,7 +147,7 @@ function DashboardOverview() {
       { name: 'Medical', status: 'Medical' },
       { name: 'Drug Test', status: 'Drug Test' },
       { name: 'F. Interview', status: 'Final Interview' },
-      { name: 'Oath Taking', status: 'Oath Taking' } // Linked to the end of the pipeline progress flow
+      { name: 'Oath Taking', status: 'Oath Taking' }
     ]
 
     const assessmentData = assessmentStages.map((stage) => {
@@ -247,13 +246,13 @@ function DashboardOverview() {
           </div>
           <div className='admin-summary-card accepted'>
             <div className='flex flex-col-reverse items-center'>
-              <span className='summary-label'>Accepted</span>
+              <span className='summary-label'>Successful Applicants</span>
               <span className='summary-value'>{statusCounts['Accepted']}</span>
             </div>
           </div>
           <div className='admin-summary-card rejected'>
             <div className='flex flex-col-reverse items-center'>
-              <span className='summary-label'>Failed</span>
+              <span className='summary-label'>Disqualified</span>
               <span className='summary-value'>{statusCounts['Rejected']}</span>
             </div>
           </div>

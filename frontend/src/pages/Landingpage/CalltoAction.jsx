@@ -20,7 +20,6 @@ const CalltoAction = ({ isApplicationOpen = true, endDateObject }) => {
     };
   
     return (
-      // Main Container (bg-gray-100 to match requirements section)
       <div className="bg-gray-100 flex flex-col items-center justify-center p-20 py-32 min-h-screen">
         <div className="max-w-4xl w-full flex flex-col items-center text-center">
           
