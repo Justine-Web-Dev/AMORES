@@ -165,7 +165,7 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
                 <div className="flex flex-col items-center sm:items-start gap-1 w-full sm:w-auto">
                   <button
                     disabled
-                    className="w-full sm:w-auto px-8 py-4 bg-gray-300 text-gray-500 font-bold text-sm tracking-wider uppercase rounded-lg cursor-not-allowed opacity-75"
+                    className="w-full sm:w-auto px-8 py-4 bg-gray-300 shadow-md font-bold text-sm tracking-wider uppercase rounded-lg cursor-not-allowed opacity-75"
                   >
                     {endDateObject ? "Applications Closed" : "Applications TBA"}
                   </button>
