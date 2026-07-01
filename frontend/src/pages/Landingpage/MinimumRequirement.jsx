@@ -2,9 +2,9 @@ import React from 'react'
 
 function MinimumRequirement() {
   const requirementsData = [
-  { id: '01', title: 'AGE & CITIZENSHIP', points: ['Must be a Filipino citizen', 'At least 21 years old...', 'Not more than 30 years old...', 'Born and raised in the Philippines'] },
-  { id: '02', title: 'EDUCATION', points: ['Must be a college graduate...', 'Graduate of PNPA...', 'At least 72 collegiate units...', 'Official transcript required'] },
-  { id: '03', title: 'PHYSICAL STANDARDS', points: ['Must be physically fit', 'Male: min 162 cm', 'Female: min 157 cm', 'Weight proportionate to height'] },
+  { id: '01', title: 'PERSONAL PROFILE', points: ['At least 21 years old...', 'Must not more than 30 years old...', 'Natural born Filipino'] },
+  { id: '02', title: 'EDUCATION ATTAINMENT', points: ['Baccalaureate'] },
+  { id: '03', title: 'PHYSICAL STANDARDS', points: ['Must be physically fit', 'Male: min 157 cm', 'Female: min 152 cm', 'Weight proportionate to height'] },
   { id: '04', title: 'CHARACTER & BACKGROUND', points: ['No criminal records', 'No pending cases', 'Good moral character', 'Not a member of illegal org'] },
   { id: '05', title: 'DOCUMENTARY REQUIREMENTS', points: ['PSA birth certificate', 'Diploma & transcript', 'NBI and Police clearances', 'Barangay clearance', 'Medical results'] },
   { id: '06', title: 'ADDITIONAL CRITERIA', points: ['Pass written exam', 'Pass Physical Agility Test', 'Pass medical/neuro exams', 'Pass background investigation'] },
@@ -33,7 +33,7 @@ const RequirementCard = ({ id, title, points }) => (
           <div className="h-[2px] w-8 bg-[#EB612A]"></div>
           <span className="uppercase tracking-[0.3em] text-[10px] md:text-xs font-bold text-gray-500">Who may apply</span>
         </div>
-        <h2 className="text-[#2C2D86] text-4xl font-black mb-2">MINIMUM REQUIREMENTS</h2>
+        <h2 className="text-[#2C2D86] text-4xl font-black mb-2">MINIMUM QUALIFICATIONS</h2>
         <div className="w-40 h-1 bg-[#EB612A] mb-10"></div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

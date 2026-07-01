@@ -76,7 +76,6 @@ function ViewDetails() {
               <h1 className="text-xl font-semibold text-gray-800"> Name: {applicant.firstname} {applicant.lastname}</h1>
               <p className="text-sm text-gray-500">Reference Code: {applicant.tracking_code}</p>
 
-
               <div className="flex items-center gap-3 mt-2">
                 <span className={`${statusColors[applicant.status]} status-detail-text`}>
                   {applicant.status}
@@ -107,7 +106,6 @@ function ViewDetails() {
         </div>
         <ApplicantInfoView data={applicant}/>
         <ViewDocumentSubmitted applicantId={id}/>
-        {/* Update Status */}
           <StatusManagement 
             applicantId={id}
             applicantData={applicant}

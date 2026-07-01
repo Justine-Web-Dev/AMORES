@@ -138,7 +138,7 @@ class Evaluation(models.Model):
         return f"Evaluation for {self.application.tracking_code}"
 
 class ApplicantDocument(models.Model):
-    applicant = models.ForeignKey(Applicant, on_delete=models.CASCADE, related_name='documents', verbose_name="Applicant")
+    applicant = models.ForeignKey(Applicant, on_delete=models.CASCADE, related_name='documents', verbose_name="Applicant")      
     DOCUMENT_TYPES = [
         # PSA
         ('BIRTH_CERT', 'Birth Certificate'),
