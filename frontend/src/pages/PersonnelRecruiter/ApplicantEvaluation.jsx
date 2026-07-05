@@ -201,7 +201,6 @@ function ApplicantEvaluation() {
             <thead className="text-xs text-gray-700 uppercase bg-gray-100 ">
               <tr>
                 <th scope="col" className="th">Name</th>
-                <th scope="col" className="th text-center">Birthdate</th>
                 <th scope="col" className="th text-center">Age</th>
                 <th scope="col" className="th text-center">Gender</th>
                 <th scope="col" className="th">Program</th>
@@ -227,7 +226,6 @@ function ApplicantEvaluation() {
                 filteredAndSorted.map((applicant) => (
                   <tr key={applicant.id} className="hover:bg-gray-50 transition-colors text-center">
                     <td>{applicant.firstname} {applicant.lastname} {applicant.middle_initial}</td>
-                    <td>{applicant.birthdate}</td>
                     <td>{applicant.age}</td>
                     <td>{applicant.gender}</td>
                     <td>{applicant.program}</td>
