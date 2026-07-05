@@ -11,6 +11,7 @@ function Form() {
     firstname: "",
     middle_name: "",
     birthdate: "",
+    address: "",
     gender: "",
     cp_number: "",
     program: "",
@@ -143,6 +144,7 @@ function Form() {
     "firstname",
     "middle_name",
     "birthdate",
+    "address",
     "gender",
     "cp_number",
     "program",
@@ -226,18 +228,38 @@ function Form() {
             <input
               className="border rounded px-3 py-2 text-sm w-full bg-gray-100 cursor-not-allowed text-gray-500"
               type="text"
-              value={formData.birthdate ? (() => {
-                const today = new Date();
-                const birthDate = new Date(formData.birthdate);
-                let age = today.getFullYear() - birthDate.getFullYear();
-                const m = today.getMonth() - birthDate.getMonth();
-                if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-                  age--;
-                }
-                return age;
-              })() : ""}
+              value={
+                formData.birthdate
+                  ? (() => {
+                      const today = new Date();
+                      const birthDate = new Date(formData.birthdate);
+                      let age = today.getFullYear() - birthDate.getFullYear();
+                      const m = today.getMonth() - birthDate.getMonth();
+                      if (
+                        m < 0 ||
+                        (m === 0 && today.getDate() < birthDate.getDate())
+                      ) {
+                        age--;
+                      }
+                      return age;
+                    })()
+                  : ""
+              }
               placeholder="Auto-calculated"
               readOnly
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-gray-600">Address</label>
+            <input
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
+              className="border rounded px-3 py-2 text-sm w-full"
+              type="text"
+              required
+              placeholder="Your Address"
             />
           </div>
 

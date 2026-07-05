@@ -92,6 +92,7 @@ function DeclinedApplicants() {
                 <th scope="col" className="th text-center">Age</th>
                 <th scope="col" className="th text-center">Gender</th>
                 <th scope="col" className="th">Program</th>
+                <th scope="col" className="th">Permanent Address</th>
                 <th scope="col" className="th">Name of School</th>
                 <th scope="col" className="th whitespace-nowrap">Date Graduated</th>
                 <th scope="col" className="th text-center">Status</th>
@@ -117,6 +118,7 @@ function DeclinedApplicants() {
                     <td>{applicant.age}</td>
                     <td>{applicant.gender}</td>
                     <td>{applicant.program}</td>
+                    <td>{applicant.address || 'N/A'}</td>
                     <td>{applicant.name_of_school}</td>
                     <td>{applicant.date_graduated}</td>
                     <td>

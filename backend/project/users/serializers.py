@@ -68,6 +68,7 @@ class ApplicantSerializer(serializers.ModelSerializer):
     firstname = serializers.CharField(source='first_name', read_only=True)
     lastname = serializers.CharField(source='last_name', read_only=True)
     cp_number = serializers.CharField(source='contact_number', read_only=True)
+    address = serializers.CharField(source='address')
     middle_initial = serializers.SerializerMethodField()
 
     class Meta:
@@ -95,6 +96,7 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
     firstname = serializers.CharField(source='first_name')
     lastname = serializers.CharField(source='last_name')
     cp_number = serializers.CharField(source='contact_number')
+    address = serializers.CharField(source='address')
     middle_initial = serializers.SerializerMethodField()
     
     # Flattened Application Fields (Safely handle missing applications)
@@ -121,7 +123,7 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
         model = Applicant
         fields = [
             'id', 'first_name', 'last_name', 'middle_name', 'birthdate', 'age', 'email', 
-            'contact_number', 'gender', 'program', 'date_graduated', 
+            'contact_number', 'gender', 'program', 'date_graduated', 'address',
             'name_of_school', 'latin_honor', 'pag_ibig_number', 
             'phil_health_id_num', 'height', 'tribe', 'created_at',
             'firstname', 'lastname', 'cp_number', 'middle_initial',

@@ -115,6 +115,7 @@ function GenerateReport() {
       'Email': app.email || 'N/A',
       'Contact Number': app.contact_number || 'N/A',
       'Gender': app.gender || 'N/A',
+      'Permanent Address': app.address || 'N/A',
       'Program': app.program || 'N/A',
       'Status': app.status || 'N/A',
       'Batch Number': app.batch || 'N/A',

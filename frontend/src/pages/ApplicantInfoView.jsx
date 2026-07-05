@@ -35,6 +35,10 @@ function ApplicantInfoView({ data }) {
             <p>{data.cp_number || "N/A"}</p>
           </div>
           <div className="info-item">
+            <label>Permanent Address</label>
+            <p>{data.address || "N/A"}</p>
+          </div>
+          <div className="info-item">
             <label>Height</label>
             <p>{data.height || "N/A"}</p>
           </div>

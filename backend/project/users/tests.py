@@ -90,6 +90,7 @@ class ApplicantRegistrationTests(TestCase):
             'lastname': 'Rivera',
             'middle_name': 'L',
             'birthdate': '1998-02-01',
+            'address': '123 Main Street',
             'gender': 'Female',
             'cp_number': '09170000001',
             'program': 'BSIT',
@@ -110,6 +111,7 @@ class ApplicantRegistrationTests(TestCase):
         self.assertEqual(applicant.first_name, 'Ana')
         self.assertEqual(applicant.last_name, 'Rivera')
         self.assertEqual(applicant.contact_number, '09170000001')
+        self.assertEqual(applicant.address, '123 Main Street')
         self.assertEqual(applicant.tribe, 'Ilonggo')
 
 

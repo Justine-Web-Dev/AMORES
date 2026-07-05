@@ -104,6 +104,7 @@ function ApplicantEvaluation() {
       'Gender': applicant.gender || 'N/A',
       'Email': applicant.email,
       'Contact #': applicant.cp_number,
+      'Permanent Address': applicant.address || 'N/A',
       'Height': applicant.height,
       'Tribe': applicant.tribe || 'N/A',
       'Pag-IBIG No.': applicant.pag_ibig_number,
@@ -204,6 +205,7 @@ function ApplicantEvaluation() {
                 <th scope="col" className="th text-center">Age</th>
                 <th scope="col" className="th text-center">Gender</th>
                 <th scope="col" className="th">Program</th>
+                <th scope="col" className="th">Permanent Address</th>
                 <th scope="col" className="th">Name of School</th>
                 <th scope="col" className="th whitespace-nowrap">Date Graduated</th>
                 <th scope="col" className="th text-center">Status</th>
@@ -229,6 +231,7 @@ function ApplicantEvaluation() {
                     <td>{applicant.age}</td>
                     <td>{applicant.gender}</td>
                     <td>{applicant.program}</td>
+                    <td>{applicant.address || 'N/A'}</td>
                     <td>{applicant.name_of_school}</td>
                     <td>{applicant.date_graduated}</td>
                     <td>
