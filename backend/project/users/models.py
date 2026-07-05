@@ -54,6 +54,7 @@ class Applicant(models.Model):
     email = models.EmailField(max_length=200, unique=True, verbose_name="Email Address")
     contact_number = models.CharField(max_length=11, unique=True, verbose_name="Contact Number")
     gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')], null=True, blank=True, verbose_name="Gender")
+    birthdate = models.DateField(verbose_name="Birthdate", null=True, blank=True)
     
     # Education
     program = models.CharField(max_length=100, verbose_name="Program/Course")
@@ -70,11 +71,10 @@ class Applicant(models.Model):
 
     @property
     def age(self):
-        return getattr(self, "_age", None)
-
-    @age.setter
-    def age(self, value):
-        self._age = value
+        if hasattr(self, 'birthdate') and self.birthdate:
+            today = timezone.now().date()
+            return today.year - self.birthdate.year - ((today.month, today.day) < (self.birthdate.month, self.birthdate.day))
+        return None
 
     # Property for backward compatibility (flattens active application)
     @property

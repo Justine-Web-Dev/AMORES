@@ -57,6 +57,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
 
 class ApplicantSerializer(serializers.ModelSerializer):
     date_graduated = FlexibleDateField()
+    birthdate = FlexibleDateField(required=False, allow_null=True)
     created_at = serializers.DateTimeField(read_only=True)
     age = serializers.SerializerMethodField()
     
@@ -86,6 +87,7 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
     A flattened version of the Applicant data for backward compatibility with existing frontend views.
     """
     date_graduated = FlexibleDateField()
+    birthdate = FlexibleDateField(required=False, allow_null=True)
     created_at = serializers.SerializerMethodField()
     age = serializers.SerializerMethodField()
     
@@ -118,7 +120,7 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
     class Meta:
         model = Applicant
         fields = [
-            'id', 'first_name', 'last_name', 'middle_name', 'age', 'email', 
+            'id', 'first_name', 'last_name', 'middle_name', 'birthdate', 'age', 'email', 
             'contact_number', 'gender', 'program', 'date_graduated', 
             'name_of_school', 'latin_honor', 'pag_ibig_number', 
             'phil_health_id_num', 'height', 'tribe', 'created_at',

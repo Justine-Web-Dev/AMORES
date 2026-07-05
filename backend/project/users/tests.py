@@ -3,6 +3,7 @@ import sqlite3
 import tempfile
 
 from django.test import SimpleTestCase, TestCase
+from django.urls import reverse
 
 from .models import Applicant, Application
 from .serializers import ApplicantFullSerializer
@@ -80,6 +81,36 @@ class ApplicantSerializationTests(TestCase):
         self.assertEqual(data['lastname'], 'Rivera')
         self.assertIn('id', data)
         self.assertIsNone(data['age'])
+
+
+class ApplicantRegistrationTests(TestCase):
+    def test_register_applicant_form_accepts_frontend_field_names(self):
+        payload = {
+            'firstname': 'Ana',
+            'lastname': 'Rivera',
+            'middle_name': 'L',
+            'birthdate': '1998-02-01',
+            'gender': 'Female',
+            'cp_number': '09170000001',
+            'program': 'BSIT',
+            'name_of_school': 'Sample School',
+            'date_graduated': '2024-01-01',
+            'email': 'ana@example.com',
+            'latin_honor': 'Cum Laude',
+            'pag_ibig_number': '123456789012',
+            'phil_health_id_num': '210987654321',
+            'height': '170cm',
+            'tribe_affiliated': 'Ilonggo',
+        }
+
+        response = self.client.post(reverse('register_applicant_form'), payload, format='json')
+
+        self.assertEqual(response.status_code, 201, response.data)
+        applicant = Applicant.objects.get(email='ana@example.com')
+        self.assertEqual(applicant.first_name, 'Ana')
+        self.assertEqual(applicant.last_name, 'Rivera')
+        self.assertEqual(applicant.contact_number, '09170000001')
+        self.assertEqual(applicant.tribe, 'Ilonggo')
 
 
 class SqliteImportTests(TestCase):

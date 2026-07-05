@@ -99,6 +99,7 @@ function ApplicantEvaluation() {
       'First Name': applicant.firstname,
       'Last Name': applicant.lastname,
       'Middle Name': applicant.middle_name || 'N/A',
+      'Birthdate': applicant.birthdate || 'N/A',
       'Age': applicant.age,
       'Gender': applicant.gender || 'N/A',
       'Email': applicant.email,
@@ -134,7 +135,7 @@ function ApplicantEvaluation() {
     XLSX.utils.book_append_sheet(workbook, worksheet, "Master Applicant List");
 
     const wscols = [
-      {wch: 15}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 5}, {wch: 10}, 
+      {wch: 15}, {wch: 20}, {wch: 20}, {wch: 20}, {wch: 15}, {wch: 5}, {wch: 10}, 
       {wch: 30}, {wch: 15}, {wch: 10}, {wch: 20}, {wch: 15}, {wch: 15},
       {wch: 30}, {wch: 30}, {wch: 15}, {wch: 15}, 
       {wch: 25}, {wch: 30}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 40},
@@ -200,6 +201,7 @@ function ApplicantEvaluation() {
             <thead className="text-xs text-gray-700 uppercase bg-gray-100 ">
               <tr>
                 <th scope="col" className="th">Name</th>
+                <th scope="col" className="th text-center">Birthdate</th>
                 <th scope="col" className="th text-center">Age</th>
                 <th scope="col" className="th text-center">Gender</th>
                 <th scope="col" className="th">Program</th>
@@ -225,6 +227,7 @@ function ApplicantEvaluation() {
                 filteredAndSorted.map((applicant) => (
                   <tr key={applicant.id} className="hover:bg-gray-50 transition-colors text-center">
                     <td>{applicant.firstname} {applicant.lastname} {applicant.middle_initial}</td>
+                    <td>{applicant.birthdate}</td>
                     <td>{applicant.age}</td>
                     <td>{applicant.gender}</td>
                     <td>{applicant.program}</td>

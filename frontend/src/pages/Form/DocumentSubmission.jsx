@@ -113,7 +113,15 @@ function DocumentSubmission() {
       localStorage.removeItem('applicationFormData')
       navigate('../success-submit', { state: { trackingCode: code }, relative: 'path' })
     } catch (err) {
-      const errorMessage = err?.response?.data?.error || err?.response?.data?.detail || "Submission failed."
+      console.error("Submission error data:", err?.response?.data);
+      let errorMessage = "Submission failed.";
+      if (err?.response?.data) {
+        if (typeof err.response.data === 'object') {
+           errorMessage = JSON.stringify(err.response.data);
+        } else {
+           errorMessage = err.response.data;
+        }
+      }
       setError(errorMessage)
     } finally {
       setLoading(false)

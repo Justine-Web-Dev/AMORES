@@ -23,6 +23,10 @@ function ApplicantInfoView({ data }) {
             <p>{data.firstname || "N/A"}</p>
           </div>
           <div className="info-item">
+            <label>Birthdate</label>
+            <p>{data.birthdate || "N/A"}</p>
+          </div>
+          <div className="info-item">
             <label>Age</label>
             <p>{data.age || "N/A"}</p>
           </div>

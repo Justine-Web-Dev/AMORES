@@ -19,7 +19,7 @@ class ApplicationInline(admin.StackedInline):
     show_change_link = True
 
 class ApplicantAdmin(admin.ModelAdmin):
-    list_display = ("first_name", "last_name", "gender", "email", "contact_number", "program", "created_at")
+    list_display = ("first_name", "last_name", "gender", "email", "contact_number", "program", "birthdate", "age", "created_at")
     list_editable = ("gender",)
     search_fields = ("first_name", "last_name", "email", "contact_number")
     list_filter = ("gender", "program", "created_at")
