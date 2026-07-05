@@ -58,6 +58,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
 class ApplicantSerializer(serializers.ModelSerializer):
     date_graduated = FlexibleDateField()
     created_at = serializers.DateTimeField(read_only=True)
+    age = serializers.SerializerMethodField()
     
     # We include fields from active applications to help the frontend
     current_application = ApplicationSerializer(source='active_application', read_only=True)
@@ -77,12 +78,16 @@ class ApplicantSerializer(serializers.ModelSerializer):
             return f"{obj.middle_name[0]}."
         return ""
 
+    def get_age(self, obj):
+        return getattr(obj, 'age', None)
+
 class ApplicantFullSerializer(serializers.ModelSerializer):
     """
     A flattened version of the Applicant data for backward compatibility with existing frontend views.
     """
     date_graduated = FlexibleDateField()
     created_at = serializers.SerializerMethodField()
+    age = serializers.SerializerMethodField()
     
     # Mapping back to old names for frontend compatibility
     firstname = serializers.CharField(source='first_name')
@@ -129,6 +134,9 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
         if obj.middle_name:
             return f"{obj.middle_name[0]}."
         return ""
+
+    def get_age(self, obj):
+        return getattr(obj, 'age', None)
 
     def get_created_at(self, obj):
         if obj.created_at:

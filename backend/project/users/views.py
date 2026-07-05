@@ -198,7 +198,6 @@ def validate_applicant_form(request):
 
     return Response({"valid": True, "message": "Form data is valid."}, status=status.HTTP_200_OK)
 
-
 @api_view(['POST'])
 def register_applicant_form(request):
     # Mapping old field names to new ones for validation and creation

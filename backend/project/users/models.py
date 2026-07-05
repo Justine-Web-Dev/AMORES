@@ -51,7 +51,6 @@ class Applicant(models.Model):
     first_name = models.CharField(max_length=100, verbose_name="First Name")
     last_name = models.CharField(max_length=100, verbose_name="Last Name")
     middle_name = models.CharField(max_length=100, blank=True, verbose_name="Middle Name")
-    age = models.IntegerField(default=18, verbose_name="Age")
     email = models.EmailField(max_length=200, unique=True, verbose_name="Email Address")
     contact_number = models.CharField(max_length=11, unique=True, verbose_name="Contact Number")
     gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')], null=True, blank=True, verbose_name="Gender")
@@ -68,6 +67,14 @@ class Applicant(models.Model):
     tribe = models.CharField(max_length=100, null=True, blank=True, default='N/A', verbose_name="Tribe Affiliation")
     
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date Registered")
+
+    @property
+    def age(self):
+        return getattr(self, "_age", None)
+
+    @age.setter
+    def age(self, value):
+        self._age = value
 
     # Property for backward compatibility (flattens active application)
     @property

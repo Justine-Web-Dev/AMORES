@@ -45,7 +45,6 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
   const navigate = useNavigate();
   const requirementsRef = useRef(null);
 
-  // Grouping all your imported assets into an array for the background loop
   const backgroundImages = [bg1, bg2, bg3, bg4, bg5, bg6, bg7, bg8, bg9];
 
   useEffect(() => {
@@ -56,7 +55,6 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
       setShowDisclaimer(true);
     }
 
-    // Rotates the hero background image every 5 seconds
     const bgTimer = setInterval(() => {
       setCurrentBgIndex(
         (prevIndex) => (prevIndex + 1) % backgroundImages.length,
@@ -102,9 +100,7 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
         <Disclaimer onAccept={handleAccept} onCancel={handleCancel} />
       )}
 
-      {/* Vibrant Light Background Hero Section */}
       <section className="relative min-h-[90vh] lg:min-h-screen flex items-center pt-28 pb-16 overflow-hidden bg-slate-100">
-      {/* Dynamic Image Layers - Optimized positioning for both mobile and desktop screens */}
       {backgroundImages.map((bgImage, index) => (
         <div
           key={index}
@@ -117,15 +113,12 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
         />
       ))}
 
-      {/* Responsive Gradient Masks - Lightened up significantly on mobile so the image layers stay fully visible */}
       <div className="absolute inset-0 bg-gradient-to-r from-slate-50/95 via-slate-50/50 to-transparent/5 z-10 hidden lg:block" />
       <div className="absolute inset-0 bg-gradient-to-b from-slate-50/70 via-slate-50/45 to-transparent/10 z-10 lg:hidden" />
 
-      {/* Content Wrapper */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-20">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-8">
           
-          {/* Left Column: Core Message */}
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left w-full lg:w-1/2 space-y-6">
             <div className="inline-flex items-center gap-3 px-3 py-1 bg-[#2C2D88]/10 backdrop-blur-sm rounded-full border border-[#2C2D88]/20 shadow-sm">
               <span className="w-2 h-2 rounded-full bg-[#EB612A] animate-ping" />
@@ -143,7 +136,6 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
                 <span>Honor.</span>
               </h1>
 
-              {/* Enhanced text card wrapper transparency to showcase image background */}
               <p className="text-gray-900 font-semibold text-sm md:text-lg max-w-lg leading-relaxed bg-white/75 backdrop-blur-md p-4 rounded-xl border border-white/50 shadow-xs">
                 Join the Philippine National Police force today. We are
                 looking for honorable, dedicated, and disciplined citizens
@@ -152,7 +144,6 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
               </p>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto pt-2">
               {isApplicationOpen && endDateObject ? (
                 <button
@@ -187,7 +178,6 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
             </div>
           </div>
 
-          {/* Right Column - Informational Card (Now beautifully glassmorphic on both mobile and desktop screens) */}
           <div className="w-full lg:w-[45%] bg-gradient-to-br from-[#2C2D88]/75 to-[#1e1f5c]/80 backdrop-blur-md border-t-8 border-[#EB612A] text-white shadow-2xl rounded-2xl p-5 md:p-8 space-y-5 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
               <HiOutlineShieldCheck className="w-40 h-40" />
@@ -203,7 +193,6 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
             </div>
 
             <div className="space-y-3 md:space-y-4">
-              {/* Stat Item 1 */}
               <div className="flex items-start gap-4 p-2 md:p-3 rounded-lg hover:bg-white/5 transition-colors">
                 <HiOutlineClipboardList className="w-6 h-6 text-[#EB612A] shrink-0 mt-1" />
                 <div>
@@ -219,7 +208,6 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
 
               <div className="h-[1px] bg-white/15 w-full"></div>
 
-              {/* Stat Item 2 */}
               <div className="flex items-start gap-4 p-2 md:p-3 rounded-lg hover:bg-white/5 transition-colors">
                 <HiOutlineShieldCheck className="w-6 h-6 text-[#EB612A] shrink-0 mt-1" />
                 <div>
@@ -235,7 +223,6 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
 
               <div className="h-[1px] bg-white/15 w-full"></div>
 
-              {/* Stat Item 3 */}
               <div className="flex items-start gap-4 p-2 md:p-3 rounded-lg hover:bg-white/5 transition-colors">
                 <HiOutlineCalendar className="w-6 h-6 text-[#EB612A] shrink-0 mt-1" />
                 <div>
@@ -255,7 +242,6 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
               </div>
             </div>
 
-            {/* Strategic Banner Tagline */}
             <div className="bg-white/5 border-l-4 border-[#EB612A] p-4 rounded-r-lg">
               <p className="text-xs md:text-sm italic text-slate-200 leading-relaxed">
                 <span className="font-bold text-white block not-italic mb-0.5">
@@ -271,7 +257,6 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
       </div>
     </section>
 
-      {/* Dynamic Infinite Text Ticker Loop */}
       <div className="bg-white border-y border-gray-200 py-3 overflow-hidden shadow-sm select-none ticker">
         <div className="flex whitespace-nowrap animate-ticker inline-block ticker-track">
           {[...Array(4)].map((_, idx) => (
@@ -307,7 +292,6 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
         </div>
       </div>
 
-      {/* Scroll Sections Container */}
       <main className="space-y-4">
         <FadeInSection>
           <AboutUs />

@@ -17,10 +17,9 @@ function ApplicantEvaluation() {
     "New Applicant": "bg-blue-100 text-blue-600",
     "Document Review": "bg-purple-100 text-purple-600",
     "Initial Screening": "bg-yellow-100 text-yellow-600",
-    "Technical Interview": "bg-cyan-100 text-cyan-600",
     "Qualified": "bg-indigo-100 text-indigo-700",
     "Accepted": "bg-emerald-100 text-emerald-700",
-    "Rejected": "bg-rose-100 text-rose-700",
+    "Disqualifed": "bg-rose-100 text-rose-700",
     "Body Mass Index": "bg-blue-50 text-blue-500",
     "Physical Agility Test": "bg-orange-100 text-orange-600",
     "Neuro Examination": "bg-indigo-100 text-indigo-600",
@@ -167,7 +166,6 @@ function ApplicantEvaluation() {
             <option value="New Applicant">New Applicant</option>
             <option value="Document Review">Document Review</option>
             <option value="Initial Screening">Initial Screening</option>
-            <option value="Technical Interview">Technical Interview</option>
             <option value="Qualified">Qualified</option>
             <option value="Accepted">Accepted</option>
             <option value="Body Mass Index">Body Mass Index</option>

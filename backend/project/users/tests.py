@@ -5,6 +5,7 @@ import tempfile
 from django.test import SimpleTestCase, TestCase
 
 from .models import Applicant, Application
+from .serializers import ApplicantFullSerializer
 from .utils import (
     build_database_backup_command,
     build_database_restore_command,
@@ -56,6 +57,29 @@ class DatabaseBackupRestoreCommandTests(SimpleTestCase):
         self.assertEqual(command[0], 'psql')
         self.assertTrue(any('amores' in item for item in command))
         self.assertEqual(command[-1], '/tmp/amores.sql')
+
+
+class ApplicantSerializationTests(TestCase):
+    def test_serializes_applicant_without_age_database_column(self):
+        applicant = Applicant.objects.create(
+            first_name='Ana',
+            last_name='Rivera',
+            email='ana@example.com',
+            contact_number='09170000001',
+            program='BSIT',
+            date_graduated='2024-01-01',
+            name_of_school='School',
+            pag_ibig_number='123',
+            phil_health_id_num='456',
+            height='170cm',
+        )
+
+        data = ApplicantFullSerializer(applicant).data
+
+        self.assertEqual(data['firstname'], 'Ana')
+        self.assertEqual(data['lastname'], 'Rivera')
+        self.assertIn('id', data)
+        self.assertIsNone(data['age'])
 
 
 class SqliteImportTests(TestCase):
