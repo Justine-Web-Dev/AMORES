@@ -224,6 +224,8 @@ def register_applicant_form(request):
     if 'lastname' in data: data['last_name'] = data.pop('lastname')[0] if isinstance(data['lastname'], list) else data.pop('lastname')
     if 'cp_number' in data: data['contact_number'] = data.pop('cp_number')[0] if isinstance(data['cp_number'], list) else data.pop('cp_number')
     if 'tribe_affiliated' in data: data['tribe'] = data.pop('tribe_affiliated')[0] if isinstance(data['tribe_affiliated'], list) else data.pop('tribe_affiliated')
+    if 'address' in data and not data.get('address'):
+        data['address'] = 'N/A'
 
     serializer = ApplicantSerializer(data=data)
     if serializer.is_valid():
