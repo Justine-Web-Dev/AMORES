@@ -33,7 +33,7 @@ const RequirementCard = ({ id, title, points }) => (
           <div className="h-[2px] w-8 bg-[#EB612A]"></div>
           <span className="uppercase tracking-[0.3em] text-[10px] md:text-xs font-bold text-gray-500">Who may apply</span>
         </div>
-        <h2 className="text-[#2C2D86] text-4xl font-black mb-2">MINIMUM QUALIFICATIONS</h2>
+        <h2 className="text-[#2C2D86] text-4xl font-black mb-2">GENERAL QUALIFICATIONS</h2>
         <div className="w-40 h-1 bg-[#EB612A] mb-10"></div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

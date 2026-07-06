@@ -6,7 +6,7 @@ import {
 } from 'recharts'
 
 function PersonnelOverview() {
-   const [users, setUsers] = useState([])
+    const [users, setUsers] = useState([])
     const [applicants, setApplicants] = useState([])
     const [loading, setLoading] = useState(true)
     
@@ -68,21 +68,24 @@ function PersonnelOverview() {
       // 1. Status Breakdown
       const statuses = {
         'New Applicant': 0,
+        'Document Review': 0, // Added explicit Document Review mapping
         'Screening': 0,
         'Qualified': 0,
         'Accepted': 0,
         'Rejected': 0,
-        'Oath Taking': 0 // Added Oath Taking category
+        'Oath Taking': 0 
       }
-      const screeningStages = ['Document Review', 'Initial Screening', 'Technical Interview']
+      // Removed 'Document Review' from here so it can be tracked independently
+      const screeningStages = ['Initial Screening', 'Technical Interview']
       
       data.forEach(a => {
         if (a.status === 'New Applicant') statuses['New Applicant']++
+        else if (a.status === 'Document Review') statuses['Document Review']++ // Increments Document Review
         else if (screeningStages.includes(a.status)) statuses['Screening']++
         else if (a.status === 'Qualified') statuses['Qualified']++
         else if (a.status === 'Accepted') statuses['Accepted']++
         else if (a.status === 'Rejected') statuses['Rejected']++
-        else if (a.status === 'Oath Taking') statuses['Oath Taking']++ // Increments counter for Oath Taking
+        else if (a.status === 'Oath Taking') statuses['Oath Taking']++ 
         else if (a.status === 'Body Mass Index') statuses['BMI'] = (statuses['BMI'] || 0) + 1
         else if (a.status === 'Physical Agility Test') statuses['PAT'] = (statuses['PAT'] || 0) + 1
         else if (a.status === 'Neuro Examination') statuses['Neuro'] = (statuses['Neuro'] || 0) + 1
@@ -148,7 +151,7 @@ function PersonnelOverview() {
         { name: 'Medical', status: 'Medical' },
         { name: 'Drug Test', status: 'Drug Test' },
         { name: 'F. Interview', status: 'Final Interview' },
-        { name: 'Oath Taking', status: 'Oath Taking' } // Appended to the end of the timeline
+        { name: 'Oath Taking', status: 'Oath Taking' } 
       ]
   
       const assessmentData = assessmentStages.map((stage) => {
@@ -166,8 +169,8 @@ function PersonnelOverview() {
     }
   
     const applicant_length = applicants.length
-    // Added a 6th color hex to accommodate the new status category safely
-    const CHART_COLORS = ['#2C2D86', '#EB612A', '#10B981', '#F59E0B', '#6366F1', '#8B5CF6']
+    // Added an extra color hex to support pie chart cleanly if distributions shift
+    const CHART_COLORS = ['#2C2D86', '#EB612A', '#10B981', '#F59E0B', '#6366F1', '#8B5CF6', '#EC4899']
   
     if (loading) {
       return (
@@ -225,6 +228,15 @@ function PersonnelOverview() {
                 <span className='summary-value'>{statusCounts['New Applicant']}</span>
               </div>
             </div>
+            
+            {/* Added Document Review Summary Card */}
+            <div className='admin-summary-card document-review'>
+              <div className='flex flex-col-reverse items-center'>
+                <span className='summary-label'>Document Review</span>
+                <span className='summary-value'>{statusCounts['Document Review'] || 0}</span>
+              </div>
+            </div>
+
             <div className='admin-summary-card under-review'>
               <div className='flex flex-col-reverse items-center'>
                 <span className='summary-label'>Screening</span>
@@ -239,23 +251,17 @@ function PersonnelOverview() {
             </div>
             <div className='admin-summary-card accepted'>
               <div className='flex flex-col-reverse items-center'>
-                <span className='summary-label'>Accepted</span>
+                <span className='summary-label'>Successful Applicants</span>
                 <span className='summary-value'>{statusCounts['Accepted']}</span>
               </div>
             </div>
             <div className='admin-summary-card rejected'>
               <div className='flex flex-col-reverse items-center'>
-                <span className='summary-label'>Failed</span>
+                <span className='summary-label'>Disqualified</span>
                 <span className='summary-value'>{statusCounts['Rejected']}</span>
               </div>
             </div>
-            {/* Added Oath Taking Summary Card */}
-            <div className='admin-summary-card oath-taking'>
-              <div className='flex flex-col-reverse items-center'>
-                <span className='summary-label'>Oath Taking</span>
-                <span className='summary-value'>{statusCounts['Oath Taking'] || 0}</span>
-              </div>
-            </div>
+
             <div className='admin-summary-card bmi'>
               <div className='flex flex-col-reverse items-center'>
                 <span className='summary-label'>BMI</span>
@@ -290,6 +296,12 @@ function PersonnelOverview() {
               <div className='flex flex-col-reverse items-center'>
                 <span className='summary-label'>Final Interview</span>
                 <span className='summary-value'>{statusCounts['Final Interview'] || 0}</span>
+              </div>
+            </div>
+            <div className='admin-summary-card oath-taking'>
+              <div className='flex flex-col-reverse items-center'>
+                <span className='summary-label'>Oath Taking</span>
+                <span className='summary-value'>{statusCounts['Oath Taking'] || 0}</span>
               </div>
             </div>
           </div>
