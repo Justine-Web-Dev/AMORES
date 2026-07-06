@@ -131,9 +131,9 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
               <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-[#2C2D88] italic uppercase leading-none drop-shadow-xs select-none">
                 <span>Serve.</span>
                 <br />
-                <span className="text-[#EB612A]">Protect.</span>
+                <span className="text-[#EB612A]">Honor.</span>
                 <br />
-                <span>Honor.</span>
+                <span>Justice.</span>
               </h1>
 
               <p className="text-gray-900 font-semibold text-sm md:text-lg max-w-lg leading-relaxed bg-white/75 backdrop-blur-md p-4 rounded-xl border border-white/50 shadow-xs">
