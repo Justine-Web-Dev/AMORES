@@ -1,278 +1,321 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from "react";
 
 import { IoIosAddCircleOutline } from "react-icons/io";
 import { CiSearch } from "react-icons/ci";
 
-import './UserManagement.css'
+import "./UserManagement.css";
 
-import { api } from '../../../api/api'
-import UserCard from './UserCard'
-import AddNewUserForm from '../Form/AddNewUserForm'
-import ConfirmationModal from '../../Modals/ConfirmationModal'
-import RestoreModal from '../../Modals/RestoreModal'
-import MessageModal from '../../Modals/MessageModal'
+import { api } from "../../../api/api";
+import UserCard from "./UserCard";
+import AddNewUserForm from "../Form/AddNewUserForm";
+import ConfirmationModal from "../../Modals/ConfirmationModal";
+import RestoreModal from "../../Modals/RestoreModal";
+import MessageModal from "../../Modals/MessageModal";
 
 function UserManagement() {
-  const [users, setUsers] = useState([])
-  const [toggleModal, setToggleModal] = useState(false)
-  const [selectedUser, setSelectedUser] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [activeSearchTerm, setActiveSearchTerm] = useState('')
-  const [open, setOpen] = useState(null)
-  const [showConfirmModal, setShowConfirmModal] = useState(false)
-  const [showRestoreModal, setShowRestoreModal] = useState(false)
-  const [userToArchive, setUserToArchive] = useState(null)
-  const [userToRestore, setUserToRestore] = useState(null)
-  const [modalConfig, setModalConfig] = useState({ isOpen: false, type: 'success', title: '', message: '' })
+  const [users, setUsers] = useState([]);
+  const [toggleModal, setToggleModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeSearchTerm, setActiveSearchTerm] = useState("");
+  const [open, setOpen] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showRestoreModal, setShowRestoreModal] = useState(false);
+  const [userToArchive, setUserToArchive] = useState(null);
+  const [userToRestore, setUserToRestore] = useState(null);
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    type: "success",
+    title: "",
+    message: "",
+  });
 
-  const [activeTab, setActiveTab] = useState('active')
+  const [loading, setLoading] = useState(false);
+
+  const [activeTab, setActiveTab] = useState("active");
 
   const fetchUsers = async () => {
+    setLoading(true);
     try {
-      const response = await api.get(`users/get_user/?archived=${activeTab === 'archived'}`)
-      setUsers(response.data)
-      console.log(response.data)
+      const response = await api.get(
+        `users/get_user/?archived=${activeTab === "archived"}`,
+      );
+      setUsers(response.data);
+      console.log(response.data);
     } catch (error) {
-      console.error("Error fetching users:", error)
+      console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchUsers()
-  }, [activeTab])
+    fetchUsers();
+  }, [activeTab]);
 
   const handleEdit = (user) => {
-    setSelectedUser(user)
-    setToggleModal(true)
-    setOpen(null) // Closes the action dropdown list layout cleanly
-  }
+    setSelectedUser(user);
+    setToggleModal(true);
+    setOpen(null); // Closes the action dropdown list layout cleanly
+  };
 
   const handleArchive = (user) => {
-    setUserToArchive(user)
-    setShowConfirmModal(true)
-    setOpen(null)
-  }
+    setUserToArchive(user);
+    setShowConfirmModal(true);
+    setOpen(null);
+  };
 
   const handleRestore = (user) => {
-    setUserToRestore(user)
-    setShowRestoreModal(true)
-    setOpen(null)
-  }
+    setUserToRestore(user);
+    setShowRestoreModal(true);
+    setOpen(null);
+  };
 
   const confirmRestore = async () => {
     if (!userToRestore) return;
     try {
-      await api.put(`users/update_user/${userToRestore.id}/`, { ...userToRestore, is_archived: false })
-      fetchUsers()
-      setShowRestoreModal(false)
-      setUserToRestore(null)
+      await api.put(`users/update_user/${userToRestore.id}/`, {
+        ...userToRestore,
+        is_archived: false,
+      });
+      fetchUsers();
+      setShowRestoreModal(false);
+      setUserToRestore(null);
       setModalConfig({
         isOpen: true,
-        type: 'success',
-        title: 'User Restored',
-        message: `User "${userToRestore.username}" has been successfully restored.`
-      })
+        type: "success",
+        title: "User Restored",
+        message: `User "${userToRestore.username}" has been successfully restored.`,
+      });
     } catch (error) {
-      console.error("Error restoring user:", error)
+      console.error("Error restoring user:", error);
       setModalConfig({
         isOpen: true,
-        type: 'error',
-        title: 'Restore Failed',
-        message: 'There was an error restoring the user.'
-      })
+        type: "error",
+        title: "Restore Failed",
+        message: "There was an error restoring the user.",
+      });
     }
-  }
+  };
 
   const confirmArchive = async () => {
     if (!userToArchive) return;
-    
-    try {
-      await api.delete(`users/update_user/${userToArchive.id}/`)
-      fetchUsers()
-      setShowConfirmModal(false)
-      setUserToArchive(null)
-      setModalConfig({
-        isOpen: true,
-        type: 'success',
-        title: 'User Archived',
-        message: `User "${userToArchive.username}" has been successfully archived.`
-      })
-    } catch (error) {
-      console.error("Error archiving user:", error.response || error)
-      setModalConfig({
-        isOpen: true,
-        type: 'error',
-        title: 'Archive Failed',
-        message: error.response?.data?.error || 'There was an error archiving the user.'
-      })
-    }
-  }
 
-  const filteredAndSorted = users
-  .filter((user) => {
+    try {
+      await api.delete(`users/update_user/${userToArchive.id}/`);
+      fetchUsers();
+      setShowConfirmModal(false);
+      setUserToArchive(null);
+      setModalConfig({
+        isOpen: true,
+        type: "success",
+        title: "User Archived",
+        message: `User "${userToArchive.username}" has been successfully archived.`,
+      });
+    } catch (error) {
+      console.error("Error archiving user:", error.response || error);
+      setModalConfig({
+        isOpen: true,
+        type: "error",
+        title: "Archive Failed",
+        message:
+          error.response?.data?.error ||
+          "There was an error archiving the user.",
+      });
+    }
+  };
+
+  const filteredAndSorted = users.filter((user) => {
     const fullName = `${user.name} ${user.username}`.toLowerCase();
     const matchesSearch = fullName.includes(activeSearchTerm.toLowerCase());
     return matchesSearch;
-  })
-  
+  });
+
   const toggleMenu = (id) => {
-    setOpen(open === id ? null : id)
-  }
+    setOpen(open === id ? null : id);
+  };
 
   // Extracted logic to re-verify state cleanly on closure changes
   const handleCloseUserForm = () => {
-    setToggleModal(false)
-    setSelectedUser(null)
-    fetchUsers() // CRITICAL FIX: Pulls down updated row info from database after submission saves
-  }
+    setToggleModal(false);
+    setSelectedUser(null);
+    fetchUsers(); // CRITICAL FIX: Pulls down updated row info from database after submission saves
+  };
 
   return (
-    <div className='module-content'>
-      <div className='flex justify-between items-center add-btn-container'>
-        <div className='flex flex-col '>
+    <div className="module-content">
+      <div className="flex justify-between items-center add-btn-container">
+        <div className="flex flex-col ">
           <h2>User Management</h2>
           <p>Manage system users, roles, and permissions.</p>
         </div>
-         <button 
-           onClick={() => {
-             setSelectedUser(null)
-             setToggleModal(true)
-           }}
-           className='flex justify-evenly items-center w-[150px] h-[40px] bg-[#2C2D86] text-white rounded cursor-pointer hover:-translate-y-[2px] hover:shadow-lg transition'>
-            <IoIosAddCircleOutline size={20}/>
-             Add New User
-          </button>
+        <button
+          onClick={() => {
+            setSelectedUser(null);
+            setToggleModal(true);
+          }}
+          className="flex justify-evenly items-center w-[150px] h-[40px] bg-[#2C2D86] text-white rounded cursor-pointer hover:-translate-y-[2px] hover:shadow-lg transition"
+        >
+          <IoIosAddCircleOutline size={20} />
+          Add New User
+        </button>
       </div>
 
       <div className="flex gap-4 mt-6 mb-2 border-b border-gray-200">
-        <button 
-          onClick={() => setActiveTab('active')}
-          className={`pb-2 px-4 text-sm font-medium transition-all duration-200 ${activeTab === 'active' ? 'border-b-2 border-[#2C2D86] text-[#2C2D86]' : 'text-gray-500 hover:text-gray-700'}`}>
-          Active Users ({activeTab === 'active' ? filteredAndSorted.length : '...'})
+        <button
+          onClick={() => setActiveTab("active")}
+          className={`pb-2 px-4 text-sm font-medium transition-all duration-200 ${activeTab === "active" ? "border-b-2 border-[#2C2D86] text-[#2C2D86]" : "text-gray-500 hover:text-gray-700"}`}
+        >
+          Active Users (
+          {activeTab === "active" ? filteredAndSorted.length : "..."})
         </button>
-        <button 
-          onClick={() => setActiveTab('archived')}
-          className={`pb-2 px-4 text-sm font-medium transition-all duration-200 ${activeTab === 'archived' ? 'border-b-2 border-[#2C2D86] text-[#2C2D86]' : 'text-gray-500 hover:text-gray-700'}`}>
-          Archived Users ({activeTab === 'archived' ? filteredAndSorted.length : '...'})
+        <button
+          onClick={() => setActiveTab("archived")}
+          className={`pb-2 px-4 text-sm font-medium transition-all duration-200 ${activeTab === "archived" ? "border-b-2 border-[#2C2D86] text-[#2C2D86]" : "text-gray-500 hover:text-gray-700"}`}
+        >
+          Archived Users (
+          {activeTab === "archived" ? filteredAndSorted.length : "..."})
         </button>
       </div>
 
-      <div className='flex gap-5 mt-4'>
+      <div className="flex gap-5 mt-4">
         <input
-            type="text"
-            placeholder="Search applicants..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
-          <button onClick={() => setActiveSearchTerm(searchTerm)}
-          className='flex items-center px-10 bg-[#2C2D86] text-white cursor-pointer rounded search-btn'><CiSearch size={30} /> Search</button>
+          type="text"
+          placeholder="Search applicants..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-input"
+        />
+        <button
+          onClick={() => setActiveSearchTerm(searchTerm)}
+          className="flex items-center px-10 bg-[#2C2D86] text-white cursor-pointer rounded search-btn"
+        >
+          <CiSearch size={30} /> Search
+        </button>
       </div>
 
-      <hr className='border-gray-300 my-4'/>
+      <hr className="border-gray-300 my-4" />
 
-      <div className='my-4'>
+      <div className="my-4">
         <table className="w-full text-sm text-center text-gray-500">
-            <thead className="text-xs text-gray-700 uppercase bg-gray-100 ">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-100 ">
+            <tr>
+              <th scope="col" className="th">
+                Name
+              </th>
+              <th scope="col" className="th">
+                Username
+              </th>
+              <th scope="col" className="th text-center">
+                Status
+              </th>
+              <th scope="col" className="th">
+                Actions
+              </th>
+            </tr>
+          </thead>
+
+          <tbody className="divide-y divide-gray-200 bg-white">
+            {loading ? (
               <tr>
-                <th scope="col" className="th">Name</th>
-                <th scope="col" className="th">Username</th>
-                <th scope="col" className="th text-center">Status</th>
-                <th scope="col" className="th">Actions</th>
+                <td colSpan="10" className="px-4 py-10">
+                  <div className="flex justify-center items-center w-full">
+                    <div className='border-[4px] border-gray-100 border-t-[#2C2D86] h-[30px] w-[30px] rounded-full animate-spin'></div>
+                  </div>
+                </td>
               </tr>
-            </thead>
+            ) : filteredAndSorted.length > 0 ? (
+              filteredAndSorted.map((user) => (
+                <tr key={user.id}>
+                  <td>{user.name}</td>
+                  <td>{user.username}</td>
+                  <td>{user.role}</td>
+                  <td className="px-4 py-4 text-center relative">
+                    <div className="flex justify-center items-center">
+                      <button
+                        onClick={() => toggleMenu(user.id)}
+                        className="flex items-center justify-center w-9 h-9 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all duration-200 active:scale-95"
+                        title="More Options"
+                      >
+                        <span className="text-xl font-bold tracking-widest leading-none pb-2">
+                          ...
+                        </span>
+                      </button>
+                    </div>
 
-            <tbody className="divide-y divide-gray-200 bg-white">
-              {
-                filteredAndSorted.length > 0 ? (
-                  filteredAndSorted.map((user) => (
-                  <tr key={user.id}>
-                    <td>{user.name}</td>
-                    <td>{user.username}</td>
-                    <td>{user.role}</td>
-                    <td className="px-4 py-4 text-center relative">
-                      <div className="flex justify-center items-center">
-                        <button 
-                          onClick={() => toggleMenu(user.id)}
-                          className="flex items-center justify-center w-9 h-9 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all duration-200 active:scale-95"
-                          title="More Options"
-                        >
-                          <span className="text-xl font-bold tracking-widest leading-none pb-2">...</span>
-                        </button>
-                      </div>
-
-                      {open === user.id && (
-                        <div className="absolute right-10 z-10 w-40 bg-white shadow-lg border border-gray-100 rounded-md actions">
-                          <ul className="flex flex-col text-[14px] gap-[5px]">
-                            <h1 className='font-bold text-black border-b pb-1 border-gray-200 action-title'>Actions</h1>
-                            <button 
-                              onClick={() => handleEdit(user)}
-                              className="text-left px-2 py-1 cursor-pointer view-details-btn-action">
-                              Edit
+                    {open === user.id && (
+                      <div className="absolute right-10 z-10 w-40 bg-white shadow-lg border border-gray-100 rounded-md actions">
+                        <ul className="flex flex-col text-[14px] gap-[5px]">
+                          <h1 className="font-bold text-black border-b pb-1 border-gray-200 action-title">
+                            Actions
+                          </h1>
+                          <button
+                            onClick={() => handleEdit(user)}
+                            className="text-left px-2 py-1 cursor-pointer view-details-btn-action"
+                          >
+                            Edit
+                          </button>
+                          {activeTab === "active" ? (
+                            <button
+                              onClick={() => handleArchive(user)}
+                              className="text-left  cursor-pointer view-details-btn-action"
+                            >
+                              Archive
                             </button>
-                            {activeTab === 'active' ? (
-                              <button 
-                                onClick={() => handleArchive(user)}
-                                className="text-left  cursor-pointer view-details-btn-action">
-                                Archive
-                              </button>
-                            ) : (
-                              <button 
-                                onClick={() => handleRestore(user)}
-                                className="text-left text-green-600 font-medium cursor-pointer view-details-btn-action">
-                                Restore
-                              </button>
-                            )}
-                          </ul>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))) : (
-                  <tr>
-                  <td colSpan="4" className="py-10 text-gray-500 italic col-8">
-                    No {activeTab} users found
+                          ) : (
+                            <button
+                              onClick={() => handleRestore(user)}
+                              className="text-left text-green-600 font-medium cursor-pointer view-details-btn-action"
+                            >
+                              Restore
+                            </button>
+                          )}
+                        </ul>
+                      </div>
+                    )}
                   </td>
                 </tr>
-                )
-              }
-            </tbody>
-          </table> 
+              ))
+            ) : (
+              <tr>
+                <td colSpan="4" className="py-10 text-gray-500 italic col-8">
+                  No {activeTab} users found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
-      
-        {/* Updated toggle modal block with handleCloseUserForm callback structural change */}
-        {toggleModal && (
-          <AddNewUserForm 
-            onClose={handleCloseUserForm} 
-            user={selectedUser}
-          />
-        )}
 
-        <ConfirmationModal 
-          isOpen={showConfirmModal}
-          onClose={() => setShowConfirmModal(false)}
-          onConfirm={confirmArchive}
-          title="Archive User"
-          message={`Are you sure you want to archive "${userToArchive?.username}"? This will disable their account but preserve their data.`}
-        />
+      {toggleModal && (
+        <AddNewUserForm onClose={handleCloseUserForm} user={selectedUser} />
+      )}
 
-        <RestoreModal 
-          isOpen={showRestoreModal}
-          onClose={() => setShowRestoreModal(false)}
-          onConfirm={confirmRestore}
-          title="Restore User"
-          message={`Are you sure you want to restore user "${userToRestore?.username}"? This will reactivate their account.`}
-        />
+      <ConfirmationModal
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={confirmArchive}
+        title="Archive User"
+        message={`Are you sure you want to archive "${userToArchive?.username}"? This will disable their account but preserve their data.`}
+      />
 
-        <MessageModal 
-          isOpen={modalConfig.isOpen}
-          onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
-          type={modalConfig.type}
-          title={modalConfig.title}
-          message={modalConfig.message}
-        />
+      <RestoreModal
+        isOpen={showRestoreModal}
+        onClose={() => setShowRestoreModal(false)}
+        onConfirm={confirmRestore}
+        title="Restore User"
+        message={`Are you sure you want to restore user "${userToRestore?.username}"? This will reactivate their account.`}
+      />
+
+      <MessageModal
+        isOpen={modalConfig.isOpen}
+        onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+        type={modalConfig.type}
+        title={modalConfig.title}
+        message={modalConfig.message}
+      />
     </div>
-  )
+  );
 }
 
-export default UserManagement
+export default UserManagement;
