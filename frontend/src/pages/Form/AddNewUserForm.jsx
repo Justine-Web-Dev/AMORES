@@ -169,7 +169,6 @@ function AddNewUserForm({ onClose, user }) {
             </div>
           )}
         </div>
-
         <div className="flex justify-end mt-3">
           <button
             type="submit"
