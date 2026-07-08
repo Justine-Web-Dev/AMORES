@@ -9,7 +9,7 @@ import './ApplicantEval.css'
 function ApplicantEvaluation() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('All')
-  const [sortBy, setSortBy] = useState('date') // Defaulted to date for FIFO view
+  const [sortBy, setSortBy] = useState('date')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
@@ -75,7 +75,6 @@ function ApplicantEvaluation() {
         } else if (sortBy === 'date') {
           const dateA = new Date(a.created_at);
           const dateB = new Date(b.created_at);
-          // Changed from (dateB - dateA) to (dateA - dateB) for First-In, First-Out (Chronological Order)
           return dateA - dateB;
         } else if (sortBy === 'batch1') {
           return (a.batch || 0) - (b.batch || 0);
