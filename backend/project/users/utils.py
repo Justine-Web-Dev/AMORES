@@ -136,6 +136,56 @@ def create_database_backup(db_settings):
     raise ValueError('Unsupported database engine.')
 
 
+def _prepare_postgresql_restore_script(backup_path):
+    """Create a SQL script that truncates existing tables before applying a PostgreSQL dump."""
+    with open(backup_path, 'r', encoding='utf-8') as source_file:
+        backup_sql = source_file.read()
+
+    temp_dir = tempfile.gettempdir()
+    fd, restore_script_path = tempfile.mkstemp(prefix='amores_restore_', suffix='.sql', dir=temp_dir)
+    os.close(fd)
+
+    truncate_tables = [
+        'users_auditlog',
+        'users_evaluation',
+        'users_applicantdocument',
+        'users_application',
+        'users_applicant',
+        'users_user',
+        'users_systemsettings',
+        'django_admin_log',
+        'django_session',
+        'django_migrations',
+        'django_content_type',
+        'auth_user_user_permissions',
+        'auth_user_groups',
+        'auth_group_permissions',
+        'auth_user',
+        'auth_permission',
+        'auth_group',
+    ]
+
+    # Filter out problematic statements that cause permission errors
+    lines = backup_sql.split('\n')
+    filtered_lines = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped.startswith('ALTER DEFAULT PRIVILEGES'):
+            continue
+        if stripped.startswith('GRANT ') and 'ON SCHEMA public' in line:
+            continue
+        filtered_lines.append(line)
+    filtered_sql = '\n'.join(filtered_lines)
+
+    with open(restore_script_path, 'w', encoding='utf-8') as restore_file:
+        restore_file.write("SET client_min_messages TO WARNING;\n")
+        for table in truncate_tables:
+            restore_file.write(f"DROP TABLE IF EXISTS \"{table}\" CASCADE;\n")
+        restore_file.write(filtered_sql)
+
+    return restore_script_path
+
+
 def restore_database_backup(backup_path, backup_format, db_settings, model_classes):
     """Restore the database from a backup file."""
     engine = db_settings.get('ENGINE', '')
@@ -165,10 +215,27 @@ def restore_database_backup(backup_path, backup_format, db_settings, model_class
                 'psql was not found. Install PostgreSQL client tools or restore a .json backup instead.'
             )
         connections.close_all()
-        restore_command = build_database_restore_command(backup_path, db_settings, psql=psql)
-        result = subprocess.run(restore_command, check=True, capture_output=True, text=True)
-        if result.stderr:
-            print(f"[RESTORE] psql stderr: {result.stderr}")
+        restore_script_path = _prepare_postgresql_restore_script(backup_path)
+        try:
+            restore_command = [
+                psql,
+                '-v',
+                'ON_ERROR_STOP=1',
+                '-1',
+                f'--dbname={_postgres_connection_uri(db_settings)}',
+                '-f',
+                restore_script_path,
+            ]
+            result = subprocess.run(restore_command, capture_output=True, text=True)
+            if result.returncode != 0:
+                error_msg = result.stderr if result.stderr else result.stdout
+                print(f"[RESTORE] psql failed with exit code {result.returncode}: {error_msg}")
+                raise subprocess.CalledProcessError(result.returncode, restore_command, output=error_msg)
+            if result.stderr:
+                print(f"[RESTORE] psql stderr: {result.stderr}")
+        finally:
+            if os.path.exists(restore_script_path):
+                os.remove(restore_script_path)
         return
 
     raise ValueError('Invalid backup file.')

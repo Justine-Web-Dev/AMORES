@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import tempfile
+from unittest.mock import patch
 
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
@@ -13,6 +14,7 @@ from .utils import (
     detect_backup_format,
     import_sqlite_backup_to_postgres,
     create_database_backup,
+    restore_database_backup,
 )
 
 
@@ -58,6 +60,49 @@ class DatabaseBackupRestoreCommandTests(SimpleTestCase):
         self.assertEqual(command[0], 'psql')
         self.assertTrue(any('amores' in item for item in command))
         self.assertEqual(command[-1], '/tmp/amores.sql')
+
+
+class DatabaseRestoreTests(SimpleTestCase):
+    def test_postgresql_restore_truncates_existing_tables_before_import(self):
+        db_settings = {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': 'amores',
+            'USER': 'postgres',
+            'PASSWORD': 'secret',
+            'HOST': 'localhost',
+            'PORT': '5432',
+        }
+
+        with tempfile.NamedTemporaryFile(suffix='.sql', delete=False) as tmp_file:
+            tmp_file.write(b'INSERT INTO users_user (id, username) VALUES (1, \'admin\');\n')
+            temp_path = tmp_file.name
+
+        try:
+            with patch('users.utils.find_pg_binary', return_value='psql'), \
+                 patch('users.utils.subprocess.run') as mock_run, \
+                 patch('users.utils.os.remove', side_effect=lambda path: None):
+                mock_result = type('MockResult', (), {'returncode': 0, 'stderr': '', 'stdout': ''})()
+                mock_run.return_value = mock_result
+                restore_database_backup(temp_path, 'postgresql', db_settings, {})
+
+            self.assertEqual(mock_run.call_count, 1)
+            command = mock_run.call_args[0][0]
+            self.assertEqual(command[0], 'psql')
+            self.assertTrue(any(item.startswith('--dbname=') for item in command))
+            restore_script_path = command[-1]
+            self.assertNotEqual(restore_script_path, temp_path)
+            with open(restore_script_path, 'r', encoding='utf-8') as restore_file:
+                contents = restore_file.read()
+            self.assertIn('SET client_min_messages TO WARNING;', contents)
+            self.assertIn('DROP TABLE IF EXISTS', contents)
+            self.assertIn('users_user', contents)
+            self.assertIn('INSERT INTO users_user', contents)
+        finally:
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+            cleanup_path = locals().get('restore_script_path')
+            if cleanup_path and os.path.exists(cleanup_path):
+                os.remove(cleanup_path)
 
 
 class ApplicantSerializationTests(TestCase):
