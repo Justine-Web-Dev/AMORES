@@ -11,23 +11,34 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 import os
 from pathlib import Path
+from urllib.parse import parse_qs, unquote, urlparse
+
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
+IS_RENDER = os.getenv("RENDER") == "true"
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRETKEY")
+SECRET_KEY = os.environ.get("SECRET_KEY") or os.environ.get("SECRETKEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "false" if IS_RENDER else "true").lower() in ("true", "1", "yes")
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.100.148','.onrender.com']
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '192.168.100.148',
+    '.onrender.com',
+]
+if render_host := os.getenv("RENDER_EXTERNAL_HOSTNAME"):
+    ALLOWED_HOSTS.append(render_host)
 
 
 # Application definition
@@ -51,6 +62,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -65,12 +77,23 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://192.168.100.148:5173",
-    "https://amores-two.vercel.app"
+    "https://amores-two.vercel.app",
 ]
+if extra_cors := os.getenv("CORS_ALLOWED_ORIGINS"):
+    CORS_ALLOWED_ORIGINS.extend(
+        origin.strip() for origin in extra_cors.split(",") if origin.strip()
+    )
 
 CSRF_TRUSTED_ORIGINS = [
     "http://192.168.100.148:5173",
+    "https://amores-two.vercel.app",
 ]
+if extra_csrf := os.getenv("CSRF_TRUSTED_ORIGINS"):
+    CSRF_TRUSTED_ORIGINS.extend(
+        origin.strip() for origin in extra_csrf.split(",") if origin.strip()
+    )
+if render_host:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{render_host}")
 
 from corsheaders.defaults import default_headers
 CORS_ALLOW_HEADERS = list(default_headers) + [
@@ -99,18 +122,54 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',   
-        'NAME': os.getenv("NAME"),
-        'USER': os.getenv("USER"),
-        'PASSWORD': os.getenv("PASSWORD"),
-        'HOST': os.getenv("HOST"),
-        'PORT': os.getenv("DB_PORT","5432"),
+def _resolve_db_host(host):
+    # Neon pooler connections leave search_path empty, which breaks migrations/DDL.
+    if host and "-pooler" in host and os.getenv("USE_DB_POOLER", "").lower() != "true":
+        host = host.replace("-pooler", "")
+    return host
+
+
+def _database_from_url(database_url):
+    parsed = urlparse(database_url)
+    query = parse_qs(parsed.query)
+    host = _resolve_db_host(parsed.hostname or "")
+    options = {'connect_timeout': 10}
+    sslmode = query.get('sslmode', ['require'])[0]
+    if sslmode:
+        options['sslmode'] = sslmode
+    return {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': (parsed.path or '/').lstrip('/'),
+        'USER': parsed.username,
+        'PASSWORD': unquote(parsed.password or ''),
+        'HOST': host,
+        'PORT': parsed.port or 5432,
+        'OPTIONS': options,
+    }
+
+
+def _database_config():
+    database_url = os.getenv("DATABASE_URL")
+    if database_url:
+        return _database_from_url(database_url)
+
+    # Prefer DB_* vars on Render/Linux; plain USER can conflict with the OS user.
+    return {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv("DB_NAME") or os.getenv("NAME"),
+        'USER': os.getenv("DB_USER") or os.getenv("PGUSER") or os.getenv("USER"),
+        'PASSWORD': os.getenv("DB_PASSWORD") or os.getenv("PASSWORD"),
+        'HOST': _resolve_db_host(os.getenv("DB_HOST") or os.getenv("HOST", "")),
+        'PORT': os.getenv("DB_PORT", "5432"),
         'OPTIONS': {
-            'connect_timeout': 10,  
+            'connect_timeout': 10,
+            'sslmode': 'require',
         },
     }
+
+
+DATABASES = {
+    'default': _database_config()
 }
 
 
@@ -172,6 +231,6 @@ STORAGES = {
         "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage" if IS_RENDER else "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }

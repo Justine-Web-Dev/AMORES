@@ -1,21 +1,26 @@
 import axios from "axios";
 
+const baseURL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api").replace(/\/$/, "");
+
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api',
-  headers:{
-    'Content-Type': 'application/json'
-  }
-})
+  baseURL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    // Axios treats `/path` as site-root, not baseURL — strip leading slashes.
+    if (config.url?.startsWith("/")) {
+      config.url = config.url.slice(1);
+    }
+
+    const token = localStorage.getItem("token");
     if (token) {
-      config.headers['X-User-Token'] = token;
+      config.headers["X-User-Token"] = token;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );

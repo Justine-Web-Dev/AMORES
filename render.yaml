@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: amores-api
+    runtime: python
+    rootDir: backend/project
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: gunicorn project.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.0
+      - key: SECRETKEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: CLOUD_NAME
+        sync: false
+      - key: API_KEY
+        sync: false
+      - key: API_SECRET
+        sync: false
