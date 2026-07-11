@@ -194,7 +194,7 @@ function PersonnelOverview() {
       <div className='module-content'>
         <div className="flex justify-between items-center mb-6 lg:mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
+            <h2 className="text-2xl font-bold text-gray-800">Recruitment Overview</h2>
             <p className="text-gray-500">System metrics and recruitment analytics at a glance.</p>
           </div>
           
