@@ -29,6 +29,8 @@ import tempfile
 import secrets
 import string
 
+import threading
+
 def send_welcome_email(name, email, raw_password):
     """Send new user's credentials via Django's built-in email backend.
     With the console backend this prints to the Django terminal (free, no credentials)."""
@@ -42,16 +44,20 @@ def send_welcome_email(name, email, raw_password):
         f"– PNP-AMORES System\n"
         f"Timestamp: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
     )
-    try:
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            fail_silently=False,
-        )
-    except Exception as e:
-        print(f"[AMORES] Email send failed for {email}: {e}")
+    
+    def _send_email_task():
+        try:
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            print(f"[AMORES] Email send failed for {email}: {e}")
+            
+    threading.Thread(target=_send_email_task).start()
 
 @api_view(['GET'])
 def get_user(request):
