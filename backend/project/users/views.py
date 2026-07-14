@@ -29,7 +29,6 @@ import tempfile
 import secrets
 import string
 
-
 def send_welcome_email(name, email, raw_password):
     """Send new user's credentials via Django's built-in email backend.
     With the console backend this prints to the Django terminal (free, no credentials)."""
