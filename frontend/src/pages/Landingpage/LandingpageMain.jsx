@@ -79,10 +79,10 @@ function LandingpageMain() {
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
 
-  if (token && (role === "Admin" || role === "Personnel")) {
+  if (token && (role === "Administrator" || role === "Recruiter")) {
     return (
       <Navigate
-        to={role === "Admin" ? "/Dashboard" : "/PersonnelDashboard"}
+        to={role === "Administrator" ? "/Dashboard" : "/PersonnelDashboard"}
         replace
       />
     );

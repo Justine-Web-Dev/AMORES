@@ -26,11 +26,11 @@ function Header() {
 
   const token = localStorage.getItem('token');
   const payload = parseJwt(token);
-  const username = payload?.username || 'User';
+  const name = payload?.name || 'User';
   const rawRole = payload?.role || '';
   
   // Professional role mapping with direct Admin check
-  const role = (username === 'Admin' || rawRole === 'Administrator') ? 'Administrator' : 
+  const role = (rawRole === 'Administrator') ? 'Administrator' : 
                (rawRole === 'Recruiter') ? 'Recruitment Staff' : 'Staff';
 
   // Dynamic Breadcrumb Logic
@@ -81,7 +81,7 @@ function Header() {
         
         <div className="user-profile-header">
           <div className="text-right hidden sm:block">
-            <h4>{username}</h4>
+            <h4>{name}</h4>
             <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider">{role}</p>
           </div>
           <img src={logoAcc} alt="Profile" className="header-avatar" />

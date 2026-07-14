@@ -31,8 +31,8 @@ class User(models.Model):
     )
 
     name = models.CharField(max_length=100, default="Unknown", verbose_name="Full Name")
-    username = models.CharField(max_length=100, unique=True, verbose_name="Username")
-    password = models.CharField(max_length=128, verbose_name="Password") # Increased length for potential hashing
+    email = models.EmailField(max_length=100,null=True, blank=True, unique=True, verbose_name="Email Address")
+    password = models.CharField(max_length=128, verbose_name="Password") 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='Recruiter', verbose_name="Role")
     is_archived = models.BooleanField(default=False, verbose_name="Is Archived")
 
@@ -45,7 +45,7 @@ class User(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.name} (@{self.username})"
+        return f"{self.name} ({self.email})"
 
 class Applicant(models.Model):
     first_name = models.CharField(max_length=100, verbose_name="First Name")
@@ -202,5 +202,5 @@ class AuditLog(models.Model):
         ordering = ['-timestamp']
 
     def __str__(self):
-        performer = self.performer.username if self.performer else self.performer_name
+        performer = self.performer.name if self.performer else self.performer_name
         return f"{performer} - {self.action} at {self.timestamp}"

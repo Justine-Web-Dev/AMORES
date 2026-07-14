@@ -22,7 +22,7 @@ class FlexibleDateField(serializers.DateField):
 class UsersSerializers(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'name', 'username', 'password', 'role', 'is_archived']
+        fields = ['id', 'name', 'email', 'password', 'role', 'is_archived']
         extra_kwargs = {
             'password': {'write_only': True, 'required': False}
         }
@@ -253,8 +253,8 @@ class AuditLogSerializer(serializers.ModelSerializer):
     
     def get_user(self, obj):
         """Return the performer username, with fallback to performer_name or 'System'"""
-        if obj.performer and obj.performer.username:
-            return obj.performer.username
+        if obj.performer:
+            return obj.performer.name
         elif obj.performer_name:
             return obj.performer_name
         return 'System'

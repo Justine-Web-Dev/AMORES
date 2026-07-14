@@ -204,7 +204,7 @@ function UserManagement() {
                 Name
               </th>
               <th scope="col" className="th">
-                Username
+                Email
               </th>
               <th scope="col" className="th text-center">
                 Status
@@ -228,7 +228,7 @@ function UserManagement() {
               filteredAndSorted.map((user) => (
                 <tr key={user.id}>
                   <td>{user.name}</td>
-                  <td>{user.username}</td>
+                  <td>{user.email}</td>
                   <td>{user.role}</td>
                   <td className="px-4 py-4 text-center relative">
                     <div className="flex justify-center items-center">

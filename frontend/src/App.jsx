@@ -19,7 +19,7 @@ function App() {
         <Route 
           path='/Dashboard/*' 
           element={
-            <ProtectedRoute allowedRole="Admin">
+            <ProtectedRoute allowedRole="Administrator">
               <AdminDashboard />
             </ProtectedRoute>
           } 
@@ -29,7 +29,7 @@ function App() {
         <Route 
           path='/PersonnelDashboard/*' 
           element={
-            <ProtectedRoute allowedRole="Personnel">
+            <ProtectedRoute allowedRole="Recruiter">
               <PersonnelDashboard />
             </ProtectedRoute>
           } 

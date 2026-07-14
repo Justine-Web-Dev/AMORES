@@ -2,8 +2,8 @@ from django.contrib import admin
 from .models import User, Applicant, Application, Evaluation, ApplicantDocument, AuditLog, SystemSettings
 
 class UserAdmin(admin.ModelAdmin):
-    list_display = ("name", "username", "role", "is_archived")
-    search_fields = ("name", "username")
+    list_display = ("name", "email", "role", "is_archived")
+    search_fields = ("name", "email")
     list_filter = ("role", "is_archived")
 
 admin.site.register(User, UserAdmin)

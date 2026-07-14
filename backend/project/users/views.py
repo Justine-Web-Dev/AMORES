@@ -17,6 +17,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.contrib.auth.hashers import check_password, make_password
+from django.core.mail import send_mail
 
 import jwt
 import datetime
@@ -25,8 +26,33 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.db.models import Prefetch
 import tempfile
+import secrets
+import string
 
-# Create your views here.
+
+def send_welcome_email(name, email, raw_password):
+    """Send new user's credentials via Django's built-in email backend.
+    With the console backend this prints to the Django terminal (free, no credentials)."""
+    subject = f"Welcome to AMORES – Account Created for {name}"
+    message = (
+        f"Hi {name},\n\n"
+        f"Your AMORES account has been created successfully.\n\n"
+        f"Login credentials:\n"
+        f"  Email:    {email}\n"
+        f"  Password: {raw_password}\n\n"
+        f"– PNP-AMORES System\n"
+        f"Timestamp: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    )
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+            fail_silently=False,
+        )
+    except Exception as e:
+        print(f"[AMORES] Email send failed for {email}: {e}")
 
 @api_view(['GET'])
 def get_user(request):
@@ -37,39 +63,77 @@ def get_user(request):
 
 @api_view(['POST'])
 def register_user(request):
-  username = request.data.get('username')
-  name = request.data.get('name')
+    email = request.data.get('email')
+    name = request.data.get('name')
 
-  if User.objects.filter(username=username).exists():
-      return Response({"error": f"Username '{username}' is already taken."}, status=status.HTTP_400_BAD_REQUEST)
+    if not email: 
+        return Response({"error": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    if User.objects.filter(email=email).exists():
+        return Response({"error": f"Email '{email}' is already taken."}, status=status.HTTP_400_BAD_REQUEST)
   
-  if User.objects.filter(name=name).exists():
-      return Response({"error": f"A personnel with the name '{name}' is already registered."}, status=status.HTTP_400_BAD_REQUEST)
+    if User.objects.filter(name=name).exists():
+        return Response({"error": f"A personnel with the name '{name}' is already registered."}, status=status.HTTP_400_BAD_REQUEST)
 
-  serializers = UsersSerializers(data=request.data)
-  if serializers.is_valid():
-    user = serializers.save()
-    performer_username = get_user_from_request(request)
-    performer = User.objects.filter(username=performer_username).first()
+    raw_password = request.data.get('password')
+
+    if not raw_password:
+        # Define secure character pool
+        alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
+        while True:
+            # Generate a random string using cryptographically secure secrets module
+            generated = ''.join(secrets.choice(alphabet) for _ in range(14))
+            # Validate strength rules (1 lowercase, 1 uppercase, 2 digits)
+            if (any(c.islower() for c in generated)
+                    and any(c.isupper() for c in generated)
+                    and sum(c.isdigit() for c in generated) >= 2):
+                raw_password = generated
+                break
+
+    registration_data = request.data.copy()
+    registration_data['password'] = make_password(raw_password)
+
+    serializers = UsersSerializers(data=registration_data)
     
-    create_audit_log(
-        performer, 
-        'USER_REGISTRATION', 
-        f"New user '{user.username}' registered as {user.role}.",
-        performer_name=performer_username if not performer else None
-    )
-    return Response(serializers.data, status=status.HTTP_201_CREATED)
-  return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+    if serializers.is_valid():
+        user = serializers.save()
+        
+        # Fixed tracking to search via email instead of username
+        performer_email = get_user_from_request(request)
+        performer = User.objects.filter(email=performer_email).first()
+        
+        create_audit_log(
+            performer, 
+            'USER_REGISTRATION', 
+            f"New user '{user.email}' registered as {user.role}.",
+            performer_name=performer_email if not performer else None
+        )
+
+        # Send credentials to the new user via Django's email backend
+        send_welcome_email(name=user.name, email=user.email, raw_password=raw_password)
+        
+        response_data = serializers.data
+
+        # If the frontend didn't supply a password, pass back the raw temporary string
+        if not request.data.get('password'):
+            response_data['temporary_password'] = raw_password
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
+        
+    return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
 def login_user(request):
-  username = request.data.get('username')
+  email = request.data.get('email')
   password = request.data.get('password')
 
+  if not email or not password:
+      return Response({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
+
   try:
-    user = User.objects.get(username=username, is_archived=False)
+    user = User.objects.get(email=email, is_archived=False)
   except User.DoesNotExist:
-    return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    return Response({'error': 'Email not found'}, status=status.HTTP_404_NOT_FOUND)
   
   is_password_valid = False
   if user.password == password:
@@ -84,56 +148,83 @@ def login_user(request):
   
   payload = {
     "user_id": user.id,
-    "username": user.username,
+    "email": user.email,
+    "name": user.name,
+    "role": user.role,
     "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
   }
   
   token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
-  create_audit_log(user, 'LOGIN', f"User '{user.username}' logged in successfully.")
+  create_audit_log(user, 'LOGIN', f"User '{user.email}' logged in successfully.")
 
   return Response({
     "token": token,
-    "username": user.username,
+    "email": user.email,
+    "role": user.role,
+    "name": user.name,
   })
 
-@api_view(['GET','PUT','DELETE'])
+@api_view(['GET', 'PUT', 'DELETE'])
 def update_user(request, pk):
-  try:
-    user_obj = User.objects.get(pk=pk)
-  except User.DoesNotExist:
-    return Response(status=status.HTTP_404_NOT_FOUND)
+    try:
+        user_obj = User.objects.get(pk=pk)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
-  if request.method == 'GET':
-    serializers = UsersSerializers(user_obj)
-    return Response(serializers.data)
-  elif request.method == 'PUT':
-    target_username = user_obj.username
-    new_username = request.data.get('username')
-    new_name = request.data.get('name')
+    # Cache target user's email for audit logging
+    target_email = user_obj.email
 
-    if User.objects.filter(username=new_username).exclude(pk=pk).exists():
-        return Response({"error": f"Username '{new_username}' is already taken."}, status=status.HTTP_400_BAD_REQUEST)
-    
-    if User.objects.filter(name=new_name).exclude(pk=pk).exists():
-        return Response({"error": f"A personnel with the name '{new_name}' is already registered."}, status=status.HTTP_400_BAD_REQUEST)
+    # --- GET: Retrieve User ---
+    if request.method == 'GET':
+        serializers = UsersSerializers(user_obj)
+        return Response(serializers.data)
 
-    serializers = UsersSerializers(user_obj, data=request.data)
-    if serializers.is_valid():
-      serializers.save()
-      performer_username = get_user_from_request(request)
-      performer = User.objects.filter(username=performer_username).first()
-      create_audit_log(performer, 'USER_UPDATE', f"User '{target_username}' details updated.", performer_name=performer_username if not performer else None)
-      return Response(serializers.data)
-    return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
-  elif request.method == 'DELETE':
-    username = user_obj.username
-    user_obj.is_archived = True
-    user_obj.save()
-    performer_username = get_user_from_request(request)
-    performer = User.objects.filter(username=performer_username).first()
-    create_audit_log(performer, 'USER_ARCHIVE', f"User '{username}' archived.", performer_name=performer_username if not performer else None)
-    return Response(status=status.HTTP_204_NO_CONTENT)
+    # --- PUT: Update User ---
+    elif request.method == 'PUT':
+        new_name = request.data.get('name')
+        new_email = request.data.get('email')
 
+        # Check if the new email is already taken by another user
+        if new_email and User.objects.filter(email=new_email).exclude(pk=pk).exists():
+            return Response({"error": f"Email '{new_email}' is already taken."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if name is unique (keeping your personnel logic)
+        if new_name and User.objects.filter(name=new_name).exclude(pk=pk).exists():
+            return Response({"error": f"A personnel with the name '{new_name}' is already registered."}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializers = UsersSerializers(user_obj, data=request.data, partial=True) # partial=True handles partial updates smoothly
+        if serializers.is_valid():
+            serializers.save()
+            
+            # Fetch performer using email instead of username
+            performer_email = get_user_from_request(request)
+            performer = User.objects.filter(email=performer_email).first()
+            
+            create_audit_log(
+                performer, 
+                'USER_UPDATE', 
+                f"User '{target_email}' details updated.", 
+                performer_name=performer_email if not performer else None
+            )
+            return Response(serializers.data)
+        return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # --- DELETE: Archive User ---
+    elif request.method == 'DELETE':
+        user_obj.is_archived = True
+        user_obj.save()
+        
+        # Fetch performer using email instead of username
+        performer_email = get_user_from_request(request)
+        performer = User.objects.filter(email=performer_email).first()
+        
+        create_audit_log(
+            performer, 
+            'USER_ARCHIVE', 
+            f"User '{target_email}' archived.", 
+            performer_name=performer_email if not performer else None
+        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 def get_applicant_queryset():
   return Applicant.objects.prefetch_related(
     Prefetch(

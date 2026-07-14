@@ -355,9 +355,9 @@ def get_user_from_request(request):
             import jwt
             from django.conf import settings
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            username = payload.get('username', 'Unknown')
-            print(f"[AUDIT] Extracted user from token: {username}")  # Debug log
-            return username
+            email = payload.get('email', 'Unknown')
+            print(f"[AUDIT] Extracted user from token: {email}")  # Debug log
+            return email
         except Exception as e:
             print(f"[AUDIT] Error decoding token: {str(e)}")  # Debug log
             return 'Unknown'
@@ -375,13 +375,13 @@ def create_audit_log(performer, action, details, performer_name=None):
     Returns the created AuditLog object or None if creation failed.
     """
     try:
-        if isinstance(performer, User) and performer.username:
+        if isinstance(performer, User) and performer.name:
             log = AuditLog.objects.create(
                 performer=performer,
                 action=action,
                 details=details
             )
-            print(f"[AUDIT] Created log: {performer.username} - {action}")
+            print(f"[AUDIT] Created log: {performer.name} - {action}")
             return log
         
         # Fallback: use performer_name or 'System'
