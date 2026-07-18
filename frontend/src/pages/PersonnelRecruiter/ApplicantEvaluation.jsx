@@ -168,7 +168,6 @@ function ApplicantEvaluation() {
             <option value="Document Review">Document Review</option>
             <option value="Initial Screening">Initial Screening</option>
             <option value="Qualified">Qualified</option>
-            <option value="Accepted">Accepted</option>
             <option value="Body Mass Index">Body Mass Index</option>
             <option value="Physical Agility Test">Physical Agility Test</option>
             <option value="Neuro Examination">Neuro Examination</option>
@@ -176,7 +175,8 @@ function ApplicantEvaluation() {
             <option value="Drug Test">Drug Test</option>
             <option value="Final Interview">Final Interview</option>
             <option value="Oath Taking">Oath Taking</option>
-            <option value="Rejected">Rejected</option>
+            <option value="Accepted">Passed</option>
+            <option value="Rejected">Failed</option>
           </select>
 
           <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="sort-select">

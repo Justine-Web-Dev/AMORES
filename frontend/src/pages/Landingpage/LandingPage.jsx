@@ -92,6 +92,7 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
     return new Date(year, month - 1, day);
   };
 
+  const startDateObject = getSafeDate(appDates?.start);
   const endDateObject = getSafeDate(appDates?.end);
 
   return (
@@ -217,6 +218,25 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
                   <p className="text-xs text-gray-200 font-medium">
                     Police Offices actively evaluating documentation channels
                     simultaneously.
+                  </p>
+                </div>
+              </div>
+
+              <div className="h-[1px] bg-white/15 w-full"></div>
+
+              <div className="flex items-start gap-4 p-2 md:p-3 rounded-lg hover:bg-white/5 transition-colors">
+                <HiOutlineCalendar className="w-6 h-6 text-[#EB612A] shrink-0 mt-1" />
+                <div>
+                  <h4 className="text-2xl md:text-3xl font-black tracking-tight text-[#EB612A] uppercase">
+                    {startDateObject
+                      ? startDateObject.toLocaleString("en-US", {
+                          month: "long",
+                          day: "numeric",
+                        })
+                      : "TBA"}
+                  </h4>
+                  <p className="text-xs text-gray-200 font-medium">
+                    Start of the recruitment and application period.
                   </p>
                 </div>
               </div>

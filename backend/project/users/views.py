@@ -37,12 +37,17 @@ def send_welcome_email(name, email, raw_password):
     subject = f"Welcome to AMORES – Account Created for {name}"
     message = (
         f"Hi {name},\n\n"
-        f"Your AMORES account has been created successfully.\n\n"
-        f"Login credentials:\n"
-        f"  Email:    {email}\n"
-        f"  Password: {raw_password}\n\n"
-        f"– PNP-AMORES System\n"
-        f"Timestamp: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        f"Your AMORES account has been successfully created.\n\n"
+        f"----------------------------------------\n"
+        f"YOUR LOGIN CREDENTIALS:\n"
+        f"Email:    {email}\n"
+        f"Password: {raw_password}\n"
+        f"----------------------------------------\n\n"
+        f"👉 Action Required: For security purposes, please log in and change your password immediately.\n\n"
+        f"Login here: [Your System URL]\n\n"
+        f"Best regards,\n"
+        f"PNP-AMORES System\n\n"
+        f"Generated on: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
     )
     
     try:
@@ -55,6 +60,33 @@ def send_welcome_email(name, email, raw_password):
         )
     except Exception as e:
         print(f"[AMORES] Email send failed for {email}: {e}", flush=True)
+
+def send_application_received_email(name, email, tracking_code):
+    """Send confirmation email to applicants with their tracking code."""
+    subject = f"Application Received – AMORES"
+    message = (
+        f"Hi {name},\n\n"
+        f"We have successfully received your application for the Philippine National Police.\n\n"
+        f"----------------------------------------\n"
+        f"YOUR TRACKING CODE:\n"
+        f"{tracking_code}\n"
+        f"----------------------------------------\n\n"
+        f"You can use this tracking code to check the status of your application on our portal.\n\n"
+        f"Best regards,\n"
+        f"PNP-AMORES System\n\n"
+        f"Generated on: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    )
+    
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+            fail_silently=False,
+        )
+    except Exception as e:
+        print(f"[AMORES] Application email send failed for {email}: {e}", flush=True)
 
 @api_view(['GET'])
 def get_user(request):
@@ -333,6 +365,12 @@ def register_applicant_form(request):
        
        create_audit_log(None, 'APPLICANT_REGISTRATION', f"New applicant '{applicant.first_name} {applicant.last_name}' ({application.tracking_code}) registered.", performer_name='System')
        
+       send_application_received_email(
+           name=f"{applicant.first_name} {applicant.last_name}",
+           email=applicant.email,
+           tracking_code=application.tracking_code
+       )
+       
        return Response({
                  "id": applicant.id,
                  "tracking_code": application.tracking_code, 
@@ -375,9 +413,9 @@ def update_applicant_status(request, pk):
                 setattr(application, field, request.data.get(field))
         application.save()
         
-        performer_username = get_user_from_request(request)
-        performer = User.objects.filter(username=performer_username).first()
-        create_audit_log(performer, 'STATUS_UPDATE', f"Applicant '{applicant.first_name} {applicant.last_name}' status updated to '{application.status}'", performer_name=performer_username if not performer else None)
+        performer_email = get_user_from_request(request)
+        performer = User.objects.filter(email=performer_email).first()
+        create_audit_log(performer, 'STATUS_UPDATE', f"Applicant '{applicant.first_name} {applicant.last_name}' status updated to '{application.status}'", performer_name=performer_email if not performer else None)
 
         return Response({
             "message": "Status updated successfully",
@@ -493,9 +531,9 @@ def update_system_settings(request):
     serializer = SystemSettingsSerializer(settings_obj, data=request.data)
     if serializer.is_valid():
         serializer.save()
-        performer_username = get_user_from_request(request)
-        performer = User.objects.filter(username=performer_username).first()
-        create_audit_log(performer, 'SETTINGS_UPDATE', f"System settings updated. Current Batch: {settings_obj.current_batch}", performer_name=performer_username if not performer else None)
+        performer_email = get_user_from_request(request)
+        performer = User.objects.filter(email=performer_email).first()
+        create_audit_log(performer, 'SETTINGS_UPDATE', f"System settings updated. Current Batch: {settings_obj.current_batch}", performer_name=performer_email if not performer else None)
         return Response(serializer.data)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -517,13 +555,13 @@ def backup_database(request):
         with open(backup_path, 'rb') as backup_file:
             backup_content = backup_file.read()
 
-        performer_username = get_user_from_request(request)
-        performer = User.objects.filter(username=performer_username).first()
+        performer_email = get_user_from_request(request)
+        performer = User.objects.filter(email=performer_email).first()
         create_audit_log(
             performer,
             'BACKUP',
             "System database backup exported.",
-            performer_name=performer_username if not performer else None,
+            performer_name=performer_email if not performer else None,
         )
 
         response = HttpResponse(backup_content, content_type=content_type)
@@ -566,9 +604,9 @@ def restore_database(request):
 
         restore_database_backup(temp_backup_path, backup_format, db_settings, model_classes)
 
-        performer_username = get_user_from_request(request)
-        performer = User.objects.filter(username=performer_username).first()
-        create_audit_log(performer, 'RESTORE', "System database restored.", performer_name=performer_username if not performer else None)
+        performer_email = get_user_from_request(request)
+        performer = User.objects.filter(email=performer_email).first()
+        create_audit_log(performer, 'RESTORE', "System database restored.", performer_name=performer_email if not performer else None)
         return Response({"message": "Database restored successfully."}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"error": f"Restore failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

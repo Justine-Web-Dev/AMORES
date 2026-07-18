@@ -6,7 +6,6 @@ import { CiSearch } from "react-icons/ci";
 import "./UserManagement.css";
 
 import { api } from "../../../api/api";
-import UserCard from "./UserCard";
 import AddNewUserForm from "../Form/AddNewUserForm";
 import ConfirmationModal from "../../Modals/ConfirmationModal";
 import RestoreModal from "../../Modals/RestoreModal";
@@ -173,7 +172,7 @@ function UserManagement() {
           onClick={() => setActiveTab("archived")}
           className={`pb-2 px-4 text-sm font-medium transition-all duration-200 ${activeTab === "archived" ? "border-b-2 border-[#2C2D86] text-[#2C2D86]" : "text-gray-500 hover:text-gray-700"}`}
         >
-          Archived Users (
+          Inactive Users (
           {activeTab === "archived" ? filteredAndSorted.length : "..."})
         </button>
       </div>
@@ -207,6 +206,9 @@ function UserManagement() {
                 Email
               </th>
               <th scope="col" className="th text-center">
+                Role
+              </th>
+              <th scope="col" className="th text-center">
                 Status
               </th>
               <th scope="col" className="th">
@@ -230,6 +232,7 @@ function UserManagement() {
                   <td>{user.name}</td>
                   <td>{user.email}</td>
                   <td>{user.role}</td>
+                  <td><span className={user.is_archived ? "bg-red-100 text-red-800 font-semibold px-4 py-1 rounded-md" : "bg-emerald-100 text-emerald-800 font-semibold px-4 py-1 rounded-md"}>{user.is_archived ? "Inactive" : "Active"}</span></td>
                   <td className="px-4 py-4 text-center relative">
                     <div className="flex justify-center items-center">
                       <button
@@ -279,7 +282,7 @@ function UserManagement() {
             ) : (
               <tr>
                 <td colSpan="4" className="py-10 text-gray-500 italic col-8">
-                  No {activeTab} users found
+                  No {activeTab === "active" ? "active" : "inactive"} users found
                 </td>
               </tr>
             )}

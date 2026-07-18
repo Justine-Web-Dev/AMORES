@@ -70,9 +70,9 @@ function HeaderLanding({ isApplicationOpen = true, appDates }) {
             ) : (
               <button 
               disabled
-              className="flex justify-center items-center bg-gray-400 h-[40px] w-[140px] text-sm text-white rounded cursor-not-allowed opacity-70"
+              className="flex justify-center items-center bg-gray-400 h-[40px] w-[140px] text-sm text-white rounded"
               >
-                {endDateObject ? "Closed" : "TBA"}
+                {endDateObject ? "Closed" : "APPLICATIONS TBA"}
               </button>
             )}
           </div>
