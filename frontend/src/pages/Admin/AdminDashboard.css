@@ -9,13 +9,20 @@
   padding: 25px 30px;
   flex: 1;
   overflow-y: auto;
-  transition: all 0.3s ease;
+  transition: margin-left 0.3s ease-in-out;
+}
+
+.main-content.collapsed {
+  margin-left: 90px;
 }
 
 @media (max-width: 1366px) {
   .main-content {
     margin-left: 260px;
     padding: 20px 25px;
+  }
+  .main-content.collapsed {
+    margin-left: 90px;
   }
 }
 
@@ -95,15 +102,15 @@
 }
 
 .admin-summary-card.qualified {
-  border-left-color: #6366F1;
+  border-left-color: #22C55E;
 }
 
 .admin-summary-card.accepted {
-  border-left-color: #10B981;
+  border-left-color: #166534;
 }
 
 .admin-summary-card.rejected {
-  border-left-color: #F43F5E;
+  border-left-color: #EF4444;
 }
 
 .admin-summary-card.bmi {

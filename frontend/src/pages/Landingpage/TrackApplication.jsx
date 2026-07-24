@@ -14,8 +14,6 @@ function TrackApplication() {
 
   const statusColors = {
     "New Applicant": "bg-blue-100 text-blue-600",
-    "Document Review": "bg-purple-100 text-purple-600",
-    "Initial Screening": "bg-yellow-100 text-yellow-600",
     "Qualified": "bg-indigo-100 text-indigo-700",
     "Accepted": "bg-emerald-100 text-emerald-700",
     "Rejected": "bg-rose-100 text-rose-700",
@@ -30,8 +28,6 @@ function TrackApplication() {
 
   const INITIAL_STAGES = [
     "New Applicant",
-    "Document Review",
-    "Initial Screening",
     "Qualified"
   ];
 
@@ -154,8 +150,6 @@ function TrackApplication() {
                       style={isActive ? { color: '#2C2D86' } : {}}
                       >
                         {stage === "New Applicant" ? "Submitted" : 
-                         stage === "Document Review" ? "Docs" :
-                         stage === "Initial Screening" ? "Initial" :
                          stage === "Qualified" ? "Qualified" :
                          stage === "Accepted" ? "Accepted" :
                          stage === "Body Mass Index" ? "BMI" :
@@ -254,7 +248,7 @@ function TrackApplication() {
                 </div>
               )}
 
-              {application?.evaluation_remarks && (
+              {application?.evaluation_remarks && application?.status === 'Rejected' && (
                 <div className="flex flex-col gap-1 col-span-1 md:col-span-2 mt-2 p-4 bg-blue-50 border border-blue-100 rounded-lg">
                   <span className="text-[10px] uppercase font-bold text-blue-400 mb-1">Evaluation Message / Remarks</span>
                   <p className="text-blue-800 text-sm italic">"{application.evaluation_remarks}"</p>

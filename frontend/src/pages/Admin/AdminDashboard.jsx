@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Sidebar from '../../Components/Sidebar/Sidebar'
 import Header from '../../Components/Header/Header'
@@ -16,13 +16,15 @@ import DocumentSubmission from '../Form/DocumentSubmission'
 import SubmitApplicationModal from '../../Modals/SubmitApplicationModal'
 import Logout from '../../Modals/Logout'
 import GenerateReport from '../GenerateReport'
+import AccountSettings from '../Settings/AccountSettings'
 
 function AdminDashboard() {
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
     <div className='AdminDashboard'>
-      <Sidebar />
-      <div className='main-content'>
+      <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
+      <div className={`main-content ${isCollapsed ? 'collapsed' : ''}`}>
         <Header />
         <Routes>
           <Route index element={<DashboardOverview />} />
@@ -37,6 +39,7 @@ function AdminDashboard() {
           <Route path="document-submission" element={<DocumentSubmission />} />
           <Route path="success-submit" element={<SubmitApplicationModal />} />
           <Route path="generate-report" element={<GenerateReport />} />
+          <Route path="account-settings" element={<AccountSettings />} />
           <Route path="logout" element={<Logout />} />
         </Routes>
       </div>

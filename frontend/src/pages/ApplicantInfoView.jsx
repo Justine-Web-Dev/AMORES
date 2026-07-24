@@ -3,6 +3,21 @@ import React from "react";
 function ApplicantInfoView({ data }) {
   if (!data) return null;
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString;
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (e) {
+      return dateString;
+    }
+  };
+
   return (
     <div className="bg-[#F9FAFB] shadow-md rounded-[12px] summary-container">
       <header className="summary-header">
@@ -24,7 +39,7 @@ function ApplicantInfoView({ data }) {
           </div>
           <div className="info-item">
             <label>Birthdate</label>
-            <p>{data.birthdate || "N/A"}</p>
+            <p>{formatDate(data.birthdate)}</p>
           </div>
           <div className="info-item">
             <label>Age</label>
@@ -59,7 +74,7 @@ function ApplicantInfoView({ data }) {
           </div>
           <div className="info-item">
             <label>Date Graduated</label>
-            <p>{data.date_graduated || "N/A"}</p>
+            <p>{formatDate(data.date_graduated)}</p>
           </div>
         </div>
       </section>

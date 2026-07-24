@@ -18,8 +18,6 @@ function GenerateReport() {
   const STATUS_CHOICES = [
     'All',
     'New Applicant',
-    'Document Review',
-    'Initial Screening',
     'Qualified',
     'Accepted',
     'Rejected',
@@ -55,7 +53,6 @@ function GenerateReport() {
         return base + "bg-green-100 text-green-800 border-green-200";
       case 'Rejected':
         return base + "bg-red-100 text-red-800 border-red-200";
-      case 'Initial Screening':
       case 'New Applicant':
         return base + "bg-blue-100 text-blue-800 border-blue-200";
       default:

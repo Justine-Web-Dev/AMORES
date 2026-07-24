@@ -15,8 +15,6 @@ function ApplicantEvaluation() {
 
   const statusColors = {
     "New Applicant": "bg-blue-100 text-blue-600",
-    "Document Review": "bg-purple-100 text-purple-600",
-    "Initial Screening": "bg-yellow-100 text-yellow-600",
     "Qualified": "bg-indigo-100 text-indigo-700",
     "Accepted": "bg-emerald-100 text-emerald-700",
     "Disqualifed": "bg-rose-100 text-rose-700",
@@ -165,8 +163,6 @@ function ApplicantEvaluation() {
           <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="filter-select">
             <option value="All">All Statuses</option>
             <option value="New Applicant">New Applicant</option>
-            <option value="Document Review">Document Review</option>
-            <option value="Initial Screening">Initial Screening</option>
             <option value="Qualified">Qualified</option>
             <option value="Body Mass Index">Body Mass Index</option>
             <option value="Physical Agility Test">Physical Agility Test</option>

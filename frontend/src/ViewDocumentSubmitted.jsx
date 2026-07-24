@@ -44,7 +44,7 @@ const SECTIONS = [
   },
 ]
 
-const DocCard = ({ doc, label }) => {
+const DocCard = ({ doc, label, onScan }) => {
   let imgUrl = doc.file_url || doc.file;
   if (imgUrl && !imgUrl.startsWith('http')) {
     const baseUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
@@ -69,6 +69,33 @@ const DocCard = ({ doc, label }) => {
         <p className="text-[10px] mt-1 text-gray-400">
           Uploaded: {new Date(doc.uploaded_at).toLocaleDateString()}
         </p>
+
+        {/* AI Verification Badge */}
+        {doc.ai_remarks ? (
+          <div className="mt-2 text-xs">
+            {doc.ai_verified ? (
+              <span className="inline-flex items-center gap-1 text-green-600 font-medium">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                AI Verified
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-orange-500 font-medium">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                AI Flagged
+              </span>
+            )}
+            <p className="text-[9px] text-gray-500 mt-0.5" title={doc.ocr_text}>
+              {doc.ai_remarks}
+            </p>
+          </div>
+        ) : (
+          <button
+            onClick={() => onScan(doc.id)}
+            className="mt-2 px-3 py-1 bg-blue-50 text-blue-600 border border-blue-200 rounded text-xs font-medium hover:bg-blue-100 transition-colors"
+          >
+            Scan with AI
+          </button>
+        )}
       </div>
     </div>
   )
@@ -94,6 +121,16 @@ function ViewDocumentSubmitted({ applicantId }) {
       fetchDocuments()
     }
   }, [applicantId])
+
+  const handleScan = async (docId) => {
+    try {
+      const response = await api.post(`users/scan-document/${docId}/`)
+      setDocuments(docs => docs.map(d => d.id === docId ? response.data : d))
+    } catch (err) {
+      console.error("Error scanning document:", err)
+      alert("Failed to scan document: " + (err.response?.data?.error || err.message))
+    }
+  }
 
   if (loading) return <div>Loading Documents...</div>
 
@@ -134,7 +171,7 @@ function ViewDocumentSubmitted({ applicantId }) {
                   const label = isLegacy
                     ? (section.fallbackLabels?.[index] || DOC_LABELS[doc.document_type])
                     : undefined
-                  return <DocCard key={doc.id} doc={doc} label={label} />
+                  return <DocCard key={doc.id || index} doc={doc} label={label} onScan={handleScan} />
                 })}
               </div>
             </div>

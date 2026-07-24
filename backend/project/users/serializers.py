@@ -22,7 +22,7 @@ class FlexibleDateField(serializers.DateField):
 class UsersSerializers(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'password', 'role', 'is_archived']
+        fields = ['id', 'name', 'email', 'password', 'role', 'is_archived', 'profile_picture']
         extra_kwargs = {
             'password': {'write_only': True, 'required': False}
         }
@@ -60,6 +60,7 @@ class ApplicantSerializer(serializers.ModelSerializer):
     birthdate = FlexibleDateField(required=False, allow_null=True)
     created_at = serializers.DateTimeField(read_only=True)
     age = serializers.SerializerMethodField()
+    address = serializers.ReadOnlyField()
     
     # We include fields from active applications to help the frontend
     current_application = ApplicationSerializer(source='active_application', read_only=True)
@@ -90,6 +91,7 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
     birthdate = FlexibleDateField(required=False, allow_null=True)
     created_at = serializers.SerializerMethodField()
     age = serializers.SerializerMethodField()
+    address = serializers.ReadOnlyField()
     
     # Mapping back to old names for frontend compatibility
     firstname = serializers.CharField(source='first_name')
@@ -122,6 +124,7 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'first_name', 'last_name', 'middle_name', 'birthdate', 'age', 'email', 
             'contact_number', 'gender', 'program', 'date_graduated', 'address',
+            'barangay', 'city_municipality', 'province', 'zip_code',
             'name_of_school', 'latin_honor', 'pag_ibig_number', 
             'phil_health_id_num', 'height', 'tribe', 'created_at',
             'firstname', 'lastname', 'cp_number', 'middle_initial',
@@ -224,14 +227,30 @@ class ApplicantDocumentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ApplicantDocument
-        fields = ['id', 'applicant', 'document_type', 'file', 'uploaded_at', 'file_url']
+        fields = ['id', 'applicant', 'document_type', 'file', 'uploaded_at', 'file_url', 'ocr_text', 'ai_verified', 'ai_remarks']
         read_only_fields = ['uploaded_at']
 
     def get_file_url(self, obj):
         if obj.file:
+            # If it's a Cloudinary storage, generate a signed URL to allow PDF delivery
+            try:
+                import cloudinary.utils
+                from django.conf import settings
+                if hasattr(obj.file.storage, 'bucket_name') or 'cloudinary' in str(type(obj.file.storage)).lower():
+                    # Check if it's raw or image based on storage class
+                    res_type = 'raw' if 'Raw' in str(type(obj.file.storage)) else 'image'
+                    # Force output format to jpg for image resources to bypass PDF blocks
+                    url, _ = cloudinary.utils.cloudinary_url(
+                        obj.file.name, 
+                        resource_type=res_type, 
+                        sign_url=True,
+                        format='jpg' if res_type == 'image' else None
+                    )
+                    return url
+            except Exception as e:
+                print(f"Error signing URL: {e}")
+                
             url = obj.file.url
-            # Cloudinary returns absolute URLs directly; for local files,
-            # try to build an absolute URI using the request context.
             if url.startswith('http'):
                 return url
             request = self.context.get('request')

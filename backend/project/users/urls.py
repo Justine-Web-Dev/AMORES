@@ -1,10 +1,11 @@
 from django.urls import path
-from .views import register_user,login_user, get_user,update_user, get_applicant_form,register_applicant_form, track_status,track_application_status, upload_document,get_applicant_documents,get_single_applicant,update_applicant_status,get_active_applicants, get_all_applicants, get_system_settings, update_system_settings, get_audit_logs, backup_database, restore_database, validate_applicant_form
+from .views import register_user,login_user, get_user,update_user, change_password, get_applicant_form,register_applicant_form, track_status,track_application_status, upload_document,get_applicant_documents, scan_document, get_single_applicant,update_applicant_status,get_active_applicants, get_all_applicants, get_system_settings, update_system_settings, get_audit_logs, backup_database, restore_database, validate_applicant_form, SubmitApplicationView
 
 urlpatterns = [
   #Login Users
     path('register_user/', register_user,name='register_user'),
     path("login_user/", login_user,name='login_user'),
+    path("change_password/", change_password, name='change_password'),
     path("get_user/", get_user,name='get_user'),
     path("update_user/<int:pk>/", update_user, name='update_user'),
   
@@ -16,11 +17,13 @@ urlpatterns = [
     path("get_applicant_info/",get_applicant_form,name='get_applicant_form'),
     path("validate_applicant_form/", validate_applicant_form, name='validate_applicant_form'),
     path("register_applicant_info/", register_applicant_form,name='register_applicant_form'),
+    path("applications/submit/", SubmitApplicationView.as_view(), name='submit_application'),
     path("track_status/<str:code>/", track_status,name='track_status'),
 
   #Applicant document
     path("upload-document/",upload_document, name="upload_document"),
     path("view-applicant-document/<int:applicant_id>/",get_applicant_documents, name="get_applicant_documents"),
+    path("scan-document/<int:doc_id>/", scan_document, name="scan_document"),
 
   #Track the applicant code
     path('track-status/', track_application_status, name='track_application_status'),

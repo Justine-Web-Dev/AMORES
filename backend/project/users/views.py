@@ -1,7 +1,7 @@
 from django.shortcuts import render
+from django.db import transaction
 from .serializers import (
-    UsersSerializers, ApplicantSerializer, ApplicationSerializer, 
-    EvaluationSerializer, ApplicantFullSerializer, ApplicantDocumentSerializer, 
+    UsersSerializers, ApplicantSerializer, ApplicantFullSerializer, ApplicantDocumentSerializer, 
     SystemSettingsSerializer, AuditLogSerializer
 )
 from .models import User, Applicant, Application, Evaluation, ApplicantDocument, SystemSettings, AuditLog
@@ -11,13 +11,16 @@ from .utils import (
     detect_backup_format,
     create_database_backup,
     restore_database_backup,
+    send_mail_async,
 )
+from .services import evaluate_initial_application_status
+from .screening import evaluate_initial_application_status
 from rest_framework.decorators import api_view, parser_classes
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.contrib.auth.hashers import check_password, make_password
-from django.core.mail import send_mail
 
 import jwt
 import datetime
@@ -44,14 +47,13 @@ def send_welcome_email(name, email, raw_password):
         f"Password: {raw_password}\n"
         f"----------------------------------------\n\n"
         f"👉 Action Required: For security purposes, please log in and change your password immediately.\n\n"
-        f"Login here: [Your System URL]\n\n"
         f"Best regards,\n"
         f"PNP-AMORES System\n\n"
         f"Generated on: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
     )
     
     try:
-        send_mail(
+        send_mail_async(
             subject=subject,
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
@@ -78,7 +80,7 @@ def send_application_received_email(name, email, tracking_code):
     )
     
     try:
-        send_mail(
+        send_mail_async(
             subject=subject,
             message=message,
             from_email=settings.DEFAULT_FROM_EMAIL,
@@ -87,6 +89,33 @@ def send_application_received_email(name, email, tracking_code):
         )
     except Exception as e:
         print(f"[AMORES] Application email send failed for {email}: {e}", flush=True)
+
+def send_password_changed_email(name, email, new_password):
+    """Send notification email when a user changes their password."""
+    subject = f"Password Changed Successfully – AMORES"
+    message = (
+        f"Hi {name},\n\n"
+        f"Your password for the PNP-AMORES System has been successfully changed.\n\n"
+        f"----------------------------------------\n"
+        f"YOUR NEW PASSWORD:\n"
+        f"{new_password}\n"
+        f"----------------------------------------\n\n"
+        f"If you did not make this change, please contact the system administrator immediately.\n\n"
+        f"Best regards,\n"
+        f"PNP-AMORES System\n\n"
+        f"Generated on: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    )
+    
+    try:
+        send_mail_async(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+            fail_silently=False,
+        )
+    except Exception as e:
+        print(f"[AMORES] Password changed email send failed for {email}: {e}", flush=True)
 
 @api_view(['GET'])
 def get_user(request):
@@ -111,7 +140,9 @@ def register_user(request):
 
     raw_password = request.data.get('password')
 
+    is_system_generated = False
     if not raw_password:
+        is_system_generated = True
         # Define secure character pool
         alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
         while True:
@@ -126,6 +157,8 @@ def register_user(request):
 
     registration_data = request.data.copy()
     registration_data['password'] = make_password(raw_password)
+    if is_system_generated:
+        registration_data['must_change_password'] = True
 
     serializers = UsersSerializers(data=registration_data)
     
@@ -185,6 +218,7 @@ def login_user(request):
     "email": user.email,
     "name": user.name,
     "role": user.role,
+    "profile_picture": user.profile_picture.url if user.profile_picture else None,
     "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
   }
   
@@ -196,7 +230,48 @@ def login_user(request):
     "email": user.email,
     "role": user.role,
     "name": user.name,
+    "profile_picture": user.profile_picture.url if user.profile_picture else None,
+    "must_change_password": user.must_change_password,
   })
+
+
+
+@api_view(['POST'])
+def change_password(request):
+    current_password = request.data.get('current_password')
+    new_password = request.data.get('new_password')
+    
+    if not current_password or not new_password:
+        return Response({'error': 'Current password and new password are required.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    performer_email = get_user_from_request(request)
+    if not performer_email or performer_email == 'Unknown':
+        return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+    try:
+        user = User.objects.get(email=performer_email, is_archived=False)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+        
+    # Check current password
+    is_valid = False
+    if user.password == current_password: # To handle legacy plaintext passwords temporarily if any
+        is_valid = True
+    elif check_password(current_password, user.password):
+        is_valid = True
+        
+    if not is_valid:
+        return Response({'error': 'Invalid current password.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    user.password = make_password(new_password)
+    user.must_change_password = False
+    user.save()
+    
+    create_audit_log(user, 'PASSWORD_CHANGE', f"User '{user.email}' changed their password via settings.", performer_name=user.email)
+    
+    send_password_changed_email(user.name, user.email, new_password)
+    
+    return Response({'message': 'Password has been changed successfully.'}, status=status.HTTP_200_OK)
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def update_user(request, pk):
@@ -240,7 +315,21 @@ def update_user(request, pk):
                 f"User '{target_email}' details updated.", 
                 performer_name=performer_email if not performer else None
             )
-            return Response(serializers.data)
+            
+            payload = {
+                "user_id": user_obj.id,
+                "email": user_obj.email,
+                "name": user_obj.name,
+                "role": user_obj.role,
+                "profile_picture": user_obj.profile_picture.url if user_obj.profile_picture else None,
+                "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+            }
+            token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+            
+            response_data = serializers.data
+            response_data['token'] = token
+            
+            return Response(response_data)
         return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
 
     # --- DELETE: Archive User ---
@@ -378,6 +467,36 @@ def register_applicant_form(request):
        }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+def send_status_update_email(applicant_email, applicant_name, status_val, remarks=None):
+    """Sends asynchronous email notification when an applicant's status is manually updated."""
+    subject = f"Application Status Update – AMORES"
+    message = (
+        f"Hi {applicant_name},\n\n"
+        f"There has been an update to your application status in the PNP-AMORES recruitment portal.\n\n"
+        f"Current Status: {status_val}\n"
+    )
+    if status_val == 'Rejected' and remarks:
+        message += f"Reason: {remarks}\n\n"
+    elif status_val == 'Qualified':
+        message += "Congratulations! You have passed the initial screening phase and are now qualified for the next steps.\n\n"
+    
+    message += (
+        f"Please go to the portal to track your progress.\n\n"
+        f"Best regards,\n"
+        f"PNP-AMORES System"
+    )
+    
+    try:
+        send_mail_async(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[applicant_email],
+            fail_silently=False,
+        )
+    except Exception as e:
+        print(f"[AMORES] Status update email send failed for {applicant_email}: {e}", flush=True)
+
 @api_view(['PUT'])
 def update_applicant_status(request, pk):
     try:
@@ -412,6 +531,15 @@ def update_applicant_status(request, pk):
             if field in request.data:
                 setattr(application, field, request.data.get(field))
         application.save()
+        
+        # Email Notification if status is Qualified or Rejected
+        if new_status in ['Qualified', 'Rejected']:
+            remarks = application.rejection_reason if new_status == 'Rejected' else application.evaluation_remarks
+            import threading
+            threading.Thread(
+                target=send_status_update_email,
+                args=(applicant.email, f"{applicant.first_name} {applicant.last_name}", new_status, remarks)
+            ).start()
         
         performer_email = get_user_from_request(request)
         performer = User.objects.filter(email=performer_email).first()
@@ -466,15 +594,47 @@ def track_application_status(request):
 def upload_document(request):
     serializer = ApplicantDocumentSerializer(data=request.data, context={'request': request})
     if serializer.is_valid():
-        serializer.save()
+        document = serializer.save()
+        
+        # Trigger background OCR processing
+        try:
+            import threading
+            from .services_ocr import process_document_ocr
+            threading.Thread(target=process_document_ocr, args=(document.id,)).start()
+        except Exception as e:
+            print(f"Failed to start OCR thread: {e}")
+            
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
 def get_applicant_documents(request, applicant_id):
     documents = ApplicantDocument.objects.filter(applicant_id=applicant_id)
+    
+    # Automatically trigger OCR re-scan in background threads when recruiter views or refreshes details page
+    try:
+        from .services_ocr import process_document_ocr
+        import threading
+        for doc in documents:
+            threading.Thread(target=process_document_ocr, args=(doc.id,)).start()
+    except Exception as e:
+        print(f"Failed to trigger auto re-scan on load: {e}")
+        
     serializer = ApplicantDocumentSerializer(documents, many=True, context={'request': request})
     return Response(serializer.data)
+
+@api_view(['POST'])
+def scan_document(request, doc_id):
+    try:
+        from .services_ocr import process_document_ocr
+        process_document_ocr(doc_id)
+        
+        # Fetch the updated document
+        document = ApplicantDocument.objects.get(id=doc_id)
+        serializer = ApplicantDocumentSerializer(document, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
 def get_active_applicants(request):
@@ -610,3 +770,114 @@ def restore_database(request):
         return Response({"message": "Database restored successfully."}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"error": f"Restore failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+def send_screening_notification(applicant_email, applicant_name, status, remarks):
+    """Sends asynchronous email notification for initial screening result."""
+    subject = f"Initial Screening Result - AMORES"
+    message = (
+        f"Hi {applicant_name},\n\n"
+        f"Your application has been evaluated in the initial screening phase.\n"
+        f"Status: {status}\n\n"
+    )
+    if status == 'Rejected':
+        message += f"Remarks: {remarks}\n\n"
+    
+    message += (
+        f"Thank you,\n"
+        f"PNP-AMORES System"
+    )
+    
+    try:
+        send_mail_async(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[applicant_email],
+            fail_silently=False,
+        )
+    except Exception as e:
+        print(f"[AMORES] Screening email send failed for {applicant_email}: {e}", flush=True)
+
+
+@api_view(['POST'])
+def screen_initial_application(request):
+    applicant_id = request.data.get('application_id') # We'll keep the key the same to avoid frontend breaking but it represents applicant_id
+    if not applicant_id:
+        return Response({"error": "application_id is required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+    try:
+        applicant = Applicant.objects.get(id=applicant_id)
+        application = applicant.active_application
+        if not application:
+            return Response({"error": "Application not found for this applicant."}, status=status.HTTP_404_NOT_FOUND)
+    except Applicant.DoesNotExist:
+        return Response({"error": "Applicant not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    performer_email = get_user_from_request(request)
+    performer = User.objects.filter(email=performer_email).first()
+
+    try:
+        result = evaluate_initial_application_status(application, request.data, performer)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    # Asynchronous Notification
+    applicant = application.applicant
+    threading.Thread(
+        target=send_screening_notification, 
+        args=(applicant.email, f"{applicant.first_name} {applicant.last_name}", result['updated_status'], result['screening_remarks'])
+    ).start()
+
+    return Response(result, status=status.HTTP_200_OK)
+
+class SubmitApplicationView(APIView):
+    parser_classes = [MultiPartParser, JSONParser, FormParser]
+
+    def post(self, request, *args, **kwargs):
+        try:
+            with transaction.atomic():
+                email = request.data.get('email')
+                applicant, created = Applicant.objects.get_or_create(
+                    email=email,
+                    defaults={
+                        'first_name': request.data.get('first_name', ''),
+                        'last_name': request.data.get('last_name', ''),
+                        'program': request.data.get('program', ''),
+                        'height': request.data.get('height', ''),
+                        'gender': request.data.get('gender', ''),
+                        'contact_number': request.data.get('contact_number', ''),
+                        'pag_ibig_number': request.data.get('pag_ibig_number', ''),
+                        'phil_health_id_num': request.data.get('phil_health_id_num', ''),
+                    }
+                )
+                
+                # Check for existing pending application
+                if not created:
+                    existing_app = applicant.applications.exclude(status='Rejected').first()
+                    if existing_app:
+                        return Response({'error': 'You already have an active application.'}, status=status.HTTP_400_BAD_REQUEST)
+                
+                application = Application.objects.create(
+                    applicant=applicant,
+                    status='New Applicant'
+                )
+                
+                birth_cert_file = request.FILES.get('birth_certificate')
+                if birth_cert_file:
+                    doc = ApplicantDocument.objects.create(
+                        applicant=applicant,
+                        document_type='BIRTH_CERT',
+                        file=birth_cert_file
+                    )
+                    from .services_ocr import process_document_ocr
+                    import threading
+                    transaction.on_commit(
+                        lambda: threading.Thread(target=process_document_ocr, args=(doc.id,)).start()
+                    )
+                
+                screening_result = evaluate_initial_application_status(application, request.data, performer_user=None)
+                
+                return Response(screening_result, status=status.HTTP_201_CREATED)
+                
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

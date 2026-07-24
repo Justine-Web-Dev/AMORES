@@ -22,8 +22,25 @@ function StatusManagement({applicantId, applicantData, currentStatus, onUpdate,c
   const isAccepted = currentStatus === 'Accepted'
 
   useEffect(() => {
-    setSelectedStatus(currentStatus);
-    setRejectionReason(currentRejectionReason || "");
+    // If current status is 'New Applicant', preselect based on AI screening result
+    if (currentStatus === 'New Applicant') {
+      const remarks = applicantData?.evaluation_remarks || "";
+      const rejReason = currentRejectionReason || applicantData?.rejection_reason || "";
+      
+      if (remarks.includes("AI Passed") || remarks.includes("Initial screening passed")) {
+        setSelectedStatus("Qualified");
+        setRejectionReason("");
+      } else if (remarks.includes("Failed") || rejReason.includes("Failed") || remarks.includes("failed") || rejReason.includes("failed")) {
+        setSelectedStatus("Rejected");
+        setRejectionReason(rejReason || remarks);
+      } else {
+        setSelectedStatus(currentStatus);
+        setRejectionReason(currentRejectionReason || "");
+      }
+    } else {
+      setSelectedStatus(currentStatus);
+      setRejectionReason(currentRejectionReason || "");
+    }
     
     // Sync evaluation states if data refreshes
     if (applicantData) {
@@ -93,8 +110,6 @@ function StatusManagement({applicantId, applicantData, currentStatus, onUpdate,c
 
   const INITIAL_STATUSES = [
     "New Applicant",
-    "Document Review",
-    "Initial Screening",
     "Qualified",
     "Rejected"
   ];

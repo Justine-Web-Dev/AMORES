@@ -6,8 +6,6 @@ import './TrackingScreening.css';
 
 const STAGES = [
     { id: 'New Applicant', title: 'New Applicant', icon: <HiOutlineUserGroup />, colorClass: 'column-new' },
-    { id: 'Document Review', title: 'Doc Review', icon: <HiOutlineClipboardCheck />, colorClass: 'column-doc' },
-    { id: 'Initial Screening', title: 'Initial Screening', icon: <HiOutlineChatAlt2 />, colorClass: 'column-initial' },
     { id: 'Technical Interview', title: 'Technical', icon: <HiOutlineClipboardCheck />, colorClass: 'column-technical' },
     { id: 'Qualified', title: 'Qualified', icon: <HiOutlineBadgeCheck />, colorClass: 'column-accepted' },
     { id: 'Body Mass Index', title: 'BMI', icon: <HiOutlineClipboardCheck />, colorClass: 'column-bmi' },
@@ -50,8 +48,6 @@ function TrackingScreening() {
     const getCardClass = (stageId) => {
         switch (stageId) {
             case 'New Applicant': return 'card-new';
-            case 'Document Review': return 'card-doc';
-            case 'Initial Screening': return 'card-initial';
             case 'Technical Interview': return 'card-technical';
             case 'Qualified': return 'card-accepted';
             case 'Accepted': return 'card-accepted';

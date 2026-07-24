@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { HiArrowNarrowLeft, HiOutlineCloudUpload, HiX } from "react-icons/hi";
 import { api } from '../../../api/api'
@@ -32,7 +32,6 @@ function DocumentSubmission() {
 
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-
   const handleFileChange = (event, documentKey) => {
     const file = event.target.files[0]
     if (file) {
@@ -128,37 +127,49 @@ function DocumentSubmission() {
     }
   }
 
-  const SingleUploadBox = ({ label, docKey, file }) => (
-    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 transition-all">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-        <div>
-          <p className="text-sm font-semibold text-gray-800">{label}</p>
-          <p className="text-xs text-gray-400">Image Format Required</p>
+  const SingleUploadBox = ({ label, docKey, file, isOptional = false }) => (
+    <div className="bg-white border border-gray-300 rounded-lg p-4 transition duration-200 hover:border-gray-400 flex flex-col justify-between min-h-[100px]">
+      <div className="flex justify-between items-start gap-2 mb-2">
+        <div className="flex flex-col">
+          <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
+            {label}
+            {!isOptional && <span className="text-red-500 ml-1">*</span>}
+          </span>
+          <span className="text-[11px] text-gray-400 mt-0.5">PDF format required</span>
         </div>
-        
+      </div>
+      
+      <div className="mt-auto">
         {!file ? (
-          <label className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-md text-xs font-semibold cursor-pointer transition-colors border border-blue-200">
-            <HiOutlineCloudUpload size={16} />
-            <span>Upload Image</span>
+          <label className="flex items-center justify-center gap-2 w-full py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold cursor-pointer transition border border-gray-200 focus-within:ring-2 focus-within:ring-[#2C2D86]">
+            <HiOutlineCloudUpload size={16} className="text-gray-500" />
+            <span>Upload Document</span>
             <input
               type="file"
-              accept="image/*"
+              accept="application/pdf"
               disabled={loading}
               onChange={(e) => handleFileChange(e, docKey)}
               className="hidden"
             />
           </label>
         ) : (
-          <div className="flex items-center gap-2 bg-green-50 border border-green-200 px-2.5 py-1.5 rounded-md max-w-full sm:max-w-xs">
-            <span className="text-xs font-medium text-green-700 truncate">✓ {file.name}</span>
-            <button
-              type="button"
-              disabled={loading}
-              onClick={() => removeFile(docKey)}
-              className="text-gray-400 hover:text-red-500 rounded transition-colors"
-            >
-              <HiX size={14} />
-            </button>
+          <div className="flex flex-col gap-3 w-full">
+            <div className="flex items-center justify-between bg-green-50 border border-green-200 px-3 py-2 rounded-lg w-full">
+              <span className="text-xs font-medium text-green-700 truncate max-w-[150px]">✓ {file.name}</span>
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => removeFile(docKey)}
+                className="text-gray-400 hover:text-red-500 transition-colors p-0.5 rounded"
+              >
+                <HiX size={14} />
+              </button>
+            </div>
+            <iframe
+              src={`${URL.createObjectURL(file)}#toolbar=0&navpanes=0&scrollbar=0`}
+              title="PDF Preview"
+              className="w-full h-48 border border-gray-200 rounded-lg pointer-events-none"
+            />
           </div>
         )}
       </div>
@@ -166,48 +177,66 @@ function DocumentSubmission() {
   )
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-3xl bg-white rounded-xl shadow-md p-6   sm:p-8 my-10">
+    <div className="form-application-container min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow-md space-y-8">
         
-        {/* Back Button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 cursor-pointer mb-6 text-gray-600 hover:text-blue-800 transition-colors"
-        >
-          <HiArrowNarrowLeft size={20} />
-          <span className="text-sm font-medium">Back</span>
-        </button>
-
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Document Submission</h1>
-        <p className="text-sm text-gray-500 mb-6">Please upload each specified requirement below.</p>
+        {/* Header Block */}
+        <div className="border-b border-gray-200 pb-4 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+          <div>
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 cursor-pointer mb-3 text-sm font-semibold text-[#2C2D86] hover:text-[#1f2063] transition-colors"
+            >
+              <HiArrowNarrowLeft size={18} />
+              <span>Back to Form</span>
+            </button>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 title-application-form">
+              Document Submission
+            </h1>
+            <p className="mt-1 text-sm text-gray-500">
+              Please upload each specified requirement below to complete your track records profiles.
+            </p>
+          </div>
+          <div className="text-xs font-semibold text-red-500 bg-red-50 border border-red-200 px-3 py-1 rounded-md self-start md:self-auto">
+            * Indicates required document
+          </div>
+        </div>
 
         {error && (
-          <div className="mb-6 p-3 bg-red-50 border border-red-200 text-red-600 rounded-md text-xs text-center font-medium">
+          <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-md text-xs text-center font-medium">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
           
-          {/* PSA SECTION */}
-          <div>
-            <h2 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-2.5">1. PSA Identity Documents</h2>
-            <SingleUploadBox label="Birth Certificate" docKey="birthCert" file={documents.birthCert} />
+          {/* SECTION 1: Identity Documents */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-gray-800 border-l-4 border-[#2C2D86] pl-2">
+              Identity Documents
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <SingleUploadBox label="Birth Certificate" docKey="birthCert" file={documents.birthCert} />
+            </div>
           </div>
 
-          {/* SCHOLASTIC SECTION */}
-          <div>
-            <h2 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-2.5">2. Scholastic Records</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {/* SECTION 2: Scholastic Records */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-gray-800 border-l-4 border-[#2C2D86] pl-2">
+              Scholastic Records
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SingleUploadBox label="Official Transcript of Records (OTR)" docKey="otr" file={documents.otr} />
               <SingleUploadBox label="Diploma" docKey="diploma" file={documents.diploma} />
             </div>
           </div>
 
-          {/* CLEARANCES SECTION */}
-          <div>
-            <h2 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-2.5">3. Government Clearances</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {/* SECTION 3: Government Clearances */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-gray-800 border-l-4 border-[#2C2D86] pl-2">
+              Government Clearances
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <SingleUploadBox label="Barangay Clearance" docKey="barangayClearance" file={documents.barangayClearance} />
               <SingleUploadBox label="National Police Clearance" docKey="policeClearance" file={documents.policeClearance} />
               <SingleUploadBox label="Prosecutor's Clearance" docKey="prosecutorClearance" file={documents.prosecutorClearance} />
@@ -215,29 +244,40 @@ function DocumentSubmission() {
             </div>
           </div>
 
-          <div>
-            <h2 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-1">4. Career & Civil Service Eligibilities</h2>
-            <p className="text-xs text-gray-400 mb-3">Upload at least one item below that matches your qualifications:</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <SingleUploadBox label="PRC License" docKey="prc" file={documents.prc} />
-              <SingleUploadBox label="Napolcom Entrance Rating" docKey="napolcom" file={documents.napolcom} />
-              <SingleUploadBox label="PD907 (Honor Graduate)" docKey="pd907" file={documents.pd907} />
-              <SingleUploadBox label="CS Professional Eligibility" docKey="csProf" file={documents.csProf} />
+          {/* SECTION 4: Career & Civil Service Eligibilities */}
+          <div className="space-y-4">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-800 border-l-4 border-[#2C2D86] pl-2">
+                Career & Civil Service Eligibilities
+              </h2>
+              <p className="text-xs text-gray-400 mt-1 pl-3.5">Upload at least one item below that matches your qualifications:</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <SingleUploadBox label="PRC License" docKey="prc" file={documents.prc} isOptional={true} />
+              <SingleUploadBox label="Napolcom Entrance Rating" docKey="napolcom" file={documents.napolcom} isOptional={true} />
+              <SingleUploadBox label="PD907 (Honor Graduate)" docKey="pd907" file={documents.pd907} isOptional={true} />
+              <SingleUploadBox label="CS Professional Eligibility" docKey="csProf" file={documents.csProf} isOptional={true} />
             </div>
           </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading || !isFormValid}
-            className="w-full mt-4 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md shadow transition-colors disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-sm"
-          >
-            {loading ? 'Uploading Application Files...' : 'Submit Application'}
-          </button>
+          {/* Form Submission Actions */}
+          <div className="pt-6 border-t border-gray-200 flex justify-center md:justify-end">
+            <button
+              type="submit"
+              disabled={loading || !isFormValid}
+              className={`w-full md:w-[240px] h-11 rounded-lg bg-[#2C2D86] text-white font-bold text-sm tracking-wide shadow-md transition-all duration-200 ${
+                loading || !isFormValid
+                  ? "opacity-50 cursor-not-allowed bg-gray-400"
+                  : "hover:bg-[#1f2063] active:scale-95 cursor-pointer"
+              }`}
+            >
+              {loading ? 'Uploading Application Files...' : 'Submit Application'}
+            </button>
+          </div>
         </form>
       </div>
     </div>
   )
 }
 
-export default DocumentSubmission
+export default DocumentSubmission;

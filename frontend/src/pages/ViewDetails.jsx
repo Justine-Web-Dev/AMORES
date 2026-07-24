@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router';
 import './ViewDetailsCss.css'
 
 import StatusManagement from './PersonnelRecruiter/StatusManagement'
+import InitialScreeningChecklist from './PersonnelRecruiter/InitialScreeningChecklist'
 import ApplicantInfoView from './ApplicantInfoView'
 
 import { api } from '../../api/api'
@@ -21,8 +22,6 @@ function ViewDetails() {
 
     const statusColors = {
       "New Applicant": "inline-block mt-2 px-3 py-1 text-xs bg-blue-100 text-blue-600 rounded-full font-semibold ",
-      "Document Review": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold  bg-purple-200 text-purple-600",
-      "Initial Screening": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold  bg-yellow-100 text-yellow-600",
       "Technical Interview": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold  bg-cyan-100 text-cyan-600",
       "Qualified": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-indigo-100 text-indigo-700",
       "Accepted": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-emerald-100 text-emerald-700",
@@ -106,13 +105,13 @@ function ViewDetails() {
         </div>
         <ApplicantInfoView data={applicant}/>
         <ViewDocumentSubmitted applicantId={id}/>
-          <StatusManagement 
-            applicantId={id}
-            applicantData={applicant}
-            currentStatus={applicant.status}
-            onUpdate={fetchApplicantDetails}
-            currentRejectionReason={applicant.rejection_reason}
-          />
+        <StatusManagement 
+          applicantId={id}
+          applicantData={applicant}
+          currentStatus={applicant.status}
+          onUpdate={fetchApplicantDetails}
+          currentRejectionReason={applicant.rejection_reason}
+        />
       </div>
       <button
         onClick={handleBack}

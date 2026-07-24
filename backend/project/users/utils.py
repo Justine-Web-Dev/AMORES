@@ -396,3 +396,26 @@ def create_audit_log(performer, action, details, performer_name=None):
     except Exception as e:
         print(f"[AUDIT] Error creating audit log: {str(e)}")
         return None
+
+def send_mail_async(subject, message, recipient_list, from_email=None, fail_silently=False, html_message=None):
+    """
+    Sends an email in a background thread to prevent blocking 
+    the request-response cycle (crucial on Render.com).
+    """
+    import threading
+    from django.core.mail import send_mail
+    
+    thread = threading.Thread(
+        target=send_mail,
+        kwargs={
+            'subject': subject,
+            'message': message,
+            'from_email': from_email,
+            'recipient_list': recipient_list,
+            'fail_silently': fail_silently,
+            'html_message': html_message,
+        }
+    )
+    thread.daemon = True  # Allows main process to exit even if thread is running
+    thread.start()
+

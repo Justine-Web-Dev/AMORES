@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password, identify_hasher
+from cloudinary_storage.storage import MediaCloudinaryStorage
 
 import string
 import random
@@ -14,14 +15,11 @@ def default_date():
 def generate_tracking_code():
   length = 8
   while True:
-    # Generates something like TA-X87K2L91
     code = 'TA-' + ''.join(random.choices(string.ascii_uppercase + string.digits, k=length))
-    # Check if the code already exists in the database to ensure uniqueness
     try:
       if not Applicant.objects.filter(tracking_code=code).exists():
         return code
     except:
-      # During migrations, the table might not exist yet, so just return the code
       return code
 
 class User(models.Model):
@@ -35,6 +33,8 @@ class User(models.Model):
     password = models.CharField(max_length=128, verbose_name="Password") 
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='Recruiter', verbose_name="Role")
     is_archived = models.BooleanField(default=False, verbose_name="Is Archived")
+    must_change_password = models.BooleanField(default=False, verbose_name="Must Change Password")
+    profile_picture = models.ImageField(upload_to='profiles/', null=True, blank=True, verbose_name="Profile Picture")
 
     def save(self, *args, **kwargs):
         if self.password:
@@ -55,7 +55,11 @@ class Applicant(models.Model):
     contact_number = models.CharField(max_length=11, unique=True, verbose_name="Contact Number")
     gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')], null=True, blank=True, verbose_name="Gender")
     birthdate = models.DateField(verbose_name="Birthdate", null=True, blank=True)
-    address = models.TextField(verbose_name="Permanent Address")
+    
+    barangay = models.CharField(max_length=100, null=True, blank=True, verbose_name="Barangay")
+    city_municipality = models.CharField(max_length=100, null=True, blank=True, verbose_name="City/Municipality")
+    province = models.CharField(max_length=100, null=True, blank=True, verbose_name="Province")
+    zip_code = models.CharField(max_length=10, null=True, blank=True, verbose_name="Zip Code")
     
     # Education
     program = models.CharField(max_length=100, verbose_name="Program/Course")
@@ -69,6 +73,11 @@ class Applicant(models.Model):
     tribe = models.CharField(max_length=100, null=True, blank=True, default='N/A', verbose_name="Tribe Affiliation")
     
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date Registered")
+
+    @property
+    def address(self):
+        parts = [self.barangay, self.city_municipality, self.province, self.zip_code]
+        return ", ".join(filter(None, parts))
 
     @property
     def age(self):
@@ -88,8 +97,6 @@ class Applicant(models.Model):
 class Application(models.Model):
     STATUS_CHOICES = [
         ('New Applicant', 'New Applicant'),
-        ('Document Review', 'Document Review'),
-        ('Initial Screening', 'Initial Screening'),
         ('Technical Interview', 'Technical Interview'),
         ('Qualified', 'Qualified'),
         ('Accepted', 'Accepted'),
@@ -171,7 +178,12 @@ class ApplicantDocument(models.Model):
     ]
 
     document_type = models.CharField(max_length=25, choices=DOCUMENT_TYPES, verbose_name="Document Type")
-    file = models.ImageField(upload_to='applicant_docs/', verbose_name="Document File")
+    file = models.FileField(upload_to='applicant_docs/', storage=MediaCloudinaryStorage(), verbose_name="Document File")
+
+    # AI Verification Fields
+    ocr_text = models.TextField(blank=True, null=True, verbose_name="Extracted Text (OCR)")
+    ai_verified = models.BooleanField(default=False, verbose_name="AI Verified")
+    ai_remarks = models.CharField(max_length=255, blank=True, null=True, verbose_name="AI Remarks")
     uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Date Uploaded")
 
     def __str__(self):

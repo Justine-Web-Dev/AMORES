@@ -1,15 +1,14 @@
 import React, { useState } from 'react'
-import './LoginForm.css'
-import { useNavigate, Navigate } from 'react-router-dom'
-import { api } from '../../api/api'
+import '../../pages/auth/LoginForm.css'
+import { useNavigate, Navigate, Link } from 'react-router-dom'
+import { api } from '../../../api/api'
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-import logo from '../assets/RRSU1 logo.png'
-import LoginSuccessModal from '../Modals/LoginSuccessModal'
-import ErrorLoginModal from '../Modals/ErrorLoginModal'
+import logo from '../../assets/RRSU1 logo.png'
+import LoginSuccessModal from '../../Modals/LoginSuccessModal'
+import ErrorLoginModal from '../../Modals/ErrorLoginModal'
 
 function LoginForm() {
-  // Swapped out username state for email
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoggedIn, setIsLoggedIn] = useState(false)
@@ -43,15 +42,22 @@ function LoginForm() {
       setTimeout(() => {
         localStorage.setItem("token", data.token);
         
-        // Dynamic fallback logic checking data.email instead of data.username
         const isAdmin = data.role === "Administrator" || data.email === "Admin"; 
         const userRole = data.role || (isAdmin ? "Administrator" : "Recruiter");
         localStorage.setItem("role", userRole);
 
-        if (userRole === "Administrator") {
-          navigate("/Dashboard")
+        if (data.must_change_password) {
+          if (userRole === "Administrator") {
+            navigate("/Dashboard/account-settings?force=true");
+          } else {
+            navigate("/PersonnelDashboard/account-settings?force=true");
+          }
         } else {
-          navigate("/PersonnelDashboard")
+          if (userRole === "Administrator") {
+            navigate("/Dashboard")
+          } else {
+            navigate("/PersonnelDashboard")
+          }
         }
       }, 3000)
 
@@ -60,15 +66,13 @@ function LoginForm() {
       setErrorMessage(msg)
       setShowErrorModal(true)
     } finally {
-      setLoading(false)
+      const setLoadingFalse = setLoading(false)
     }
   }
 
-  // Synchronous route guard to prevent layout/paint flash (blink)
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
   
-  // More robust check: only redirect if both token and a valid role exist.
   if (token && role) {
     if (role === 'Administrator') return <Navigate to="/Dashboard" replace />;
     if (role === 'Recruiter') return <Navigate to="/PersonnelDashboard" replace />;
@@ -76,7 +80,7 @@ function LoginForm() {
 
   return (
     <div className='LoginForm'>
-        <form action="" onSubmit={handleLogin} className='form'>
+        <form onSubmit={handleLogin} className='form'>
           <div className="logo-container">
             <img src={logo} alt="logo RRSU1" height={'80px'} width={'120px'}/>
             <p className='logo-name'>PNP- AMORES</p>
@@ -88,7 +92,7 @@ function LoginForm() {
           </div>
 
           <div className='credentials'>
-            {/* Updated state connections and placeholders from Username to Email */}
+            {/* Email Field Container */}
             <div className='username-container'>
               <label htmlFor="emailInput">Email</label>
               <input 
@@ -101,8 +105,8 @@ function LoginForm() {
               />
             </div>
 
-
-            <div className='password-container relative'>
+            {/* Password Field Container */}
+            <div className='password-container relative flex flex-col'>
               <label htmlFor="passwordInput">Password</label>
               <div className="relative">
                 <input 
@@ -122,10 +126,15 @@ function LoginForm() {
                   {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
                 </button>
               </div>
+              
+              {/* Removed Forgot Password Link */}
+              <div className='flex justify-end mt-1'>
+              </div>
             </div>
 
+            {/* Action Submit Button */}
             <button 
-              className={`login-btn ${loading ? 'opacity-70 cursor-not-allowed' : ''}`} 
+              className={`login-btn mt-4 ${loading ? 'opacity-70 cursor-not-allowed' : ''}`} 
               type='submit' 
               disabled={loading}
             >

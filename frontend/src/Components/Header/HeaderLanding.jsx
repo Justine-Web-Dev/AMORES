@@ -8,13 +8,6 @@ function HeaderLanding({ isApplicationOpen = true, appDates }) {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const getSafeDate = (dateStr) => {
-        if (!dateStr) return null;
-        const [year, month, day] = dateStr.split('-').map(Number);
-        return new Date(year, month - 1, day);
-    };
-    const endDateObject = getSafeDate(appDates?.end);
-
     const handleAboutClick = (e) => {
         e.preventDefault();
         const headerHeight = 80; 
@@ -60,21 +53,6 @@ function HeaderLanding({ isApplicationOpen = true, appDates }) {
             >
               Personnel Login
             </Link>
-
-            {isApplicationOpen && endDateObject ? (
-              <Link to={'/form-application'} 
-              className="flex justify-center items-center bg-[#2C2D86] h-[40px] w-[140px] text-sm text-white rounded cursor-pointer apply-btn hover:bg-[#1a1b5c] transition-all"
-              >
-                Apply Now
-              </Link>
-            ) : (
-              <button 
-              disabled
-              className="flex justify-center items-center bg-gray-400 h-[40px] w-[140px] text-sm text-white rounded"
-              >
-                {endDateObject ? "Closed" : "APPLICATIONS TBA"}
-              </button>
-            )}
           </div>
         </div>
 
@@ -94,29 +72,6 @@ function HeaderLanding({ isApplicationOpen = true, appDates }) {
           <Link to={'/'} className="text-sm w-full text-center py-2 home" onClick={() => setMenuOpen(false)}>Home</Link>
           <a href="#about-us" className="text-sm w-full text-center py-2 about-us" onClick={handleAboutClick}>About Us</a>
           <Link to={'/track-application'} className="text-sm w-full text-center py-2 track-app" onClick={() => setMenuOpen(false)}>Track Application</Link>
-          
-          {/* <Link to={'/LoginUsers'} 
-            className="flex justify-center items-center border border-[#2C2D86] text-[#2C2D86] h-[40px] w-full text-sm font-semibold rounded cursor-pointer login-staff-btn hover:bg-[#2C2D86] hover:text-white transition-all"
-            onClick={() => setMenuOpen(false)}
-          >
-            Personnel Login
-          </Link> */}
-
-          {isApplicationOpen && endDateObject ? (
-            <Link to={'/form-application'} 
-            className="flex justify-center items-center bg-[#2C2D86] h-[40px] w-full text-sm text-white rounded cursor-pointer apply-btn"
-            onClick={() => setMenuOpen(false)}
-            >
-              Apply Now
-            </Link>
-          ) : (
-            <button 
-            disabled
-            className="flex justify-center items-center bg-gray-400 h-[40px] w-full text-sm text-white rounded cursor-not-allowed opacity-70"
-            >
-              {endDateObject ? "Closed" : "TBA"}
-            </button>
-          )}
         </nav>
       </div>
     </header>

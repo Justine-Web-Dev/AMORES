@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { api } from "../../../api/api";
 import LandingPage from "./LandingPage";
-import AboutUs from "./AboutUs";
 import TrackApplication from "./TrackApplication";
 import HeaderLanding from "../../Components/Header/HeaderLanding";
 import Form from "../Form/Form";

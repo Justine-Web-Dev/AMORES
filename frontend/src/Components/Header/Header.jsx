@@ -1,10 +1,27 @@
-import React from 'react'
-import { useLocation } from 'react-router-dom'
+import React, { useState, useRef, useEffect } from 'react'
+import { useLocation, Link } from 'react-router-dom'
+import { RiSettings4Line } from 'react-icons/ri'
 import './Header.css'
 import logoAcc from '../../assets/RRSU1 logo.png'
 
 function Header() {
   const location = useLocation();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [showAccountOptions, setShowAccountOptions] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+        setShowAccountOptions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Function to decode JWT token
   const parseJwt = (token) => {
@@ -28,6 +45,19 @@ function Header() {
   const payload = parseJwt(token);
   const name = payload?.name || 'User';
   const rawRole = payload?.role || '';
+  const initialProfilePic = payload?.profile_picture || logoAcc;
+  
+  const [profilePic, setProfilePic] = useState(initialProfilePic);
+
+  useEffect(() => {
+    const handleProfilePicUpdate = (e) => {
+      setProfilePic(e.detail);
+    };
+    window.addEventListener('profilePictureUpdated', handleProfilePicUpdate);
+    return () => {
+      window.removeEventListener('profilePictureUpdated', handleProfilePicUpdate);
+    };
+  }, []);
   
   // Professional role mapping with direct Admin check
   const role = (rawRole === 'Administrator') ? 'Administrator' : 
@@ -79,12 +109,56 @@ function Header() {
           <h4 className="text-sm font-bold text-gray-700">{currentDay}</h4>
         </div>
         
-        <div className="user-profile-header">
+        <div className="user-profile-header relative cursor-pointer" ref={dropdownRef} onClick={() => setShowDropdown(!showDropdown)}>
           <div className="text-right hidden sm:block">
             <h4>{name}</h4>
             <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-wider">{role}</p>
           </div>
-          <img src={logoAcc} alt="Profile" className="header-avatar" />
+          <img src={profilePic} alt="Profile" className="header-avatar" />
+          
+          {/* Dropdown Menu */}
+          {showDropdown && (
+            <div 
+              className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div 
+                className="flex items-center justify-between px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition-colors cursor-pointer"
+                onClick={() => setShowAccountOptions(!showAccountOptions)}
+              >
+                <div className="flex items-center gap-3">
+                  <RiSettings4Line size={18}/> 
+                  <span>Account Settings</span>
+                </div>
+                <span className="text-xs">{showAccountOptions ? '▲' : '▼'}</span>
+              </div>
+
+              {showAccountOptions && (
+                <div className="bg-slate-50 py-1 border-y border-slate-100">
+                  <Link 
+                    to={location.pathname.toLowerCase().includes('personnel') ? "/PersonnelDashboard/account-settings?tab=profile" : "/Dashboard/account-settings?tab=profile"}
+                    className="flex items-center gap-3 pl-10 pr-4 py-2 text-sm text-slate-600 hover:text-indigo-600 transition-colors"
+                    onClick={() => {
+                      setShowDropdown(false);
+                      setShowAccountOptions(false);
+                    }}
+                  >
+                    Profile
+                  </Link>
+                  <Link 
+                    to={location.pathname.toLowerCase().includes('personnel') ? "/PersonnelDashboard/account-settings?tab=security" : "/Dashboard/account-settings?tab=security"}
+                    className="flex items-center gap-3 pl-10 pr-4 py-2 text-sm text-slate-600 hover:text-indigo-600 transition-colors"
+                    onClick={() => {
+                      setShowDropdown(false);
+                      setShowAccountOptions(false);
+                    }}
+                  >
+                    Change Password
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </header>
