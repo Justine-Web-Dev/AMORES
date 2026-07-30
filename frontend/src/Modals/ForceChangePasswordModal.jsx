@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../../api/api';
-import { FaShieldHalved } from 'react-icons/fa6';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaShieldAlt, FaEye, FaEyeSlash } from 'react-icons/fa';
 import './LoginModal.css';
 
 function ForceChangePasswordModal({ isOpen, onSuccess, currentPasswordProp, token }) {
@@ -76,10 +75,10 @@ function ForceChangePasswordModal({ isOpen, onSuccess, currentPasswordProp, toke
   return (
     <div className='fixed inset-0 bg-black/40 login-overlay flex justify-center items-center z-[9999]'>
       <div className="bg-white p-8 rounded-2xl shadow-xl border border-slate-200 max-w-md w-full mx-4 relative">
-        <div className="flex items-center gap-3 mb-6 justify-center">
-          <FaShieldHalved className="text-3xl text-[#2C2D86]" />
-          <h2 className="text-2xl font-bold text-slate-800">Action Required</h2>
+        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <FaShieldAlt size={30} className="text-blue-600" />
         </div>
+        <h2 className="text-2xl font-bold text-slate-800 text-center mb-6">Action Required</h2>
         
         <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-md mb-6">
           <p className="text-sm text-amber-700 font-bold">Update Password</p>
