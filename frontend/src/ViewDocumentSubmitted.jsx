@@ -69,6 +69,13 @@ const DocCard = ({ doc, label, onScan }) => {
         <p className="text-[10px] mt-1 text-gray-400">
           Uploaded: {new Date(doc.uploaded_at).toLocaleDateString()}
         </p>
+        <p className="text-[10px] mt-0.5 text-gray-500 font-medium">
+          Expires: <span className="text-orange-500 font-bold">
+            {doc.expiration_date 
+              ? new Date(doc.expiration_date).toLocaleDateString()
+              : new Date(new Date(doc.uploaded_at).getTime() + 180 * 24 * 60 * 60 * 1000).toLocaleDateString()}
+          </span>
+        </p>
 
         {/* AI Verification Badge */}
         {doc.ai_remarks ? (

@@ -20,7 +20,7 @@ function GenerateReport() {
     'New Applicant',
     'Qualified',
     'Accepted',
-    'Rejected',
+    'Failed',
     'Body Mass Index',
     'Physical Agility Test',
     'Neuro Examination',
@@ -51,7 +51,7 @@ function GenerateReport() {
       case 'Oath Taking':
       case 'Qualified':
         return base + "bg-green-100 text-green-800 border-green-200";
-      case 'Rejected':
+      case 'Failed':
         return base + "bg-red-100 text-red-800 border-red-200";
       case 'New Applicant':
         return base + "bg-blue-100 text-blue-800 border-blue-200";

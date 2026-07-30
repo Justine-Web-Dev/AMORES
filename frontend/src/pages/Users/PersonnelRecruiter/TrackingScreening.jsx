@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../../../api/api';
+import { api } from '../../../../api/api';
 import { useNavigate } from 'react-router-dom';
 import { HiOutlineUserGroup, HiOutlineCalendar, HiOutlineClipboardCheck, HiOutlineChatAlt2, HiOutlineBadgeCheck, HiOutlineXCircle } from 'react-icons/hi';
 import './TrackingScreening.css';
@@ -102,7 +102,11 @@ function TrackingScreening() {
                                                         Sch: {new Date(applicant.scheduled_date).toLocaleDateString()} {applicant.scheduled_time ? `@ ${applicant.scheduled_time}` : ''}
                                                     </span>
                                                 ) : (
-                                                    <span>{new Date(applicant.created_at).toLocaleDateString()}</span>
+                                                    ['Body Mass Index', 'Physical Agility Test', 'Neuro Examination', 'Medical', 'Drug Test', 'Final Interview', 'Oath Taking'].includes(stage.id) ? (
+                                                        <span className="text-gray-500 font-semibold italic">Sch: TBA</span>
+                                                    ) : (
+                                                        <span>{new Date(applicant.created_at).toLocaleDateString()}</span>
+                                                    )
                                                 )}
                                             </div>
                                         </div>

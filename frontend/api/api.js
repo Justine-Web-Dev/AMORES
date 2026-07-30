@@ -1,5 +1,6 @@
 import axios from "axios";
-const baseURL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api").replace(/\/$/, "");
+// import.meta.env.VITE_API_URL ||
+const baseURL = ( "http://127.0.0.1:8000/api").replace(/\/$/, "");
 
 export const api = axios.create({
   baseURL,
@@ -21,4 +22,17 @@ api.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // If backend returns 401 Unauthorized, automatically log out
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      window.location.href = "/LoginUsers";
+    }
+    return Promise.reject(error);
+  }
 );

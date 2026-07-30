@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { FiUser, FiShield, FiCamera, FiX, FiCheck } from 'react-icons/fi';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { FiUser, FiShield, FiCamera, FiX, FiCheck, FiArrowLeft } from 'react-icons/fi';
 import ChangePassword from './ChangePassword';
 import logoAcc from '../../assets/RRSU1 logo.png';
 import { api } from '../../../api/api';
@@ -9,8 +9,16 @@ import getCroppedImg from '../../utils/cropImage';
 
 function AccountSettings() {
   const location = useLocation();
+  const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
   const tabFromUrl = queryParams.get('tab');
+
+  const getDashboardPath = () => {
+    const path = location.pathname.toLowerCase();
+    if (path.includes('personnel')) return '/PersonnelDashboard';
+    if (path.includes('interview')) return '/InterviewDashboard';
+    return '/Dashboard';
+  };
 
   const [activeTab, setActiveTab] = useState(tabFromUrl || 'profile');
 
@@ -199,6 +207,13 @@ function AccountSettings() {
             {activeTab === 'profile' && (
               <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
                 <div className="flex items-center gap-3 mb-6">
+                  <button 
+                    onClick={() => navigate(getDashboardPath())} 
+                    className="p-1.5 mr-1 hover:bg-slate-100 rounded-lg transition-colors text-slate-500"
+                    title="Go Back"
+                  >
+                    <FiArrowLeft className="text-2xl" />
+                  </button>
                   <FiUser className="text-2xl text-[#2C2D86]" />
                   <h2 className="text-2xl font-bold text-slate-800">Profile Information</h2>
                 </div>

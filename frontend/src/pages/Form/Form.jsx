@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../../api/api";
 import MessageModal from "../../Modals/MessageModal";
+import ApplicationTypeModal from "../../Modals/ApplicationTypeModal";
 import "./FormCss.css";
 
 function Form() {
@@ -27,10 +28,34 @@ function Form() {
     phil_health_id_num: "",
     height: "",
     tribe_affiliated: "",
+    tracking_code: "",
   });
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isTypeModalOpen, setIsTypeModalOpen] = useState(() => {
+    let shouldOpen = true;
+    try {
+      const navEntries = window.performance.getEntriesByType("navigation");
+      const isReload = navEntries.length > 0 && navEntries[0].type === "reload";
+
+      const savedFormData = localStorage.getItem("applicationFormData");
+      if (savedFormData) {
+        const parsed = JSON.parse(savedFormData);
+        const fName = String(parsed.firstname || "").trim();
+        const lName = String(parsed.lastname || "").trim();
+        const email = String(parsed.email || "").trim();
+        const tc = String(parsed.tracking_code || "").trim();
+        
+        if ((fName.length > 0 || lName.length > 0 || email.length > 0 || tc.length > 0) && isReload) {
+          shouldOpen = false;
+        }
+      }
+    } catch (e) {
+      // fallback to true
+    }
+    return shouldOpen;
+  });
 
   // Load saved form data from localStorage on mount
   useEffect(() => {
@@ -99,6 +124,23 @@ function Form() {
         return;
       }
 
+      if (formData.birthdate) {
+        const birthDate = new Date(formData.birthdate);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        
+        if (age < 21 || age > 30) {
+          setErrorMessage(`Applicant age must be between 21 and 30 years old (Current Age: ${age}).`);
+          setIsErrorModalOpen(true);
+          setIsLoading(false);
+          return;
+        }
+      }
+
       const standardIds = ["pag_ibig_number", "phil_health_id_num"];
       for (const f of standardIds) {
         const v = (formData[f] || "").toString().replace(/\D/g, "");
@@ -116,6 +158,7 @@ function Form() {
         cp_number: formData.cp_number,
         pag_ibig_number: formData.pag_ibig_number,
         phil_health_id_num: formData.phil_health_id_num,
+        tracking_code: formData.tracking_code,
       });
 
       navigate("../document-submission", {
@@ -132,6 +175,34 @@ function Form() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleClearForm = () => {
+    const emptyForm = {
+      lastname: "",
+      firstname: "",
+      middle_name: "",
+      birthdate: "",
+      street: "",
+      barangay: "",
+      city_municipality: "",
+      province: "",
+      zip_code: "",
+      gender: "",
+      cp_number: "",
+      program: "",
+      name_of_school: "",
+      date_graduated: "",
+      email: "",
+      latin_honor: "",
+      pag_ibig_number: "",
+      phil_health_id_num: "",
+      height: "",
+      tribe_affiliated: "",
+      tracking_code: "",
+    };
+    setFormData(emptyForm);
+    localStorage.removeItem("applicationFormData");
   };
 
   const requiredFields = [
@@ -163,6 +234,27 @@ function Form() {
 
   return (
     <div className="form-application-container min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      {isTypeModalOpen && (
+        <ApplicationTypeModal 
+          onClose={() => setIsTypeModalOpen(false)} 
+          onRetrieve={(data) => {
+            const updatedData = { ...formData };
+            // Copy retrieved fields that exist in our formData schema, filtering out null/undefined
+            Object.keys(data).forEach(key => {
+              if (updatedData.hasOwnProperty(key) && data[key] !== null && data[key] !== undefined) {
+                updatedData[key] = data[key];
+              }
+            });
+            // Explicitly ensure tracking_code is saved even if it was missing in old cached schema
+            if (data.tracking_code) {
+              updatedData.tracking_code = data.tracking_code;
+            }
+            setFormData(updatedData);
+            localStorage.setItem("applicationFormData", JSON.stringify(updatedData));
+            setIsTypeModalOpen(false);
+          }}
+        />
+      )}
       <form
         className="my-form max-w-4xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow-md space-y-8"
         onSubmit={handleSubmit}
@@ -176,8 +268,21 @@ function Form() {
               Please fill out all sections carefully to complete your application.
             </p>
           </div>
-          <div className="text-xs font-semibold text-red-500 bg-red-50 border border-red-200 px-3 py-1 rounded-md self-start md:self-auto">
-            * Indicates required fields
+          <div className="flex items-center gap-3 self-start md:self-auto">
+            <div className="text-xs font-semibold text-red-500 bg-red-50 border border-red-200 px-3 py-1 rounded-md">
+              * Indicates required fields
+            </div>
+            <button
+              className="flex items-center gap-2 h-9 px-3 rounded-lg border border-gray-300 text-gray-500 hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-all duration-200 active:scale-95 shadow-sm"
+              type="button"
+              onClick={handleClearForm}
+              title="Clear all fields"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              <span className="text-xs font-semibold">Clear Form</span>
+            </button>
           </div>
         </div>
 

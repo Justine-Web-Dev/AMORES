@@ -12,6 +12,7 @@ from .utils import (
     create_database_backup,
     restore_database_backup,
     send_mail_async,
+    get_status_congratulations_message,
 )
 from .services import evaluate_initial_application_status
 from .screening import evaluate_initial_application_status
@@ -34,7 +35,7 @@ import string
 
 import threading
 
-def send_welcome_email(name, email, raw_password):
+def send_welcome_email(name, email, raw_password, role):
     """Send new user's credentials via Django's built-in email backend.
     With the console backend this prints to the Django terminal (free, no credentials)."""
     subject = f"Welcome to AMORES – Account Created for {name}"
@@ -43,6 +44,7 @@ def send_welcome_email(name, email, raw_password):
         f"Your AMORES account has been successfully created.\n\n"
         f"----------------------------------------\n"
         f"YOUR LOGIN CREDENTIALS:\n"
+        f"Role:     {role}\n"
         f"Email:    {email}\n"
         f"Password: {raw_password}\n"
         f"----------------------------------------\n\n"
@@ -63,12 +65,13 @@ def send_welcome_email(name, email, raw_password):
     except Exception as e:
         print(f"[AMORES] Email send failed for {email}: {e}", flush=True)
 
-def send_application_received_email(name, email, tracking_code):
+def send_application_received_email(name, email, tracking_code, is_reapply=False):
     """Send confirmation email to applicants with their tracking code."""
-    subject = f"Application Received – AMORES"
+    subject_type = "Re-Application" if is_reapply else "Application"
+    subject = f"{subject_type} Received – AMORES"
     message = (
         f"Hi {name},\n\n"
-        f"We have successfully received your application for the Philippine National Police.\n\n"
+        f"We have successfully received your {subject_type.lower()} for the Philippine National Police.\n\n"
         f"----------------------------------------\n"
         f"YOUR TRACKING CODE:\n"
         f"{tracking_code}\n"
@@ -157,8 +160,8 @@ def register_user(request):
 
     registration_data = request.data.copy()
     registration_data['password'] = make_password(raw_password)
-    if is_system_generated:
-        registration_data['must_change_password'] = True
+    # Always require password change for newly registered users by admin
+    registration_data['must_change_password'] = True
 
     serializers = UsersSerializers(data=registration_data)
     
@@ -177,7 +180,7 @@ def register_user(request):
         )
 
         # Send credentials to the new user via Django's email backend
-        send_welcome_email(name=user.name, email=user.email, raw_password=raw_password)
+        send_welcome_email(name=user.name, email=user.email, raw_password=raw_password, role=user.role)
         
         response_data = serializers.data
 
@@ -392,19 +395,29 @@ def validate_applicant_form(request):
     contact_number = request.data.get('cp_number', '').strip() or request.data.get('contact_number', '').strip()
     pag_ibig_number = request.data.get('pag_ibig_number', '').strip()
     phil_health_id_num = request.data.get('phil_health_id_num', '').strip()
+    tracking_code = request.data.get('tracking_code', '').strip()
 
     errors = []
 
     if not email or not contact_number or not pag_ibig_number or not phil_health_id_num:
         return Response({"error": "Email, Contact number, Pag-IBIG number, and PhilHealth ID are required."}, status=status.HTTP_400_BAD_REQUEST)
+        
+    exclude_kwargs = {}
+    if tracking_code:
+        try:
+            existing_app = Application.objects.get(tracking_code__iexact=tracking_code)
+            exclude_kwargs['id'] = existing_app.applicant.id
+        except Application.DoesNotExist:
+            print(f"[DEBUG] validate_applicant_form: Application with tracking code '{tracking_code}' not found.")
+            pass
 
-    if Applicant.objects.filter(email__iexact=email).exists():
+    if Applicant.objects.exclude(**exclude_kwargs).filter(email__iexact=email).exists():
         errors.append("An application with this email already exists.")
-    if Applicant.objects.filter(contact_number=contact_number).exists():
+    if Applicant.objects.exclude(**exclude_kwargs).filter(contact_number=contact_number).exists():
         errors.append("An application with this contact number already exists.")
-    if Applicant.objects.filter(pag_ibig_number=pag_ibig_number).exists():
+    if Applicant.objects.exclude(**exclude_kwargs).filter(pag_ibig_number=pag_ibig_number).exists():
         errors.append("An application with this Pag-IBIG number already exists.")
-    if Applicant.objects.filter(phil_health_id_num=phil_health_id_num).exists():
+    if Applicant.objects.exclude(**exclude_kwargs).filter(phil_health_id_num=phil_health_id_num).exists():
         errors.append("An application with this PhilHealth ID already exists.")
 
     if errors:
@@ -419,17 +432,31 @@ def register_applicant_form(request):
     contact_number = request.data.get('cp_number', '').strip() or request.data.get('contact_number', '').strip()
     pag_ibig_number = request.data.get('pag_ibig_number', '').strip()
     phil_health_id_num = request.data.get('phil_health_id_num', '').strip()
+    tracking_code = request.data.get('tracking_code', '').strip()
 
     if not email or not contact_number or not pag_ibig_number or not phil_health_id_num:
         return Response({"error": "Email, Contact number, Pag-IBIG number, and PhilHealth ID are required."}, status=status.HTTP_400_BAD_REQUEST)
 
-    if Applicant.objects.filter(email__iexact=email).exists():
+    existing_applicant = None
+    if tracking_code:
+        try:
+            existing_app = Application.objects.get(tracking_code__iexact=tracking_code)
+            existing_applicant = existing_app.applicant
+        except Application.DoesNotExist:
+            print(f"[DEBUG] register_applicant_form: Application with tracking code '{tracking_code}' not found.")
+            pass
+
+    exclude_kwargs = {}
+    if existing_applicant:
+        exclude_kwargs['id'] = existing_applicant.id
+
+    if Applicant.objects.exclude(**exclude_kwargs).filter(email__iexact=email).exists():
         return Response({"error": "An application with this email already exists."}, status=status.HTTP_409_CONFLICT)
-    if Applicant.objects.filter(contact_number=contact_number).exists():
+    if Applicant.objects.exclude(**exclude_kwargs).filter(contact_number=contact_number).exists():
         return Response({"error": "An application with this contact number already exists."}, status=status.HTTP_409_CONFLICT)
-    if Applicant.objects.filter(pag_ibig_number=pag_ibig_number).exists():
+    if Applicant.objects.exclude(**exclude_kwargs).filter(pag_ibig_number=pag_ibig_number).exists():
         return Response({"error": "An application with this Pag-IBIG number already exists."}, status=status.HTTP_409_CONFLICT)
-    if Applicant.objects.filter(phil_health_id_num=phil_health_id_num).exists():
+    if Applicant.objects.exclude(**exclude_kwargs).filter(phil_health_id_num=phil_health_id_num).exists():
         return Response({"error": "An application with this PhilHealth ID already exists."}, status=status.HTTP_409_CONFLICT)
 
     # Use serializer to handle data mapping (standardizes first_name/lastname etc)
@@ -441,9 +468,37 @@ def register_applicant_form(request):
     if 'address' in data and not data.get('address'):
         data['address'] = 'N/A'
 
-    serializer = ApplicantSerializer(data=data)
+    # Age validation (21 to 30)
+    birthdate = data.get('birthdate')
+    if birthdate:
+        if isinstance(birthdate, list): birthdate = birthdate[0]
+        from datetime import datetime
+        try:
+            dob = datetime.strptime(birthdate, '%Y-%m-%d').date()
+            today = datetime.now().date()
+            age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+            if age < 21 or age > 30:
+                return Response({"error": f"Applicant age must be between 21 and 30 years old (Current Age: {age})."}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+            pass
+
+    if existing_applicant:
+        serializer = ApplicantSerializer(existing_applicant, data=data, partial=True)
+    else:
+        serializer = ApplicantSerializer(data=data)
+
     if serializer.is_valid():
        applicant = serializer.save()
+       
+       if existing_applicant:
+           from django.utils import timezone
+           applicant.created_at = timezone.now()
+           applicant.save(update_fields=['created_at'])
+           
+           active_app = applicant.applications.exclude(status__in=['Failed', 'Rejected']).first()
+           if active_app:
+               return Response({"error": "You already have an active application."}, status=status.HTTP_400_BAD_REQUEST)
+
        # Create initial application with current batch
        settings_obj = SystemSettings.objects.first()
        current_batch = settings_obj.current_batch if settings_obj else 1
@@ -452,7 +507,8 @@ def register_applicant_form(request):
        # Create initial evaluation linked to application
        Evaluation.objects.create(application=application)
        
-       create_audit_log(None, 'APPLICANT_REGISTRATION', f"New applicant '{applicant.first_name} {applicant.last_name}' ({application.tracking_code}) registered.", performer_name='System')
+       action_msg = "updated/re-applied" if existing_applicant else "registered"
+       create_audit_log(None, 'APPLICANT_REGISTRATION', f"Applicant '{applicant.first_name} {applicant.last_name}' ({application.tracking_code}) {action_msg}.", performer_name='System')
        
        send_application_received_email(
            name=f"{applicant.first_name} {applicant.last_name}",
@@ -475,10 +531,10 @@ def send_status_update_email(applicant_email, applicant_name, status_val, remark
         f"There has been an update to your application status in the PNP-AMORES recruitment portal.\n\n"
         f"Current Status: {status_val}\n"
     )
-    if status_val == 'Rejected' and remarks:
-        message += f"Reason: {remarks}\n\n"
-    elif status_val == 'Qualified':
-        message += "Congratulations! You have passed the initial screening phase and are now qualified for the next steps.\n\n"
+    if status_val == 'Failed':
+        message += "\n"
+    else:
+        message += get_status_congratulations_message(status_val)
     
     message += (
         f"Please go to the portal to track your progress.\n\n"
@@ -497,6 +553,51 @@ def send_status_update_email(applicant_email, applicant_name, status_val, remark
     except Exception as e:
         print(f"[AMORES] Status update email send failed for {applicant_email}: {e}", flush=True)
 
+def send_schedule_email(applicant_email, applicant_name, scheduled_date, scheduled_time, status_val):
+    """Sends asynchronous email notification when an applicant's schedule is updated."""
+    subject = f"Application Schedule Update – AMORES"
+    
+    formatted_date = scheduled_date
+    if scheduled_date:
+        try:
+            from datetime import datetime
+            date_obj = datetime.strptime(str(scheduled_date), "%Y-%m-%d")
+            formatted_date = date_obj.strftime("%d/%m/%Y")
+        except Exception:
+            pass
+
+    message = (
+        f"Hi {applicant_name},\n\n"
+        f"You have been scheduled for the {status_val} step in your application.\n\n"
+        f"Date: {formatted_date}\n"
+    )
+    if scheduled_time:
+        formatted_time = scheduled_time
+        try:
+            from datetime import datetime
+            time_obj = datetime.strptime(str(scheduled_time)[:5], "%H:%M")
+            formatted_time = time_obj.strftime("%I:%M %p")
+        except Exception:
+            pass
+        message += f"Time: {formatted_time}\n"
+        
+    message += (
+        f"\nPlease ensure you arrive on time and bring any necessary requirements.\n\n"
+        f"Best regards,\n"
+        f"PNP-AMORES System"
+    )
+    
+    try:
+        send_mail_async(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[applicant_email],
+            fail_silently=False,
+        )
+    except Exception as e:
+        print(f"[AMORES] Schedule email send failed for {applicant_email}: {e}", flush=True)
+
 @api_view(['PUT'])
 def update_applicant_status(request, pk):
     try:
@@ -511,19 +612,25 @@ def update_applicant_status(request, pk):
         if new_status:
             application.status = new_status
         
-        if new_status == 'Rejected':
+        if new_status == 'Failed':
             application.rejection_reason = request.data.get('rejection_reason')
 
         # Evaluation fields
         eval_fields = [
             'bmi_height', 'bmi_weight', 'bmi_result', 'pat_score', 
+            'pat_pushups', 'pat_pushups_passed', 'pat_situps', 
+            'pat_situps_passed', 'pat_run', 'pat_run_passed',
             'psychological_result', 'medical_result', 'drug_test_result', 
-            'final_interview_score'
+            'final_interview_score', 'fi_voice_quality', 'fi_comprehension',
+            'fi_gesture', 'fi_bearing', 'fi_general_knowledge', 'fi_eloquence'
         ]
         for field in eval_fields:
             if field in request.data:
                 setattr(evaluation, field, request.data.get(field))
         evaluation.save()
+
+        old_scheduled_date = application.scheduled_date
+        old_scheduled_time = application.scheduled_time
 
         # Application fields
         app_fields = ['scheduled_date', 'scheduled_time', 'evaluation_remarks', 'oath_taking_date']
@@ -532,9 +639,22 @@ def update_applicant_status(request, pk):
                 setattr(application, field, request.data.get(field))
         application.save()
         
-        # Email Notification if status is Qualified or Rejected
-        if new_status in ['Qualified', 'Rejected']:
-            remarks = application.rejection_reason if new_status == 'Rejected' else application.evaluation_remarks
+        # Email Notification if schedule is updated
+        schedule_updated = False
+        if application.scheduled_date and (application.scheduled_date != old_scheduled_date or application.scheduled_time != old_scheduled_time):
+            if 'scheduled_date' in request.data:
+                schedule_updated = True
+        
+        if schedule_updated:
+            import threading
+            threading.Thread(
+                target=send_schedule_email,
+                args=(applicant.email, f"{applicant.first_name} {applicant.last_name}", application.scheduled_date, application.scheduled_time, application.status)
+            ).start()
+
+        # Email Notification if status is updated
+        if new_status:
+            remarks = application.rejection_reason if new_status == 'Failed' else (application.evaluation_remarks or f"You have progressed to the next step: {new_status}")
             import threading
             threading.Thread(
                 target=send_status_update_email,
@@ -554,6 +674,48 @@ def update_applicant_status(request, pk):
         return Response({"error": "Applicant not found"}, status=status.HTTP_404_NOT_FOUND)
 
 @api_view(['GET'])
+def retrieve_application_data(request):
+  code = request.query_params.get('code', None)
+  if not code:
+    return Response({"error": "Tracking code is required"}, status=status.HTTP_400_BAD_REQUEST)
+  
+  try:
+    application = Application.objects.get(tracking_code=code.upper())
+    
+    if application.status != 'Failed':
+      return Response({"error": "Only applicants with a 'Failed' status are eligible for re-application."}, status=status.HTTP_400_BAD_REQUEST)
+      
+    applicant = application.applicant
+    
+    data = {
+      "lastname": applicant.last_name,
+      "firstname": applicant.first_name,
+      "middle_name": applicant.middle_name,
+      "birthdate": applicant.birthdate,
+      "barangay": applicant.barangay,
+      "city_municipality": applicant.city_municipality,
+      "province": applicant.province,
+      "zip_code": applicant.zip_code,
+      "gender": applicant.gender,
+      "cp_number": applicant.contact_number,
+      "program": applicant.program,
+      "name_of_school": applicant.name_of_school,
+      "date_graduated": applicant.date_graduated,
+      "email": applicant.email,
+      "latin_honor": applicant.latin_honor,
+      "pag_ibig_number": applicant.pag_ibig_number,
+      "phil_health_id_num": applicant.phil_health_id_num,
+      "height": applicant.height,
+      "tribe_affiliated": getattr(applicant, 'tribe', ''),
+      "tracking_code": application.tracking_code
+    }
+    
+    return Response(data, status=status.HTTP_200_OK)
+    
+  except Application.DoesNotExist:
+    return Response({"error": "Invalid tracking code."}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
 def track_application_status(request):
   code = request.query_params.get('code', None)
   if not code:
@@ -566,6 +728,7 @@ def track_application_status(request):
 
     return Response({
         "tracking_code": application.tracking_code,
+        "applicant_id": applicant.id,
         "full_name": f"{applicant.first_name} {applicant.last_name}",
         "firstname": applicant.first_name,
         "lastname": applicant.last_name,
@@ -579,6 +742,12 @@ def track_application_status(request):
         "bmi_height": evaluation.bmi_height if evaluation else None,
         "bmi_weight": evaluation.bmi_weight if evaluation else None,
         "pat_score": evaluation.pat_score if evaluation else None,
+        "pat_pushups": evaluation.pat_pushups if evaluation else None,
+        "pat_situps": evaluation.pat_situps if evaluation else None,
+        "pat_run": evaluation.pat_run if evaluation else None,
+        "pat_pushups_passed": evaluation.pat_pushups_passed if evaluation else None,
+        "pat_situps_passed": evaluation.pat_situps_passed if evaluation else None,
+        "pat_run_passed": evaluation.pat_run_passed if evaluation else None,
         "psychological_result": evaluation.psychological_result if evaluation else None,
         "medical_result": evaluation.medical_result if evaluation else None,
         "final_interview_score": evaluation.final_interview_score if evaluation else None,
@@ -609,6 +778,16 @@ def upload_document(request):
 
 @api_view(['GET'])
 def get_applicant_documents(request, applicant_id):
+    from django.utils import timezone
+    now = timezone.now()
+    
+    # Auto-cleanup expired documents
+    expired_docs = ApplicantDocument.objects.filter(applicant_id=applicant_id, expiration_date__lte=now)
+    for doc in expired_docs:
+        if doc.file:
+            doc.file.delete(save=False)
+        doc.delete()
+
     documents = ApplicantDocument.objects.filter(applicant_id=applicant_id)
     
     # Automatically trigger OCR re-scan in background threads when recruiter views or refreshes details page
@@ -638,8 +817,8 @@ def scan_document(request, doc_id):
 
 @api_view(['GET'])
 def get_active_applicants(request):
-    # Applicants whose active_application is not 'Rejected'
-    applicants = get_applicant_queryset().exclude(applications__status='Rejected').distinct()
+    # Applicants whose active_application is not 'Failed'
+    applicants = get_applicant_queryset().exclude(applications__status='Failed').distinct()
     serializer = ApplicantFullSerializer(applicants, many=True)
     return Response(serializer.data)
 
@@ -779,7 +958,7 @@ def send_screening_notification(applicant_email, applicant_name, status, remarks
         f"Your application has been evaluated in the initial screening phase.\n"
         f"Status: {status}\n\n"
     )
-    if status == 'Rejected':
+    if status == 'Failed':
         message += f"Remarks: {remarks}\n\n"
     
     message += (
@@ -853,7 +1032,7 @@ class SubmitApplicationView(APIView):
                 
                 # Check for existing pending application
                 if not created:
-                    existing_app = applicant.applications.exclude(status='Rejected').first()
+                    existing_app = applicant.applications.exclude(status='Failed').first()
                     if existing_app:
                         return Response({'error': 'You already have an active application.'}, status=status.HTTP_400_BAD_REQUEST)
                 
@@ -874,10 +1053,55 @@ class SubmitApplicationView(APIView):
                     transaction.on_commit(
                         lambda: threading.Thread(target=process_document_ocr, args=(doc.id,)).start()
                     )
-                
                 screening_result = evaluate_initial_application_status(application, request.data, performer_user=None)
                 
                 return Response(screening_result, status=status.HTTP_201_CREATED)
                 
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['PATCH'])
+def reapply_update_view(request, tracking_code):
+    try:
+        application = Application.objects.get(tracking_code=tracking_code)
+        applicant = application.applicant
+    except Application.DoesNotExist:
+        return Response({"error": "Application not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = ApplicantSerializer(
+        applicant, 
+        data=request.data, 
+        partial=True, 
+        context={'is_reapply': True}
+    )
+
+    if serializer.is_valid():
+        serializer.save()
+        
+        # Reset the application status to New Applicant
+        application.status = "New Applicant"
+        application.rejection_reason = None
+        application.save()
+        
+        # Clear the old evaluation results for a fresh start
+        if hasattr(application, 'evaluation'):
+            application.evaluation.delete()
+        from .models import Evaluation
+        Evaluation.objects.create(application=application)
+        
+        # Send Re-Application email
+        send_application_received_email(
+            name=f"{applicant.first_name} {applicant.last_name}",
+            email=applicant.email,
+            tracking_code=application.tracking_code,
+            is_reapply=True
+        )
+        
+        return Response({
+            "id": applicant.id,
+            "tracking_code": application.tracking_code,
+            "message": "Re-application successful!",
+            "data": serializer.data
+        })
+    
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

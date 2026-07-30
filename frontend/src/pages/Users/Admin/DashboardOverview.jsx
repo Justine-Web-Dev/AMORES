@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { api } from "../../../api/api";
+import { api } from "../../../../api/api";
 import {
   PieChart,
   Pie,
@@ -36,6 +36,7 @@ function DashboardOverview() {
     provinceData: [],
     assessmentData: [],
   });
+  const [filteredApplicantCount, setFilteredApplicantCount] = useState(0);
 
   const availableBatches = useMemo(() => {
     let filteredApplicants = applicants;
@@ -102,13 +103,15 @@ function DashboardOverview() {
     if (batchFilter !== "All") {
       data = data.filter((a) => String(a.batch) === String(batchFilter));
     }
+    
+    setFilteredApplicantCount(data.length);
 
     const statuses = {
       "New Applicant": 0,
       Screening: 0,
       Qualified: 0,
       Accepted: 0,
-      Rejected: 0,
+      Failed: 0,
       "Oath Taking": 0,
     };
 
@@ -121,7 +124,7 @@ function DashboardOverview() {
       else if (screeningStages.includes(a.status)) statuses["Screening"]++;
       else if (a.status === "Qualified") statuses["Qualified"]++;
       else if (a.status === "Accepted") statuses["Accepted"]++;
-      else if (a.status === "Rejected") statuses["Rejected"]++;
+      else if (a.status === "Failed") statuses["Failed"]++;
       else if (a.status === "Oath Taking") statuses["Oath Taking"]++; 
       else if (a.status === "Body Mass Index")
         statuses["BMI"] = (statuses["BMI"] || 0) + 1;
@@ -138,7 +141,14 @@ function DashboardOverview() {
     });
 
     setStatusData(
-      Object.keys(statuses).map((name) => ({ name, value: statuses[name] })),
+      Object.keys(statuses)
+        .filter((name) => statuses[name] > 0)
+        .map((name) => {
+          let displayName = name;
+          if (name === "Accepted") displayName = "Successful Applicants";
+          if (name === "Failed") displayName = "Disqualified";
+          return { name: displayName, value: statuses[name] };
+        })
     );
     setStatusCounts(statuses);
 
@@ -334,7 +344,7 @@ function DashboardOverview() {
           <div className="admin-summary-card total-applicants">
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">Total Applicants</span>
-              <span className="summary-value">{applicant_length}</span>
+              <span className="summary-value">{filteredApplicantCount}</span>
             </div>
           </div>
           <div className="admin-summary-card new-applicants">
@@ -358,7 +368,7 @@ function DashboardOverview() {
           <div className="admin-summary-card rejected">
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">Disqualified</span>
-              <span className="summary-value">{statusCounts["Rejected"] || 0}</span>
+              <span className="summary-value">{statusCounts["Failed"] || 0}</span>
             </div>
           </div>
           <div className="admin-summary-card bmi">
@@ -420,17 +430,25 @@ function DashboardOverview() {
                 outerRadius={100}
                 paddingAngle={5}
                 dataKey="value"
-                label={({ name, percent }) => percent > 0 ? `${name} ${(percent * 100).toFixed(0)}%` : ""}
+                label={({ name, value, percent }) => percent > 0 ? `${name}: ${value} (${(percent * 100).toFixed(0)}%)` : ""}
               >
-                {statusData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={
-                    entry.name === "Rejected" ? "#EF4444" : 
-                    entry.name === "Accepted" ? "#166534" : 
-                    entry.name === "Qualified" ? "#22C55E" : 
-                    entry.name === "New Applicant" ? "#2196F3" : 
-                    CHART_COLORS[index % CHART_COLORS.length]
-                  } />
-                ))}
+                {statusData.map((entry, index) => {
+                  const colors = {
+                    'Disqualified': '#EF4444',
+                    'Successful Applicants': '#166534',
+                    'Qualified': '#22C55E',
+                    'New Applicant': '#2196F3',
+                    'Screening': '#FFC107',
+                    'BMI': '#3B82F6',
+                    'PAT': '#F97316',
+                    'Neuro': '#8B5CF6',
+                    'Medical': '#EC4899',
+                    'Drug Test': '#F59E0B',
+                    'Final Interview': '#14B8A6',
+                    'Oath Taking': '#1E3A8A'
+                  };
+                  return <Cell key={`cell-${index}`} fill={colors[entry.name] || CHART_COLORS[index % CHART_COLORS.length]} />;
+                })}
               </Pie>
               <Tooltip />
             </PieChart>

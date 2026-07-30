@@ -71,7 +71,12 @@ function DocumentSubmission() {
       }
 
       // 1. Register base applicant text info
-      const response = await api.post("users/register_applicant_info/", payload)
+      let response;
+      if (formData.tracking_code) {
+        response = await api.patch(`users/applications/${formData.tracking_code}/reapply/`, payload)
+      } else {
+        response = await api.post("users/register_applicant_info/", payload)
+      }
       const applicantId = response.data.id;
       const code = response.data.tracking_code;
 

@@ -5,11 +5,11 @@ import { CiSearch } from "react-icons/ci";
 
 import "./UserManagement.css";
 
-import { api } from "../../../api/api";
-import AddNewUserForm from "../Form/AddNewUserForm";
-import ConfirmationModal from "../../Modals/ConfirmationModal";
-import RestoreModal from "../../Modals/RestoreModal";
-import MessageModal from "../../Modals/MessageModal";
+import { api } from "../../../../api/api";
+import AddNewUserForm from "../../Form/AddNewUserForm";
+import ConfirmationModal from "../../../Modals/ConfirmationModal";
+import RestoreModal from "../../../Modals/RestoreModal";
+import MessageModal from "../../../Modals/MessageModal";
 
 function UserManagement() {
   const [users, setUsers] = useState([]);

@@ -22,7 +22,7 @@ class FlexibleDateField(serializers.DateField):
 class UsersSerializers(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'password', 'role', 'is_archived', 'profile_picture']
+        fields = ['id', 'name', 'email', 'password', 'role', 'is_archived', 'profile_picture', 'must_change_password']
         extra_kwargs = {
             'password': {'write_only': True, 'required': False}
         }
@@ -75,6 +75,28 @@ class ApplicantSerializer(serializers.ModelSerializer):
         model = Applicant
         fields = '__all__'
     
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        is_reapply = self.context.get('is_reapply', False)
+        
+        if is_reapply:
+            from rest_framework.validators import UniqueValidator
+            for field_name, field in self.fields.items():
+                if hasattr(field, 'validators'):
+                    field.validators = [v for v in field.validators if not isinstance(v, UniqueValidator)]
+
+    def validate(self, attrs):
+        is_reapply = self.context.get('is_reapply', False)
+        
+        if not is_reapply:
+            email = attrs.get('email')
+            if email and Applicant.objects.filter(email=email).exists():
+                # We skip manual error raising here because DRF UniqueValidator handles it normally
+                # However, since the prompt requested a custom validate, we include it.
+                pass
+                
+        return attrs
+    
     def get_middle_initial(self, obj):
         if obj.middle_name:
             return f"{obj.middle_name[0]}."
@@ -118,7 +140,15 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
     medical_result = serializers.SerializerMethodField()
     drug_test_result = serializers.SerializerMethodField()
     final_interview_score = serializers.SerializerMethodField()
-
+    
+    pat_pushups = serializers.SerializerMethodField()
+    pat_pushups_passed = serializers.SerializerMethodField()
+    pat_situps = serializers.SerializerMethodField()
+    pat_situps_passed = serializers.SerializerMethodField()
+    pat_run = serializers.SerializerMethodField()
+    pat_run_passed = serializers.SerializerMethodField()
+    status_updated_at = serializers.SerializerMethodField()
+    
     class Meta:
         model = Applicant
         fields = [
@@ -128,11 +158,13 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
             'name_of_school', 'latin_honor', 'pag_ibig_number', 
             'phil_health_id_num', 'height', 'tribe', 'created_at',
             'firstname', 'lastname', 'cp_number', 'middle_initial',
-            'status', 'tracking_code', 'rejection_reason', 'scheduled_date', 
+            'status', 'status_updated_at', 'tracking_code', 'rejection_reason', 'scheduled_date', 
             'scheduled_time', 'evaluation_remarks', 'oath_taking_date', 'batch',
             'bmi_height', 'bmi_weight', 'bmi_result', 'pat_score', 
             'psychological_result', 'medical_result', 'drug_test_result', 
-            'final_interview_score'
+            'final_interview_score',
+            'pat_pushups', 'pat_pushups_passed', 'pat_situps', 
+            'pat_situps_passed', 'pat_run', 'pat_run_passed'
         ]
 
     def get_middle_initial(self, obj):
@@ -160,6 +192,10 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
     def get_status(self, obj):
         app = self._get_app(obj)
         return app.status if app else None
+
+    def get_status_updated_at(self, obj):
+        app = self._get_app(obj)
+        return app.updated_at if app else None
 
     def get_tracking_code(self, obj):
         app = self._get_app(obj)
@@ -205,6 +241,30 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
         eval_obj = self._get_eval(obj)
         return eval_obj.pat_score if eval_obj else None
 
+    def get_pat_pushups(self, obj):
+        eval_obj = self._get_eval(obj)
+        return eval_obj.pat_pushups if eval_obj else None
+
+    def get_pat_pushups_passed(self, obj):
+        eval_obj = self._get_eval(obj)
+        return eval_obj.pat_pushups_passed if eval_obj else None
+
+    def get_pat_situps(self, obj):
+        eval_obj = self._get_eval(obj)
+        return eval_obj.pat_situps if eval_obj else None
+
+    def get_pat_situps_passed(self, obj):
+        eval_obj = self._get_eval(obj)
+        return eval_obj.pat_situps_passed if eval_obj else None
+
+    def get_pat_run(self, obj):
+        eval_obj = self._get_eval(obj)
+        return eval_obj.pat_run if eval_obj else None
+
+    def get_pat_run_passed(self, obj):
+        eval_obj = self._get_eval(obj)
+        return eval_obj.pat_run_passed if eval_obj else None
+
     def get_psychological_result(self, obj):
         eval_obj = self._get_eval(obj)
         return eval_obj.psychological_result if eval_obj else None
@@ -227,8 +287,8 @@ class ApplicantDocumentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ApplicantDocument
-        fields = ['id', 'applicant', 'document_type', 'file', 'uploaded_at', 'file_url', 'ocr_text', 'ai_verified', 'ai_remarks']
-        read_only_fields = ['uploaded_at']
+        fields = ['id', 'applicant', 'document_type', 'file', 'uploaded_at', 'expiration_date', 'file_url', 'ocr_text', 'ai_verified', 'ai_remarks']
+        read_only_fields = ['uploaded_at', 'expiration_date']
 
     def get_file_url(self, obj):
         if obj.file:

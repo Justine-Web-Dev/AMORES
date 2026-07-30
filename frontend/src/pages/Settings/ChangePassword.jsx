@@ -2,11 +2,21 @@ import React, { useState } from 'react';
 import { api } from '../../../api/api';
 import { FaShieldHalved } from 'react-icons/fa6';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
+import { FiArrowLeft } from 'react-icons/fi';
 
 function ChangePassword() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const isForced = searchParams.get('force') === 'true';
+
+  const getDashboardPath = () => {
+    const path = location.pathname.toLowerCase();
+    if (path.includes('personnel')) return '/PersonnelDashboard';
+    if (path.includes('interview')) return '/InterviewDashboard';
+    return '/Dashboard';
+  };
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -79,6 +89,13 @@ function ChangePassword() {
   return (
     <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
       <div className="flex items-center gap-3 mb-6">
+        <button 
+          onClick={() => navigate(getDashboardPath())} 
+          className="p-1.5 mr-1 hover:bg-slate-100 rounded-lg transition-colors text-slate-500"
+          title="Go Back"
+        >
+          <FiArrowLeft className="text-2xl" />
+        </button>
         <FaShieldHalved className="text-2xl text-[#2C2D86]" />
         <h2 className="text-2xl font-bold text-slate-800">Security Settings</h2>
       </div>

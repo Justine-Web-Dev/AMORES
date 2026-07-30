@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
-import { api } from '../../../api/api'
-import MessageModal from '../../Modals/MessageModal'
+import { api } from '../../../../api/api'
+import MessageModal from '../../../Modals/MessageModal'
 
 function SystemSettings() {
   const [isApplicationOpen, setIsApplicationOpen] = useState(true);

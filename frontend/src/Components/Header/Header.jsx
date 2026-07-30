@@ -1,6 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { useLocation, Link } from 'react-router-dom'
-import { RiSettings4Line } from 'react-icons/ri'
+import { 
+  RiSettings4Line,
+  RiDashboardLine, 
+  RiUserSharedLine, 
+  RiFileTextLine, 
+  RiUserUnfollowLine, 
+  RiDatabaseLine, 
+  RiDraftLine 
+} from 'react-icons/ri'
+import { HiOutlineDocumentReport } from 'react-icons/hi'
 import './Header.css'
 import logoAcc from '../../assets/RRSU1 logo.png'
 
@@ -61,7 +70,8 @@ function Header() {
   
   // Professional role mapping with direct Admin check
   const role = (rawRole === 'Administrator') ? 'Administrator' : 
-               (rawRole === 'Recruiter') ? 'Recruitment Staff' : 'Staff';
+               (rawRole === 'Recruiter') ? 'Recruitment Staff' : 
+               (rawRole === 'Interviewer') ? 'Interviewer' : 'Staff';
 
   // Dynamic Breadcrumb Logic
   const getPageTitle = () => {
@@ -87,6 +97,27 @@ function Header() {
     return 'Dashboard Overview';
   };
 
+  // Dynamic Header Icon Logic
+  const getHeaderIcon = () => {
+    const path = location.pathname.toLowerCase();
+    
+    if (path === '/dashboard' || path === '/personneldashboard' || path === '/dashboard/' || path === '/personneldashboard/') {
+      return <RiDashboardLine className="text-[#2C2D86] text-xl" />;
+    }
+    if (path.includes('user-management')) return <RiUserSharedLine className="text-[#2C2D86] text-xl" />;
+    if (path.includes('applications')) return <RiFileTextLine className="text-[#2C2D86] text-xl" />;
+    if (path.includes('declined')) return <RiUserUnfollowLine className="text-[#2C2D86] text-xl" />;
+    if (path.includes('audit-logs')) return <RiFileTextLine className="text-[#2C2D86] text-xl" />;
+    if (path.includes('backup-restore')) return <RiDatabaseLine className="text-[#2C2D86] text-xl" />;
+    if (path.includes('system-settings')) return <RiSettings4Line className="text-[#2C2D86] text-xl" />;
+    if (path.includes('application-form')) return <RiDraftLine className="text-[#2C2D86] text-xl" />;
+    if (path.includes('document-submission')) return <RiFileTextLine className="text-[#2C2D86] text-xl" />;
+    if (path.includes('view-details')) return <RiUserSharedLine className="text-[#2C2D86] text-xl" />;
+    if (path.includes('generate-report')) return <HiOutlineDocumentReport className="text-[#2C2D86] text-xl" />;
+    
+    return <RiDashboardLine className="text-[#2C2D86] text-xl" />;
+  };
+
   const getTimeGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good Morning';
@@ -99,8 +130,10 @@ function Header() {
   return (
     <header className='Header'>
       <div className='label-dashboard'>
-        <h4>{getPageTitle()}</h4>
-        <p>Home / {getPageTitle()}</p>
+        <div className="flex items-center gap-2">
+          {getHeaderIcon()}
+          <h4>{getPageTitle()}</h4>
+        </div>
       </div>
 
       <div className='greetings-account'>
@@ -136,7 +169,7 @@ function Header() {
               {showAccountOptions && (
                 <div className="bg-slate-50 py-1 border-y border-slate-100">
                   <Link 
-                    to={location.pathname.toLowerCase().includes('personnel') ? "/PersonnelDashboard/account-settings?tab=profile" : "/Dashboard/account-settings?tab=profile"}
+                    to={`${location.pathname.toLowerCase().includes('personnel') ? '/PersonnelDashboard' : location.pathname.toLowerCase().includes('interview') ? '/InterviewDashboard' : '/Dashboard'}/account-settings?tab=profile`}
                     className="flex items-center gap-3 pl-10 pr-4 py-2 text-sm text-slate-600 hover:text-indigo-600 transition-colors"
                     onClick={() => {
                       setShowDropdown(false);
@@ -146,7 +179,7 @@ function Header() {
                     Profile
                   </Link>
                   <Link 
-                    to={location.pathname.toLowerCase().includes('personnel') ? "/PersonnelDashboard/account-settings?tab=security" : "/Dashboard/account-settings?tab=security"}
+                    to={`${location.pathname.toLowerCase().includes('personnel') ? '/PersonnelDashboard' : location.pathname.toLowerCase().includes('interview') ? '/InterviewDashboard' : '/Dashboard'}/account-settings?tab=security`}
                     className="flex items-center gap-3 pl-10 pr-4 py-2 text-sm text-slate-600 hover:text-indigo-600 transition-colors"
                     onClick={() => {
                       setShowDropdown(false);

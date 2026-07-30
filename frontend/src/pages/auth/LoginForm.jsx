@@ -40,24 +40,21 @@ function LoginForm() {
       }, 3000)
 
       setTimeout(() => {
-        localStorage.setItem("token", data.token);
+        const isAdmin = data.role === "Administrator" || (data.email && data.email.toLowerCase().startsWith("admin@"));
+        const routeRole = isAdmin ? "Administrator" : (data.role || "Recruiter");
         
-        const isAdmin = data.role === "Administrator" || data.email === "Admin"; 
-        const userRole = data.role || (isAdmin ? "Administrator" : "Recruiter");
-        localStorage.setItem("role", userRole);
+        console.log("Login data:", data);
 
-        if (data.must_change_password) {
-          if (userRole === "Administrator") {
-            navigate("/Dashboard/account-settings?force=true");
-          } else {
-            navigate("/PersonnelDashboard/account-settings?force=true");
-          }
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("role", routeRole);
+        localStorage.setItem("must_change_password", data.must_change_password ? "true" : "false");
+        
+        if (isAdmin) {
+          navigate("/Dashboard")
+        } else if (routeRole === "Interviewer") {
+          navigate("/InterviewDashboard")
         } else {
-          if (userRole === "Administrator") {
-            navigate("/Dashboard")
-          } else {
-            navigate("/PersonnelDashboard")
-          }
+          navigate("/PersonnelDashboard")
         }
       }, 3000)
 
@@ -74,8 +71,14 @@ function LoginForm() {
   const role = localStorage.getItem('role');
   
   if (token && role) {
-    if (role === 'Administrator') return <Navigate to="/Dashboard" replace />;
-    if (role === 'Recruiter') return <Navigate to="/PersonnelDashboard" replace />;
+    switch(role){
+      case 'Administrator':
+        return <Navigate to="/Dashboard" replace />
+      case 'Interviewer':
+        return <Navigate to="/InterviewDashboard" replace />
+      case 'Recruiter':
+        return <Navigate to="/PersonnelDashboard" replace />
+    }
   }
 
   return (

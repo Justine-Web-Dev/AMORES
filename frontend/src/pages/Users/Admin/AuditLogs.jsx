@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { api } from '../../../api/api'
+import { api } from '../../../../api/api'
 import { FaSearch, FaFilter, FaHistory, FaUser, FaInfoCircle, FaCalendarAlt } from 'react-icons/fa'
 
 function AuditLogs() {

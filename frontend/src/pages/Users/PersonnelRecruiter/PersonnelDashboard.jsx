@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
-import SidebarRecruiter from "../../Components/Sidebar/SidebarRecruiter";
+import SidebarRecruiter from "../../../Components/Sidebar/SidebarRecruiter";
 import ApplicantEvaluation from "./ApplicantEvaluation";
 import PersonnelOverview from "./PersonnelOverview";
 import "./PersonnelDashboard.css";
-import DeclinedApplicants from "../DeclinedApplicants";
-import Header from "../../Components/Header/Header";
-import ViewDetails from "../ViewDetails";
-import Form from "../Form/Form";
-import DocumentSubmission from "../Form/DocumentSubmission";
-import SubmitApplicationModal from "../../Modals/SubmitApplicationModal";
-import ChangePassword from "../Settings/ChangePassword";
-import AccountSettings from "../Settings/AccountSettings";
+import DeclinedApplicants from "../../DeclinedApplicants";
+import Header from "../../../Components/Header/Header";
+import ViewDetails from "../../ViewDetails";
+import Form from "../../Form/Form";
+import DocumentSubmission from "../../Form/DocumentSubmission";
+import SubmitApplicationModal from "../../../Modals/SubmitApplicationModal";
+import AccountSettings from "../../Settings/AccountSettings";
 
 function PersonnelDashboard() {
   const [isCollapsed, setIsCollapsed] = useState(false);

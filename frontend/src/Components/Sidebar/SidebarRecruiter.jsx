@@ -70,19 +70,9 @@ function SidebarRecruiter({ isCollapsed, setIsCollapsed }) {
               </Link>
             </li>
 
-            <li>
-              <Link className={linkClass('/PersonnelDashboard/declined-applicants')} to="/PersonnelDashboard/declined-applicants">
-                <RiUserUnfollowLine size={18} className={isActive('/PersonnelDashboard/declined-applicants') ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'} />
-                {!isCollapsed && <span>Failed Applicants</span>}
-              </Link>
-            </li>
 
-            <li>
-              <Link className={linkClass('/PersonnelDashboard/application-form')} to="/PersonnelDashboard/application-form">
-                <RiDraftLine size={18} className={isActive('/PersonnelDashboard/application-form') ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'} />
-                {!isCollapsed && <span>Form Application</span>}
-              </Link>
-            </li>
+
+
           </ul>
         </nav>
         

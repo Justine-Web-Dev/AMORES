@@ -103,19 +103,7 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
               </Link>
             </li>
 
-            <li>
-              <Link className={linkClass('/Dashboard/declined-applicant')} to="/Dashboard/declined-applicant">
-                <RiUserUnfollowLine size={18} className={isActive('/Dashboard/declined-applicant') ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'} />
-                {!isCollapsed && <span>Failed Applicants</span>}
-              </Link>
-            </li>
 
-            <li>
-              <Link className={linkClass('/Dashboard/application-form')} to="/Dashboard/application-form">
-                <RiDraftLine size={18} className={isActive('/Dashboard/application-form') ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'} />
-                {!isCollapsed && <span>Form Application</span>}
-              </Link>
-            </li>
 
             <li>
               <Link className={linkClass('/Dashboard/generate-report')} to="/Dashboard/generate-report">

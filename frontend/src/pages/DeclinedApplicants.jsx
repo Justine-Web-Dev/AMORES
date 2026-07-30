@@ -15,7 +15,7 @@ function DeclinedApplicants() {
     'Under Review': 'bg-yellow-100 text-yellow-600',
     'Qualified': 'bg-indigo-100 text-indigo-700',
     'Accepted': 'bg-emerald-100 text-emerald-700',
-    'Rejected': 'bg-rose-100 text-rose-700',
+    'Failed': 'bg-rose-100 text-rose-700',
   }
 
   const fetchInfo = async (isSilent = false) => {
@@ -45,7 +45,7 @@ function DeclinedApplicants() {
 
   const filteredAndSorted = useMemo(() => {
     return applicantInfo
-      .filter((applicant) => applicant.status === 'Rejected')
+      .filter((applicant) => applicant.status === 'Failed')
       .filter((applicant) => {
         const fullName = `${applicant.firstname} ${applicant.lastname} ${applicant.middle_initial || ''}`.toLowerCase()
         return fullName.includes(searchTerm.toLowerCase())

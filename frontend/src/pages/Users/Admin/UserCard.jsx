@@ -1,5 +1,5 @@
 import React from 'react'
-import profile from '../../assets/RRSU1 logo.png'
+import profile from '../../../assets/RRSU1 logo.png'
 
 import { useState } from 'react'
 

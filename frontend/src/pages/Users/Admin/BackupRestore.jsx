@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { api } from '../../../api/api'
+import { api } from '../../../../api/api'
 import { FaDatabase, FaSyncAlt, FaCloudUploadAlt } from "react-icons/fa";
-import MessageModal from '../../Modals/MessageModal'
+import MessageModal from '../../../Modals/MessageModal'
 
 function BackupRestore() {
   const [loading, setLoading] = useState(false)

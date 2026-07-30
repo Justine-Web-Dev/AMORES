@@ -419,3 +419,18 @@ def send_mail_async(subject, message, recipient_list, from_email=None, fail_sile
     thread.daemon = True  # Allows main process to exit even if thread is running
     thread.start()
 
+
+def get_status_congratulations_message(status_val):
+    """Returns a congratulatory message based on the applicant's new status."""
+    status_messages = {
+        'Qualified': "Congratulations! You have passed the initial screening phase and are now qualified for the next steps.\n\n",
+        'Body Mass Index': "Congratulations! You have passed the Qualification phase and are now scheduled for the Body Mass Index (BMI) assessment.\n\n",
+        'Physical Agility Test': "Congratulations! You have passed the Body Mass Index (BMI) assessment and are now scheduled for the Physical Agility Test.\n\n",
+        'Neuro Examination': "Congratulations! You have passed the Physical Agility Test and are now scheduled for the Neuro Examination.\n\n",
+        'Medical': "Congratulations! You have passed the Neuro Examination and are now scheduled for the Medical Examination.\n\n",
+        'Drug Test': "Congratulations! You have passed the Medical Examination and are now scheduled for the Drug Test.\n\n",
+        'Final Interview': "Congratulations! You have passed the Drug Test and are now scheduled for the Final Interview.\n\n",
+        'Oath Taking': "Congratulations! You have passed the Final Interview and are now scheduled for Oath Taking.\n\n",
+        'Accepted': "Congratulations! You have successfully passed all assessments and your application is now Accepted.\n\n",
+    }
+    return status_messages.get(status_val, "")

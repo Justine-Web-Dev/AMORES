@@ -6,8 +6,8 @@ import { useNavigate } from 'react-router';
 
 import './ViewDetailsCss.css'
 
-import StatusManagement from './PersonnelRecruiter/StatusManagement'
-import InitialScreeningChecklist from './PersonnelRecruiter/InitialScreeningChecklist'
+
+import InitialScreeningChecklist from './Users/PersonnelRecruiter/InitialScreeningChecklist'
 import ApplicantInfoView from './ApplicantInfoView'
 
 import { api } from '../../api/api'
@@ -25,7 +25,7 @@ function ViewDetails() {
       "Technical Interview": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold  bg-cyan-100 text-cyan-600",
       "Qualified": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-indigo-100 text-indigo-700",
       "Accepted": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-emerald-100 text-emerald-700",
-      "Rejected": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-rose-100 text-rose-700",
+      "Failed": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-rose-100 text-rose-700",
       "Body Mass Index": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-blue-50 text-blue-500",
       "Physical Agility Test": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-orange-100 text-orange-600",
       "Neuro Examination": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-indigo-100 text-indigo-600",
@@ -105,13 +105,7 @@ function ViewDetails() {
         </div>
         <ApplicantInfoView data={applicant}/>
         <ViewDocumentSubmitted applicantId={id}/>
-        <StatusManagement 
-          applicantId={id}
-          applicantData={applicant}
-          currentStatus={applicant.status}
-          onUpdate={fetchApplicantDetails}
-          currentRejectionReason={applicant.rejection_reason}
-        />
+
       </div>
       <button
         onClick={handleBack}

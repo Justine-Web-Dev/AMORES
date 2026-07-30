@@ -5,6 +5,7 @@ from cloudinary_storage.storage import MediaCloudinaryStorage
 
 import string
 import random
+from datetime import timedelta
 
 # Create your models here.
 
@@ -26,6 +27,7 @@ class User(models.Model):
     ROLE_CHOICES = (
         ('Administrator', 'Administrator'),
         ('Recruiter', 'Recruiter'),
+        ('Interviewer', 'Interviewer'),
     )
 
     name = models.CharField(max_length=100, default="Unknown", verbose_name="Full Name")
@@ -100,7 +102,7 @@ class Application(models.Model):
         ('Technical Interview', 'Technical Interview'),
         ('Qualified', 'Qualified'),
         ('Accepted', 'Accepted'),
-        ('Rejected', 'Rejected'),
+        ('Failed', 'Failed'),
         ('Body Mass Index', 'Body Mass Index'),
         ('Physical Agility Test', 'Physical Agility Test'),
         ('Neuro Examination', 'Neuro Examination'),
@@ -144,9 +146,23 @@ class Evaluation(models.Model):
     
     # Examination Results
     pat_score = models.FloatField(null=True, blank=True, verbose_name="PAT Score")
+    pat_pushups = models.IntegerField(null=True, blank=True, verbose_name="Push UPS")
+    pat_pushups_passed = models.BooleanField(null=True, blank=True)
+    pat_situps = models.IntegerField(null=True, blank=True, verbose_name="Sit UPS")
+    pat_situps_passed = models.BooleanField(null=True, blank=True)
+    pat_run = models.CharField(max_length=10, null=True, blank=True, verbose_name="3km Run")
+    pat_run_passed = models.BooleanField(null=True, blank=True)
     psychological_result = models.TextField(null=True, blank=True, verbose_name="Psychological Result")
     medical_result = models.TextField(null=True, blank=True, verbose_name="Medical Result")
     drug_test_result = models.CharField(max_length=50, null=True, blank=True, verbose_name="Drug Test Result")
+    
+    # Final Interview Detailed Rubric
+    fi_voice_quality = models.FloatField(null=True, blank=True, verbose_name="Voice Quality Score")
+    fi_comprehension = models.FloatField(null=True, blank=True, verbose_name="Comprehension Score")
+    fi_gesture = models.FloatField(null=True, blank=True, verbose_name="Gesture Score")
+    fi_bearing = models.FloatField(null=True, blank=True, verbose_name="Bearing/Personality Score")
+    fi_general_knowledge = models.FloatField(null=True, blank=True, verbose_name="General Knowledge Score")
+    fi_eloquence = models.FloatField(null=True, blank=True, verbose_name="Eloquence/Adaptability Score")
     final_interview_score = models.FloatField(null=True, blank=True, verbose_name="Final Interview Score")
 
     def __str__(self):
@@ -185,6 +201,13 @@ class ApplicantDocument(models.Model):
     ai_verified = models.BooleanField(default=False, verbose_name="AI Verified")
     ai_remarks = models.CharField(max_length=255, blank=True, null=True, verbose_name="AI Remarks")
     uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Date Uploaded")
+    expiration_date = models.DateTimeField(null=True, blank=True, verbose_name="Expiration Date")
+
+    def save(self, *args, **kwargs):
+        if not self.expiration_date:
+            # Set expiration to exactly 180 days from now
+            self.expiration_date = timezone.now() + timedelta(days=180)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.get_document_type_display()} - {self.applicant.last_name}"

@@ -74,7 +74,7 @@ def evaluate_initial_application_status(application, payload_data, performer_use
     remarks = "Initial screening passed." if is_approved else "Initial screening failed: " + "; ".join(failures)
     
     previous_status = application.status
-    new_status = 'Document Review' if is_approved else 'Rejected'
+    new_status = 'Document Review' if is_approved else 'Failed'
 
     with transaction.atomic():
         application.status = new_status

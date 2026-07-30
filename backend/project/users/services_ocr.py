@@ -260,9 +260,8 @@ def process_document_ocr(document_id):
             print(f"OCR completed for doc {document.id}. Verified: {verified}")
             
             # Auto-update Application status by checking ALL of the applicant's documents
-            application = applicant.applications.exclude(status='Rejected').first()
-            if application:
-                application.status = 'New Applicant'
+            application = applicant.applications.exclude(status='Failed').first()
+            if application and application.status == 'New Applicant':
                 
                 # Fetch all documents for this applicant to see if any have failed AI verification
                 all_docs = ApplicantDocument.objects.filter(applicant=applicant)
