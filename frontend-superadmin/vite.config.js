@@ -19,6 +19,8 @@ export default defineConfig({
       'react-icons': path.resolve(__dirname, 'node_modules/react-icons'),
       'recharts': path.resolve(__dirname, 'node_modules/recharts'),
       'axios': path.resolve(__dirname, 'node_modules/axios'),
+      'react-easy-crop': path.resolve(__dirname, 'node_modules/react-easy-crop'),
+      'xlsx': path.resolve(__dirname, 'node_modules/xlsx'),
     }
   }
 })
