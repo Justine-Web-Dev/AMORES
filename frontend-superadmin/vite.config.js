@@ -16,6 +16,9 @@ export default defineConfig({
       'react': path.resolve(__dirname, 'node_modules/react'),
       'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
       'react-router-dom': path.resolve(__dirname, 'node_modules/react-router-dom'),
+      'react-icons': path.resolve(__dirname, 'node_modules/react-icons'),
+      'recharts': path.resolve(__dirname, 'node_modules/recharts'),
+      'axios': path.resolve(__dirname, 'node_modules/axios'),
     }
   }
 })
