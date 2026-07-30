@@ -15,6 +15,7 @@ import UserManagement from '../../../../frontend/src/pages/Users/Admin/UserManag
 import DeclinedApplicants from '../../../../frontend/src/pages/DeclinedApplicants';
 import GenerateReport from '../../../../frontend/src/pages/GenerateReport';
 import BackupRestore from '../../../../frontend/src/pages/Users/Admin/BackupRestore';
+import AccountSettings from '../../../../frontend/src/pages/Settings/AccountSettings';
 
 function Dashboard() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -40,6 +41,7 @@ function Dashboard() {
           <Route path="/user-management" element={<UserManagement />} />
           <Route path="/declined-applicant" element={<DeclinedApplicants />} />
           <Route path="/generate-report" element={<GenerateReport />} />
+          <Route path="/account-settings" element={<AccountSettings />} />
         </Routes>
       </div>
     </div>

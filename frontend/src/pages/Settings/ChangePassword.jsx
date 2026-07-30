@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../../../api/api';
-import { FaShieldHalved } from 'react-icons/fa6';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaShieldAlt, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { FiArrowLeft } from 'react-icons/fi';
 
@@ -100,7 +99,7 @@ function ChangePassword() {
         >
           <FiArrowLeft className="text-2xl" />
         </button>
-        <FaShieldHalved className="text-2xl text-[#2C2D86]" />
+        <FaShieldAlt className="text-2xl text-[#2C2D86]" />
         <h2 className="text-2xl font-bold text-slate-800">Security Settings</h2>
       </div>
         
