@@ -12,16 +12,16 @@ export default defineConfig({
     }
   },
   resolve: {
-    alias: {
-      'react': path.resolve(__dirname, 'node_modules/react'),
-      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
-      'react-router': path.resolve(__dirname, 'node_modules/react-router'),
-      'react-router-dom': path.resolve(__dirname, 'node_modules/react-router-dom'),
-      'react-icons': path.resolve(__dirname, 'node_modules/react-icons'),
-      'recharts': path.resolve(__dirname, 'node_modules/recharts'),
-      'axios': path.resolve(__dirname, 'node_modules/axios'),
-      'react-easy-crop': path.resolve(__dirname, 'node_modules/react-easy-crop'),
-      'xlsx': path.resolve(__dirname, 'node_modules/xlsx'),
-    }
+    alias: [
+      { find: 'react', replacement: path.resolve(__dirname, 'node_modules/react') },
+      { find: 'react-dom', replacement: path.resolve(__dirname, 'node_modules/react-dom') },
+      { find: 'react-router-dom', replacement: path.resolve(__dirname, 'node_modules/react-router-dom') },
+      { find: /^react-router$/, replacement: path.resolve(__dirname, 'node_modules/react-router') },
+      { find: 'react-icons', replacement: path.resolve(__dirname, 'node_modules/react-icons') },
+      { find: 'recharts', replacement: path.resolve(__dirname, 'node_modules/recharts') },
+      { find: 'axios', replacement: path.resolve(__dirname, 'node_modules/axios') },
+      { find: 'react-easy-crop', replacement: path.resolve(__dirname, 'node_modules/react-easy-crop') },
+      { find: 'xlsx', replacement: path.resolve(__dirname, 'node_modules/xlsx') },
+    ]
   }
 })
