@@ -15,6 +15,7 @@ export default defineConfig({
     alias: {
       'react': path.resolve(__dirname, 'node_modules/react'),
       'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+      'react-router': path.resolve(__dirname, 'node_modules/react-router'),
       'react-router-dom': path.resolve(__dirname, 'node_modules/react-router-dom'),
       'react-icons': path.resolve(__dirname, 'node_modules/react-icons'),
       'recharts': path.resolve(__dirname, 'node_modules/recharts'),
