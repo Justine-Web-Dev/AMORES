@@ -22,6 +22,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.contrib.auth.hashers import check_password, make_password
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from .permissions import IsSuperAdmin, IsAdministrator, IsRecruiter, IsInterviewer
+from rest_framework.decorators import permission_classes
 
 import jwt
 import datetime
@@ -121,13 +124,20 @@ def send_password_changed_email(name, email, new_password):
         print(f"[AMORES] Password changed email send failed for {email}: {e}", flush=True)
 
 @api_view(['GET'])
+@permission_classes([IsAdministrator])
 def get_user(request):
-  is_archived = request.query_params.get('archived', 'false') == 'true'
-  users = User.objects.filter(is_archived=is_archived)
+  archived_param = request.query_params.get('archived', 'false')
+  base_query = User.objects.only('id', 'name', 'email', 'role', 'is_archived')
+  if archived_param == 'all':
+      users = base_query.all()
+  else:
+      is_archived = archived_param == 'true'
+      users = base_query.filter(is_archived=is_archived)
   serializers = UsersSerializers(users, many=True)
   return Response(serializers.data)
 
 @api_view(['POST'])
+@permission_classes([IsAdministrator])
 def register_user(request):
     email = request.data.get('email')
     name = request.data.get('name')
@@ -193,6 +203,7 @@ def register_user(request):
     return Response(serializers.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def login_user(request):
   email = request.data.get('email')
   password = request.data.get('password')
@@ -201,9 +212,17 @@ def login_user(request):
       return Response({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
 
   try:
-    user = User.objects.get(email=email, is_archived=False)
+    user = User.objects.get(email=email)
   except User.DoesNotExist:
     return Response({'error': 'Email not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+  if user.is_archived:
+    return Response({'error': 'This email is inactive'}, status=status.HTTP_403_FORBIDDEN)
+  
+  if getattr(user, 'is_banned', False):
+      return Response({'error': 'This account has been permanently banned.'}, status=status.HTTP_403_FORBIDDEN)
+  if getattr(user, 'is_suspended', False):
+      return Response({'error': 'This account is currently suspended.'}, status=status.HTTP_403_FORBIDDEN)
   
   is_password_valid = False
   if user.password == password:
@@ -240,6 +259,7 @@ def login_user(request):
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def change_password(request):
     current_password = request.data.get('current_password')
     new_password = request.data.get('new_password')
@@ -277,6 +297,7 @@ def change_password(request):
     return Response({'message': 'Password has been changed successfully.'}, status=status.HTTP_200_OK)
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([IsAdministrator])
 def update_user(request, pk):
     try:
         user_obj = User.objects.get(pk=pk)
@@ -367,6 +388,7 @@ def get_applicant_form(request):
   return Response(serializer.data)
 
 @api_view(['GET'])
+@permission_classes([IsRecruiter])
 def get_single_applicant(request, pk):
     try:
         applicant = Applicant.objects.get(pk=pk)
@@ -599,6 +621,7 @@ def send_schedule_email(applicant_email, applicant_name, scheduled_date, schedul
         print(f"[AMORES] Schedule email send failed for {applicant_email}: {e}", flush=True)
 
 @api_view(['PUT'])
+@permission_classes([IsRecruiter])
 def update_applicant_status(request, pk):
     try:
         applicant = Applicant.objects.get(pk=pk)
@@ -816,6 +839,7 @@ def scan_document(request, doc_id):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
+@permission_classes([IsRecruiter])
 def get_active_applicants(request):
     # Applicants whose active_application is not 'Failed'
     applicants = get_applicant_queryset().exclude(applications__status='Failed').distinct()
@@ -823,6 +847,7 @@ def get_active_applicants(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
+@permission_classes([IsRecruiter])
 def get_all_applicants(request):
     # Fetch all applicants including declined/rejected ones
     applicants = get_applicant_queryset().order_by('-created_at')
@@ -830,6 +855,7 @@ def get_all_applicants(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
+@permission_classes([IsAdministrator])
 def get_system_settings(request):
     settings_obj, created = SystemSettings.objects.get_or_create(id=1)
     
@@ -844,6 +870,7 @@ def get_system_settings(request):
     return Response(serializer.data)
 
 @api_view(['PUT'])
+@permission_classes([IsAdministrator])
 def update_system_settings(request):
     settings_obj, created = SystemSettings.objects.get_or_create(id=1)
     
@@ -877,12 +904,67 @@ def update_system_settings(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
+@permission_classes([IsSuperAdmin])
 def get_audit_logs(request):
-    logs = AuditLog.objects.all().order_by('-timestamp')
+    logs = AuditLog.objects.all().order_by('-timestamp')[:500]
     serializer = AuditLogSerializer(logs, many=True)
     return Response(serializer.data)
 
 @api_view(['GET'])
+@permission_classes([IsSuperAdmin])
+def get_global_settings(request):
+    from .models import GlobalSetting
+    from .serializers import GlobalSettingSerializer
+    settings = GlobalSetting.objects.all()
+    serializer = GlobalSettingSerializer(settings, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST', 'PUT'])
+@permission_classes([IsSuperAdmin])
+def update_global_setting(request):
+    from .models import GlobalSetting
+    from .serializers import GlobalSettingSerializer
+    from .audit_logger import log_action
+    
+    key = request.data.get('key')
+    if not key:
+        return Response({"error": "Key is required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+    setting, created = GlobalSetting.objects.get_or_create(key=key, defaults={
+        'value': request.data.get('value', ''),
+        'description': request.data.get('description', '')
+    })
+    
+    if not created:
+        old_val = setting.value
+        setting.value = request.data.get('value', setting.value)
+        setting.description = request.data.get('description', setting.description)
+        if 'is_active' in request.data:
+            setting.is_active = request.data['is_active']
+        setting.save()
+        
+        log_action(
+            user=request.user,
+            action="UPDATE",
+            target_resource="GlobalSetting",
+            details=f"Updated global setting {key}",
+            changes={"old": old_val, "new": setting.value},
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
+    else:
+        log_action(
+            user=request.user,
+            action="CREATE",
+            target_resource="GlobalSetting",
+            details=f"Created global setting {key}",
+            changes={"new": setting.value},
+            ip_address=request.META.get('REMOTE_ADDR')
+        )
+        
+    return Response(GlobalSettingSerializer(setting).data)
+
+@api_view(['POST'])
+@permission_classes([IsSuperAdmin])
 def backup_database(request):
     db_settings = settings.DATABASES.get('default', {})
     engine = db_settings.get('ENGINE', '')
@@ -979,6 +1061,7 @@ def send_screening_notification(applicant_email, applicant_name, status, remarks
 
 
 @api_view(['POST'])
+@permission_classes([IsRecruiter])
 def screen_initial_application(request):
     applicant_id = request.data.get('application_id') # We'll keep the key the same to avoid frontend breaking but it represents applicant_id
     if not applicant_id:
@@ -1010,6 +1093,7 @@ def screen_initial_application(request):
     return Response(result, status=status.HTTP_200_OK)
 
 class SubmitApplicationView(APIView):
+    permission_classes = [AllowAny]
     parser_classes = [MultiPartParser, JSONParser, FormParser]
 
     def post(self, request, *args, **kwargs):
@@ -1105,3 +1189,106 @@ def reapply_update_view(request, tracking_code):
         })
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# --- System Operations & Monitoring ---
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsSuperAdmin])
+def get_system_health(request):
+    try:
+        from .health_metrics import get_system_health
+        health_data = get_system_health()
+        return Response(health_data, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+from .models import ApiKey, MasterLookup
+from .serializers import ApiKeySerializer, MasterLookupSerializer
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated, IsSuperAdmin])
+def api_keys_list(request):
+    if request.method == 'GET':
+        keys = ApiKey.objects.all()
+        serializer = ApiKeySerializer(keys, many=True)
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        # Provide a hash and store it securely
+        import secrets
+        import hashlib
+        raw_key = secrets.token_urlsafe(32)
+        key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
+        
+        serializer = ApiKeySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(key_hash=key_hash, created_by=request.user)
+            return Response({
+                "message": "API Key created successfully. Store this raw key immediately as it will not be shown again.",
+                "raw_key": raw_key,
+                "data": serializer.data
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated, IsSuperAdmin])
+def api_key_detail(request, pk):
+    try:
+        api_key = ApiKey.objects.get(pk=pk)
+    except ApiKey.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+        
+    if request.method == 'DELETE':
+        api_key.delete()
+        log_action(request.user, "API_KEY_DELETE", f"Deleted API key {api_key.name}", request, target_resource="APIKey")
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated, IsSuperAdmin])
+def master_lookup_list(request):
+    if request.method == 'GET':
+        lookups = MasterLookup.objects.all()
+        serializer = MasterLookupSerializer(lookups, many=True)
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        serializer = MasterLookupSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            log_action(request.user, "MASTER_LOOKUP_CREATE", f"Created lookup {serializer.validated_data.get('category')} - {serializer.validated_data.get('key')}", request, target_resource="MasterLookup")
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# --- Data Privacy & Governance ---
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated, IsSuperAdmin])
+def anonymize_applicant(request):
+    applicant_id = request.data.get('applicant_id')
+    try:
+        applicant = Applicant.objects.get(id=applicant_id)
+        # Scrub PII
+        old_name = f"{applicant.first_name} {applicant.last_name}"
+        applicant.first_name = "ANONYMIZED"
+        applicant.last_name = "ANONYMIZED"
+        applicant.middle_name = ""
+        applicant.email = f"anonymized_{applicant.id}@deleted.local"
+        applicant.contact_number = f"000000{applicant.id}"
+        applicant.pag_ibig_number = f"ANON-{applicant.id}"
+        applicant.phil_health_id_num = f"ANON-{applicant.id}"
+        applicant.save()
+        
+        log_action(request.user, "APPLICANT_ANONYMIZE", f"Anonymized applicant {old_name} (ID: {applicant_id})", request, target_resource="Applicant")
+        return Response({"message": "Applicant data has been scrubbed successfully."}, status=status.HTTP_200_OK)
+    except Applicant.DoesNotExist:
+        return Response({"error": "Applicant not found."}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated, IsSuperAdmin])
+def export_applicant_data(request, applicant_id):
+    try:
+        applicant = Applicant.objects.get(id=applicant_id)
+        serializer = ApplicantSerializer(applicant)
+        
+        log_action(request.user, "APPLICANT_EXPORT", f"Exported data for applicant (ID: {applicant_id})", request, target_resource="Applicant")
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Applicant.DoesNotExist:
+        return Response({"error": "Applicant not found."}, status=status.HTTP_404_NOT_FOUND)

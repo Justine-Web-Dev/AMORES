@@ -167,7 +167,7 @@ function AuditLogs() {
                 </tr>
               ) : filteredLogs.length > 0 ? (
                 filteredLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-gray-50/80 transition-colors">
+                  <tr key={log.id} className="hover:bg-gray-50/80 transition-colors border-b border-gray-100">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2 text-gray-700 text-sm">
                         <FaCalendarAlt className="text-gray-300" />
@@ -190,7 +190,10 @@ function AuditLogs() {
                     <td className="px-6 py-4">
                       <div className="flex items-start gap-2 max-w-md">
                         <FaInfoCircle className="text-gray-300 mt-1 flex-shrink-0" />
-                        <span className="text-gray-600 text-sm leading-relaxed">{log.details}</span>
+                        <div className="flex flex-col">
+                          <span className="text-gray-600 text-sm leading-relaxed">{log.details}</span>
+                          {log.ip_address && <span className="text-xs text-gray-400 mt-1">IP: {log.ip_address}</span>}
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -218,12 +221,14 @@ function AuditLogs() {
           <button 
             onClick={() => {
               const csvContent = [
-                ['Timestamp', 'User', 'Action', 'Details'],
+                ['Timestamp', 'User', 'Action', 'Details', 'IP Address'],
                 ...filteredLogs.map(log => [
                   formatTimestamp(log.timestamp),
                   log.user || 'System',
                   log.action,
-                  log.details
+                  log.target_resource || '',
+                  log.details,
+                  log.ip_address || ''
                 ])
               ].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
               

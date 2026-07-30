@@ -10,6 +10,7 @@ import {
   RiDraftLine 
 } from 'react-icons/ri'
 import { HiOutlineDocumentReport } from 'react-icons/hi'
+import { FiMoon, FiSun, FiShield } from 'react-icons/fi'
 import './Header.css'
 import logoAcc from '../../assets/RRSU1 logo.png'
 
@@ -17,6 +18,7 @@ function Header() {
   const location = useLocation();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showAccountOptions, setShowAccountOptions] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -69,7 +71,8 @@ function Header() {
   }, []);
   
   // Professional role mapping with direct Admin check
-  const role = (rawRole === 'Administrator') ? 'Administrator' : 
+  const role = (rawRole === 'SUPER_ADMIN') ? 'Super Admin' :
+               (rawRole === 'Administrator') ? 'Administrator' : 
                (rawRole === 'Recruiter') ? 'Recruitment Staff' : 
                (rawRole === 'Interviewer') ? 'Interviewer' : 'Staff';
 
@@ -136,7 +139,29 @@ function Header() {
         </div>
       </div>
 
-      <div className='greetings-account'>
+      <div className='greetings-account flex items-center gap-4'>
+        
+        {/* Environment & Security Indicators (Super Admin Only) */}
+        {role === 'Super Admin' && (
+          <div className="hidden lg:flex items-center gap-2 border-r pr-4 border-gray-100">
+            <span className="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded uppercase tracking-wider">
+              PROD
+            </span>
+            <div className="flex items-center gap-1 text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
+              <FiShield /> Sec: Active
+            </div>
+          </div>
+        )}
+
+        {/* Theme Toggle */}
+        <button 
+          onClick={() => setIsDarkMode(!isDarkMode)}
+          className="hidden sm:flex p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors border-r border-gray-100 pr-2 mr-2"
+          title="Toggle Theme"
+        >
+          {isDarkMode ? <FiSun size={18} /> : <FiMoon size={18} />}
+        </button>
+
         <div className="text-right hidden md:block border-r pr-5 border-gray-100">
           <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">{getTimeGreeting()}</p>
           <h4 className="text-sm font-bold text-gray-700">{currentDay}</h4>

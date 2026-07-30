@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Applicant, Application, Evaluation, ApplicantDocument, SystemSettings, AuditLog
+from .models import User, Applicant, Application, Evaluation, ApplicantDocument, SystemSettings, AuditLog, GlobalSetting, Role, Permission, RolePermission, ApiKey, MasterLookup
 from django.utils.dateparse import parse_datetime
 from django.contrib.auth.hashers import make_password, identify_hasher
 
@@ -22,25 +22,24 @@ class FlexibleDateField(serializers.DateField):
 class UsersSerializers(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'password', 'role', 'is_archived', 'profile_picture', 'must_change_password']
+        fields = [
+            'id', 'name', 'email', 'password', 'role', 
+            'is_archived', 'profile_picture', 'must_change_password'
+        ]
         extra_kwargs = {
             'password': {'write_only': True, 'required': False}
         }
 
     def create(self, validated_data):
+        # Hash password directly if provided
         if 'password' in validated_data:
-            try:
-                identify_hasher(validated_data['password'])
-            except ValueError:
-                validated_data['password'] = make_password(validated_data['password'])
+            validated_data['password'] = make_password(validated_data['password'])
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
+        # Hash password directly if provided during update
         if 'password' in validated_data:
-            try:
-                identify_hasher(validated_data['password'])
-            except ValueError:
-                validated_data['password'] = make_password(validated_data['password'])
+            validated_data['password'] = make_password(validated_data['password'])
         return super().update(instance, validated_data)
 
 class EvaluationSerializer(serializers.ModelSerializer):
@@ -328,7 +327,7 @@ class AuditLogSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = AuditLog
-        fields = ['id', 'user', 'action', 'details', 'timestamp']
+        fields = ['id', 'user', 'action', 'details', 'target_resource', 'changes', 'ip_address', 'timestamp']
     
     def get_user(self, obj):
         """Return the performer username, with fallback to performer_name or 'System'"""
@@ -337,3 +336,45 @@ class AuditLogSerializer(serializers.ModelSerializer):
         elif obj.performer_name:
             return obj.performer_name
         return 'System'
+
+class GlobalSettingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GlobalSetting
+        fields = '__all__'
+
+# --- Governance & RBAC Serializers ---
+
+class PermissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permission
+        fields = '__all__'
+
+class RoleSerializer(serializers.ModelSerializer):
+    permissions = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Role
+        fields = '__all__'
+        
+    def get_permissions(self, obj):
+        return [rp.permission.action for rp in obj.permissions.all()]
+
+class RolePermissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RolePermission
+        fields = '__all__'
+
+# --- System Operations Serializers ---
+
+class ApiKeySerializer(serializers.ModelSerializer):
+    created_by_name = serializers.CharField(source='created_by.name', read_only=True)
+    
+    class Meta:
+        model = ApiKey
+        fields = ['id', 'name', 'created_by_name', 'created_at', 'last_used_at', 'is_active']
+        # key_hash is deliberately excluded for security
+
+class MasterLookupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MasterLookup
+        fields = '__all__'

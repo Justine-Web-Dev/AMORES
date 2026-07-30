@@ -30,16 +30,20 @@ const ProtectedRoute = ({ children, allowedRole }) => {
 
   const { valid, timeRemaining } = checkTokenStatus();
 
+  const getLoginPath = () => {
+    return window.location.port === '5174' ? '/login' : '/LoginUsers';
+  };
+
   useEffect(() => {
     if (!valid) {
       localStorage.removeItem('token');
       localStorage.removeItem('role');
-      navigate('/LoginUsers', { replace: true });
+      navigate(getLoginPath(), { replace: true });
     } else if (timeRemaining !== null && timeRemaining > 0) {
       const timer = setTimeout(() => {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
-        navigate('/LoginUsers', { replace: true });
+        navigate(getLoginPath(), { replace: true });
       }, timeRemaining);
 
       return () => clearTimeout(timer);
@@ -49,14 +53,14 @@ const ProtectedRoute = ({ children, allowedRole }) => {
   // 1. Check if token exists and is valid
   if (!token || !valid) {
     // Not logged in or token expired - redirect to login
-    return <Navigate to="/LoginUsers" replace />;
+    return <Navigate to={getLoginPath()} replace />;
   }
 
   // 2. Check if role matches (if a specific role is required)
   if (allowedRole) {
     const roles = Array.isArray(allowedRole) ? allowedRole : [allowedRole];
     if (!roles.includes(userRole)) {
-      return <Navigate to="/LoginUsers" replace />;
+      return <Navigate to={getLoginPath()} replace />;
     }
   }
 

@@ -49,14 +49,9 @@ function PersonnelOverview() {
     useEffect(() => {
       const fetchDashboardData = async () => {
         try {
-          const [applicantsRes, usersRes] = await Promise.all([
-            api.get('users/get_applicant_info/'),
-            api.get('users/get_user/')
-          ])
-          
+          const applicantsRes = await api.get('users/get_applicant_info/')
           const applicantsData = applicantsRes.data
           setApplicants(applicantsData)
-          setUsers(usersRes.data)
           
           const uniqueYears = [
             ...new Set(

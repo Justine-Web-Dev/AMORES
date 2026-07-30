@@ -146,6 +146,12 @@ def _prepare_postgresql_restore_script(backup_path):
     os.close(fd)
 
     truncate_tables = [
+        'users_masterlookup',
+        'users_apikey',
+        'users_rolepermission',
+        'users_permission',
+        'users_role',
+        'users_globalsetting',
         'users_auditlog',
         'users_evaluation',
         'users_applicantdocument',
@@ -157,6 +163,8 @@ def _prepare_postgresql_restore_script(backup_path):
         'django_session',
         'django_migrations',
         'django_content_type',
+        'users_user_user_permissions',
+        'users_user_groups',
         'auth_user_user_permissions',
         'auth_user_groups',
         'auth_group_permissions',
@@ -173,6 +181,14 @@ def _prepare_postgresql_restore_script(backup_path):
         if stripped.startswith('ALTER DEFAULT PRIVILEGES'):
             continue
         if stripped.startswith('GRANT ') and 'ON SCHEMA public' in line:
+            continue
+        if stripped.startswith('REVOKE ') and 'ON SCHEMA public' in line:
+            continue
+        if stripped.startswith('ALTER ') and ' OWNER TO ' in line:
+            continue
+        if stripped.startswith('CREATE SCHEMA public'):
+            continue
+        if stripped.startswith('COMMENT ON SCHEMA public'):
             continue
         filtered_lines.append(line)
     filtered_sql = '\n'.join(filtered_lines)
@@ -230,7 +246,7 @@ def restore_database_backup(backup_path, backup_format, db_settings, model_class
             if result.returncode != 0:
                 error_msg = result.stderr if result.stderr else result.stdout
                 print(f"[RESTORE] psql failed with exit code {result.returncode}: {error_msg}")
-                raise subprocess.CalledProcessError(result.returncode, restore_command, output=error_msg)
+                raise Exception(f"psql failed with exit code {result.returncode}: {error_msg}")
             if result.stderr:
                 print(f"[RESTORE] psql stderr: {result.stderr}")
         finally:
@@ -337,31 +353,8 @@ def get_user_from_request(request):
     Checks 'Authorization', 'X-User-Token', and META fallback.
     Returns 'Unknown' if no user found.
     """
-    token = None
-    if hasattr(request, 'headers'):
-        token = request.headers.get('X-User-Token') or request.headers.get('Authorization')
-        if token and token.startswith('Bearer '):
-            token = token.split(' ')[1]
-    
-    if not token:
-        token = request.META.get('HTTP_X_USER_TOKEN')
-        if not token:
-            auth_header = request.META.get('HTTP_AUTHORIZATION')
-            if auth_header and auth_header.startswith('Bearer '):
-                token = auth_header.split(' ')[1]
-
-    if token:
-        try:
-            import jwt
-            from django.conf import settings
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-            email = payload.get('email', 'Unknown')
-            print(f"[AUDIT] Extracted user from token: {email}")  # Debug log
-            return email
-        except Exception as e:
-            print(f"[AUDIT] Error decoding token: {str(e)}")  # Debug log
-            return 'Unknown'
-    print("[AUDIT] No token found in request")  # Debug log
+    if hasattr(request, 'user') and request.user and request.user.is_authenticated:
+        return request.user.email
     return 'Unknown'
 
 def create_audit_log(performer, action, details, performer_name=None):

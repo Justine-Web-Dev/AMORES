@@ -353,6 +353,12 @@ function DashboardOverview() {
               <span className="summary-value">{statusCounts["New Applicant"] || 0}</span>
             </div>
           </div>
+          <div className="admin-summary-card under-review">
+            <div className="flex flex-col-reverse items-center">
+              <span className="summary-label">Screening</span>
+              <span className="summary-value">{statusCounts["Screening"] || 0}</span>
+            </div>
+          </div>
           <div className="admin-summary-card qualified">
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">Qualified</span>
@@ -528,6 +534,68 @@ function DashboardOverview() {
           </ResponsiveContainer>
         </div>
 
+        {/* CHANGED TO FULL WIDTH HORIZONTAL CHART LAYOUT */}
+        <div className="chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2 transition-all hover:shadow-md">
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 pb-4 gap-2">
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 tracking-tight">Geographic Breakdown: Top 5 Provinces</h3>
+              <p className="text-xs text-gray-500 mt-0.5">Distribution of applicants based on regional data entries.</p>
+            </div>
+            <span className="text-xs font-semibold px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full w-fit">
+              Filtered Submissions
+            </span>
+          </div>
+          
+          <div className="w-full min-h-[280px] bg-gray-50/40 p-4 rounded-xl border border-gray-100/50 flex items-center">
+            <ResponsiveContainer debounce={200} width="100%" height={280}>
+              <BarChart 
+                data={metrics.provinceData} 
+                layout="vertical"
+                margin={{ top: 10, right: 40, left: 10, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#eef0f3" />
+                <XAxis 
+                  type="number" 
+                  tick={{ fontSize: 11, fill: "#9CA3AF" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  width={120}
+                  tick={{ fontSize: 12, fill: "#4B5563", fontWeight: 600 }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip 
+                  cursor={{ fill: "rgba(44, 45, 134, 0.04)", radius: 4 }}
+                  contentStyle={{ 
+                    backgroundColor: "#FFFFFF", 
+                    border: "1px solid #E5E7EB", 
+                    borderRadius: "8px",
+                    fontSize: "12px",
+                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)"
+                  }}
+                />
+                <Bar 
+                  dataKey="count" 
+                  fill="#2C2D86" 
+                  radius={[0, 6, 6, 0]}
+                  barSize={24}
+                >
+                  <LabelList 
+                    dataKey="count" 
+                    position="right" 
+                    className="fill-[#2C2D86] font-bold text-xs"
+                    dx={10}
+                  />
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
         <div className="chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2">
           <h3 className="mb-2 text-[#2C2D86] font-semibold">Assessment Pipeline Progress</h3>
           <p className="text-sm text-gray-500 mb-6">Volume of applicants processed through key assessment stages.</p>
@@ -545,68 +613,6 @@ function DashboardOverview() {
               <Tooltip />
               <Area type="monotone" dataKey="completed" stroke="#2C2D86" strokeWidth={3} fillOpacity={1} fill="url(#colorComp)" name="Applicants" />
             </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* PROVINCES SECTION - FULL WIDTH CHART ONLY */}
-      <div className="mt-6 lg:mt-8 bg-white p-6 rounded-xl shadow-sm border border-gray-100 transition-all hover:shadow-md">
-        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 pb-4 gap-2">
-          <div>
-            <h3 className="text-lg font-bold text-gray-900 tracking-tight">Geographic Breakdown: Top 5 Provinces</h3>
-            <p className="text-xs text-gray-500 mt-0.5">Distribution of applicants based on regional data entries.</p>
-          </div>
-          <span className="text-xs font-semibold px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full w-fit">
-            Filtered Submissions
-          </span>
-        </div>
-
-        <div className="w-full min-h-[280px] bg-gray-50/40 p-4 rounded-xl border border-gray-100/50 flex items-center">
-          <ResponsiveContainer debounce={200} width="100%" height={280}>
-            <BarChart 
-              data={metrics.provinceData} 
-              layout="vertical"
-              margin={{ top: 10, right: 40, left: 10, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#eef0f3" />
-              <XAxis 
-                type="number" 
-                tick={{ fontSize: 11, fill: "#9CA3AF" }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                dataKey="name"
-                type="category"
-                width={120}
-                tick={{ fontSize: 12, fill: "#4B5563", fontWeight: 600 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip 
-                cursor={{ fill: "rgba(44, 45, 134, 0.04)", radius: 4 }}
-                contentStyle={{ 
-                  backgroundColor: "#FFFFFF", 
-                  border: "1px solid #E5E7EB", 
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                  boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)"
-                }}
-              />
-              <Bar 
-                dataKey="count" 
-                fill="#2C2D86" 
-                radius={[0, 6, 6, 0]}
-                barSize={24}
-              >
-                <LabelList 
-                  dataKey="count" 
-                  position="right" 
-                  className="fill-[#2C2D86] font-bold text-xs"
-                  dx={10}
-                />
-              </Bar>
-            </BarChart>
           </ResponsiveContainer>
         </div>
       </div>

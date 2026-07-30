@@ -1,3 +1,4 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password, identify_hasher
@@ -22,29 +23,59 @@ def generate_tracking_code():
         return code
     except:
       return code
+from django.contrib.auth.models import BaseUserManager
 
-class User(models.Model):
-    ROLE_CHOICES = (
-        ('Administrator', 'Administrator'),
-        ('Recruiter', 'Recruiter'),
-        ('Interviewer', 'Interviewer'),
-    )
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('The Email field must be set')
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
 
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('role', 'SUPER_ADMIN')
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self.create_user(email, password, **extra_fields)
+
+class User(AbstractUser):
+    objects = CustomUserManager()
+    class Roles(models.TextChoices):
+        SUPER_ADMIN = 'SUPER_ADMIN', 'Super Admin'
+        ADMINISTRATOR = 'Administrator', 'Administrator'
+        RECRUITER = 'Recruiter', 'Recruiter'
+        INTERVIEWER = 'Interviewer', 'Interviewer'
+    
     name = models.CharField(max_length=100, default="Unknown", verbose_name="Full Name")
-    email = models.EmailField(max_length=100,null=True, blank=True, unique=True, verbose_name="Email Address")
-    password = models.CharField(max_length=128, verbose_name="Password") 
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='Recruiter', verbose_name="Role")
+    email = models.EmailField(max_length=100, unique=True, verbose_name="Email Address")
+    role = models.CharField(
+        max_length=20, 
+        choices=Roles.choices, 
+        default=Roles.RECRUITER, 
+        verbose_name="Role"
+    )
     is_archived = models.BooleanField(default=False, verbose_name="Is Archived")
     must_change_password = models.BooleanField(default=False, verbose_name="Must Change Password")
     profile_picture = models.ImageField(upload_to='profiles/', null=True, blank=True, verbose_name="Profile Picture")
+    
+    # Governance & Status Controls
+    is_banned = models.BooleanField(default=False, verbose_name="Is Banned")
+    is_suspended = models.BooleanField(default=False, verbose_name="Is Suspended")
+    force_password_reset = models.BooleanField(default=False, verbose_name="Force Password Reset")
 
-    def save(self, *args, **kwargs):
-        if self.password:
-            try:
-                identify_hasher(self.password)
-            except ValueError:
-                self.password = make_password(self.password)
-        super().save(*args, **kwargs)
+    # Use email instead of username for authentication
+    username = None
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['name']
 
     def __str__(self):
         return f"{self.name} ({self.email})"
@@ -231,6 +262,9 @@ class AuditLog(models.Model):
     performer_name = models.CharField(max_length=100, null=True, blank=True, verbose_name="Performer Name (Fallback)")
     action = models.CharField(max_length=100, verbose_name="Action")
     details = models.TextField(verbose_name="Details")
+    target_resource = models.CharField(max_length=255, null=True, blank=True, verbose_name="Target Resource")
+    changes = models.JSONField(null=True, blank=True, verbose_name="Changes")
+    ip_address = models.GenericIPAddressField(null=True, blank=True, verbose_name="IP Address")
     timestamp = models.DateTimeField(auto_now_add=True, verbose_name="Timestamp")
 
     class Meta:
@@ -239,3 +273,76 @@ class AuditLog(models.Model):
     def __str__(self):
         performer = self.performer.name if self.performer else self.performer_name
         return f"{performer} - {self.action} at {self.timestamp}"
+
+class GlobalSetting(models.Model):
+    key = models.CharField(max_length=100, unique=True, verbose_name="Key")
+    value = models.JSONField(verbose_name="Value")
+    description = models.TextField(null=True, blank=True, verbose_name="Description")
+    is_active = models.BooleanField(default=True, verbose_name="Is Active")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
+
+    class Meta:
+        verbose_name = "Global Setting"
+        verbose_name_plural = "Global Settings"
+
+    def __str__(self):
+        return f"{self.key}: {self.value}"
+
+# --- Dynamic RBAC Models ---
+
+class Role(models.Model):
+    name = models.CharField(max_length=50, unique=True, verbose_name="Role Name")
+    description = models.TextField(blank=True, null=True, verbose_name="Description")
+    is_system_role = models.BooleanField(default=False, help_text="Cannot be deleted if true")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+class Permission(models.Model):
+    resource = models.CharField(max_length=100, verbose_name="Resource (e.g., applicant)")
+    action = models.CharField(max_length=50, verbose_name="Action (e.g., read, write, delete)")
+    description = models.TextField(blank=True, null=True)
+
+    class Meta:
+        unique_together = ('resource', 'action')
+
+    def __str__(self):
+        return f"{self.resource}:{self.action}"
+
+class RolePermission(models.Model):
+    role = models.ForeignKey(Role, on_delete=models.CASCADE, related_name='permissions')
+    permission = models.ForeignKey(Permission, on_delete=models.CASCADE)
+    
+    class Meta:
+        unique_together = ('role', 'permission')
+
+    def __str__(self):
+        return f"{self.role.name} -> {self.permission}"
+
+# --- System Operations Models ---
+
+class ApiKey(models.Model):
+    name = models.CharField(max_length=100, verbose_name="Integration Name")
+    key_hash = models.CharField(max_length=128, unique=True, verbose_name="Key Hash")
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_api_keys')
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return self.name
+
+class MasterLookup(models.Model):
+    category = models.CharField(max_length=50, verbose_name="Category (e.g., DEPARTMENT)")
+    key = models.CharField(max_length=100, verbose_name="Key")
+    value = models.CharField(max_length=255, verbose_name="Display Value")
+    sort_order = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+    
+    class Meta:
+        unique_together = ('category', 'key')
+        ordering = ['category', 'sort_order', 'value']
+
+    def __str__(self):
+        return f"{self.category} - {self.value}"

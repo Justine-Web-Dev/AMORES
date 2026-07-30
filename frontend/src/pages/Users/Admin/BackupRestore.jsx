@@ -35,7 +35,7 @@ function BackupRestore() {
   const handleBackup = async () => {
     setLoading(true)
     try {
-      const response = await api.get('users/backup/', { responseType: 'blob' });
+      const response = await api.post('users/backup/', {}, { responseType: 'blob' });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;

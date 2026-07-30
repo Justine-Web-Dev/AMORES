@@ -3,7 +3,7 @@ import logo from '../../assets/RRSU1 logo.png'
 import './HeaderLanding.css'
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-function HeaderLanding({ isApplicationOpen = true, appDates }) {
+function HeaderLanding() {
     const [menuOpen, setMenuOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
@@ -46,14 +46,6 @@ function HeaderLanding({ isApplicationOpen = true, appDates }) {
             <a href="#about-us" onClick={handleAboutClick} className="text-sm about-us">About Us</a>
             <Link to={'/track-application'} className="text-sm track-app">Track Application</Link>
           </nav>
-          
-          <div className="flex items-center gap-3">
-            <Link to={'/LoginUsers'} 
-              className="flex justify-center items-center border border-[#2C2D86] text-[#2C2D86] font-semibold h-[40px] px-5 text-sm rounded cursor-pointer login-staff-btn hover:bg-[#2C2D86] hover:text-white transition-all"
-            >
-              Personnel Login
-            </Link>
-          </div>
         </div>
 
         <button

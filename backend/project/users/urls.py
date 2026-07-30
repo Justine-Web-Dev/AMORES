@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import register_user,login_user, get_user,update_user, change_password, get_applicant_form,register_applicant_form, track_status,track_application_status, retrieve_application_data, upload_document,get_applicant_documents, scan_document, get_single_applicant,update_applicant_status,get_active_applicants, get_all_applicants, get_system_settings, update_system_settings, get_audit_logs, backup_database, restore_database, validate_applicant_form, SubmitApplicationView, reapply_update_view
+from .views import register_user,login_user, get_user,update_user, change_password, get_applicant_form,register_applicant_form, track_status,track_application_status, retrieve_application_data, upload_document,get_applicant_documents, scan_document, get_single_applicant,update_applicant_status,get_active_applicants, get_all_applicants, get_system_settings, update_system_settings, get_global_settings, update_global_setting, get_audit_logs, backup_database, restore_database, validate_applicant_form, SubmitApplicationView, reapply_update_view, get_system_health, api_keys_list, api_key_detail, master_lookup_list, anonymize_applicant, export_applicant_data
 
 urlpatterns = [
   #Login Users
@@ -38,8 +38,20 @@ urlpatterns = [
     path('system-settings/', get_system_settings, name='get_system_settings'),
     path('system-settings/update/', update_system_settings, name='update_system_settings'),
     
+  #Global Platform Settings (Super Admin)
+    path('global-settings/', get_global_settings, name='get_global_settings'),
+    path('global-settings/update/', update_global_setting, name='update_global_setting'),
+    
   #Audit Logs
     path('audit-logs/', get_audit_logs, name='get_audit_logs'),
+    
+  #System Operations & Governance (Super Admin)
+    path('system-health/', get_system_health, name='get_system_health'),
+    path('api-keys/', api_keys_list, name='api_keys_list'),
+    path('api-keys/<int:pk>/', api_key_detail, name='api_key_detail'),
+    path('master-lookup/', master_lookup_list, name='master_lookup_list'),
+    path('privacy/anonymize/', anonymize_applicant, name='anonymize_applicant'),
+    path('privacy/export/<int:applicant_id>/', export_applicant_data, name='export_applicant_data'),
     
   #Backup & Restore
     path('backup/', backup_database, name='backup_database'),

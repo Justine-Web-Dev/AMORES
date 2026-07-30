@@ -49,6 +49,11 @@ function LoginForm() {
         localStorage.setItem("role", routeRole);
         localStorage.setItem("must_change_password", data.must_change_password ? "true" : "false");
         
+        if (data.role === 'SUPER_ADMIN') {
+          navigate("/Dashboard");
+          return;
+        }
+
         if (isAdmin) {
           navigate("/Dashboard")
         } else if (routeRole === "Interviewer") {
@@ -63,7 +68,7 @@ function LoginForm() {
       setErrorMessage(msg)
       setShowErrorModal(true)
     } finally {
-      const setLoadingFalse = setLoading(false)
+      setLoading(false)
     }
   }
 
@@ -78,6 +83,8 @@ function LoginForm() {
         return <Navigate to="/InterviewDashboard" replace />
       case 'Recruiter':
         return <Navigate to="/PersonnelDashboard" replace />
+      case 'SUPER_ADMIN':
+        return <Navigate to="/Dashboard" replace />
     }
   }
 

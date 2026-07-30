@@ -7,6 +7,7 @@ import UserManagement from './UserManagement'
 import AuditLogs from './AuditLogs'
 import BackupRestore from './BackupRestore'
 import SystemSettings from './SystemSettings'
+import GlobalSettings from './GlobalSettings'
 import './AdminDashboard.css'
 import DeclinedApplicants from '../../DeclinedApplicants'
 import ApplicantEvaluation from '../PersonnelRecruiter/ApplicantEvaluation'
@@ -35,6 +36,7 @@ function AdminDashboard() {
           <Route path="audit-logs" element={<AuditLogs />} />
           <Route path="backup-restore" element={<BackupRestore />} />
           <Route path="system-settings" element={<SystemSettings />} />
+          <Route path="global-settings" element={<GlobalSettings />} />
           <Route path="application-form" element={<Form />} />
           <Route path="document-submission" element={<DocumentSubmission />} />
           <Route path="success-submit" element={<SubmitApplicationModal />} />

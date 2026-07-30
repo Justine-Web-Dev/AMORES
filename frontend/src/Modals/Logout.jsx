@@ -7,9 +7,15 @@ function Logout({ setShowLogout }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    const role = localStorage.getItem('role');
     localStorage.removeItem('token');
     localStorage.removeItem('role');
-    navigate('/LoginUsers');
+    
+    if (['SUPER_ADMIN', 'Administrator', 'Recruiter', 'Interviewer'].includes(role)) {
+      navigate('/login');
+    } else {
+      navigate('/LoginUsers');
+    }
   };
   
   return (

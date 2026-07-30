@@ -12,7 +12,7 @@ import {
   RiDraftLine, 
   RiHistoryLine,
   RiSettings4Line,
-  RiDatabase2Line
+  RiDatabase2Line,
 } from "react-icons/ri";
 import { HiOutlineDocumentReport } from "react-icons/hi";
 import { FiSliders, FiChevronDown, FiLogOut, FiChevronLeft, FiChevronRight } from "react-icons/fi";
@@ -24,6 +24,7 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
   const utilityPaths = [
     '/Dashboard/audit-logs',
     '/Dashboard/backup-restore',
+    '/Dashboard/system-health',
     '/Dashboard/system-settings'
   ];
 
@@ -89,94 +90,122 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
               </Link>
             </li>
 
-            <li>
-              <Link className={linkClass('/Dashboard/user-management')} to="/Dashboard/user-management">
-                <RiUserSharedLine size={18} className={isActive('/Dashboard/user-management') ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'} />
-                {!isCollapsed && <span>User Management</span>}
-              </Link>
-            </li>
+            {localStorage.getItem('role') === 'SUPER_ADMIN' && (
+              <>
+                <li>
+                  <Link className={linkClass('/Dashboard/accounts')} to="/Dashboard/accounts">
+                    <RiUserSharedLine size={18} className={isActive('/Dashboard/accounts') ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'} />
+                    {!isCollapsed && <span>User Management</span>}
+                  </Link>
+                </li>
+              </>
+            )}
 
-            <li>
-              <Link className={linkClass('/Dashboard/applications')} to="/Dashboard/applications">
-                <RiFileTextLine size={18} className={isActive('/Dashboard/applications') ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'} />
-                {!isCollapsed && <span>Applications</span>}
-              </Link>
-            </li>
+            {localStorage.getItem('role') !== 'SUPER_ADMIN' && (
+              <li>
+                <Link className={linkClass('/Dashboard/applications')} to="/Dashboard/applications">
+                  <RiFileTextLine size={18} className={isActive('/Dashboard/applications') ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'} />
+                  {!isCollapsed && <span>Applications</span>}
+                </Link>
+              </li>
+            )}
+
+            {['Administrator'].includes(localStorage.getItem('role')) && (
+              <li>
+                <Link className={linkClass('/Dashboard/user-management')} to="/Dashboard/user-management">
+                  <RiUserSharedLine size={18} className={isActive('/Dashboard/user-management') ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'} />
+                  {!isCollapsed && <span>User Management</span>}
+                </Link>
+              </li>
+            )}
+
+            {localStorage.getItem('role') !== 'SUPER_ADMIN' && (
+              <li>
+                <Link className={linkClass('/Dashboard/generate-report')} to="/Dashboard/generate-report">
+                  <HiOutlineDocumentReport size={18} className={isActive('/Dashboard/generate-report') ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'} />
+                  {!isCollapsed && <span>Generate Report</span>}
+                </Link>
+              </li>
+            )}
 
 
 
-            <li>
-              <Link className={linkClass('/Dashboard/generate-report')} to="/Dashboard/generate-report">
-                <HiOutlineDocumentReport size={18} className={isActive('/Dashboard/generate-report') ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'} />
-                {!isCollapsed && <span>Generate Report</span>}
-              </Link>
-            </li>
 
-            {/* System Utilities Section */}
-            <li className="pt-2">
-              <button 
-                type="button"
-                onClick={toggleSystemUtilities}
-                className={`w-full flex items-center justify-between py-2.5 rounded-xl text-sm font-medium transition-all duration-200
-                  ${utilityPaths.includes(location.pathname) 
-                    ? 'text-[#2C2D86] bg-indigo-50 font-semibold shadow-sm border border-indigo-100/50' 
-                    : 'text-slate-600 hover:bg-white/80'}
-                  ${isCollapsed ? 'justify-center mx-2 px-0' : 'px-4'}
-                `}
-                aria-expanded={isSystemUtilitiesOpen}
-              >
-                <div className={`flex items-center ${isCollapsed ? 'justify-center w-full' : 'gap-3'}`}>
-                  <FiSliders size={18} className={utilityPaths.includes(location.pathname) ? 'text-[#2C2D86]' : 'text-slate-400'} />
-                  {!isCollapsed && <span>System Utilities</span>}
+            {/* System Utilities Section - For Super Admin and Administrator */}
+            {['SUPER_ADMIN', 'Administrator'].includes(localStorage.getItem('role')) && (
+              <li className="pt-2">
+                <button 
+                  type="button"
+                  onClick={toggleSystemUtilities}
+                  className={`w-full flex items-center justify-between py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+                    ${utilityPaths.includes(location.pathname) 
+                      ? 'text-[#2C2D86] bg-indigo-50 font-semibold shadow-sm border border-indigo-100/50' 
+                      : 'text-slate-600 hover:bg-white/80'}
+                    ${isCollapsed ? 'justify-center mx-2 px-0' : 'px-4'}
+                  `}
+                  aria-expanded={isSystemUtilitiesOpen}
+                >
+                  <div className={`flex items-center ${isCollapsed ? 'justify-center w-full' : 'gap-3'}`}>
+                    <FiSliders size={18} className={utilityPaths.includes(location.pathname) ? 'text-[#2C2D86]' : 'text-slate-400'} />
+                    {!isCollapsed && <span>System Utilities</span>}
+                  </div>
+                  {!isCollapsed && <FiChevronDown 
+                    size={16} 
+                    className={`text-slate-400 transition-transform duration-200 ${isSystemUtilitiesOpen ? 'rotate-180 text-[#2C2D86]' : ''}`} 
+                  />}
+                </button>
+
+                {/* Collapsible Dropdown Submenu */}
+                <div className={`grid transition-all duration-200 ease-in-out ${isSystemUtilitiesOpen ? 'grid-rows-[1fr] opacity-100 mt-1' : 'grid-rows-[0fr] opacity-0 overflow-hidden'}`}>
+                  <ul className={`overflow-hidden space-y-1 ${isCollapsed ? 'pl-0 mx-2 flex flex-col items-center' : 'pl-5 border-l-2 border-slate-300/60 ml-6'}`}>
+                    {localStorage.getItem('role') === 'SUPER_ADMIN' && (
+                      <>
+                      </>
+                    )}
+                    <li>
+                      <Link 
+                        className={`flex items-center ${isCollapsed ? 'justify-center p-2' : 'gap-2.5 px-3 py-2'} rounded-lg text-xs font-medium transition-all ${
+                          isActive('/Dashboard/system-settings') ? 'text-[#2C2D86] font-semibold bg-white shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
+                        }`} 
+                        to="/Dashboard/system-settings"
+                        title="System Settings"
+                      >
+                        <RiSettings4Line size={14} />
+                        {!isCollapsed && 'System Settings'}
+                      </Link>
+                    </li>
+                    {localStorage.getItem('role') === 'SUPER_ADMIN' && (
+                      <>
+                        <li>
+                          <Link 
+                            className={`flex items-center ${isCollapsed ? 'justify-center p-2' : 'gap-2.5 px-3 py-2'} rounded-lg text-xs font-medium transition-all ${
+                              isActive('/Dashboard/audit-logs') ? 'text-[#2C2D86] font-semibold bg-white shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
+                            }`} 
+                            to="/Dashboard/audit-logs"
+                            title="Audit Logs"
+                          >
+                            <RiHistoryLine size={14} />
+                            {!isCollapsed && 'Audit Logs'}
+                          </Link>
+                        </li>
+                        <li>
+                          <Link 
+                            className={`flex items-center ${isCollapsed ? 'justify-center p-2' : 'gap-2.5 px-3 py-2'} rounded-lg text-xs font-medium transition-all ${
+                              isActive('/Dashboard/backup-restore') ? 'text-[#2C2D86] font-semibold bg-white shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
+                            }`} 
+                            to="/Dashboard/backup-restore"
+                            title="Backup & Restore"
+                          >
+                            <RiDatabase2Line size={14} />
+                            {!isCollapsed && 'Backup & Restore'}
+                          </Link>
+                        </li>
+                      </>
+                    )}
+                  </ul>
                 </div>
-                {!isCollapsed && <FiChevronDown 
-                  size={16} 
-                  className={`text-slate-400 transition-transform duration-200 ${isSystemUtilitiesOpen ? 'rotate-180 text-[#2C2D86]' : ''}`} 
-                />}
-              </button>
-
-              {/* Collapsible Dropdown Submenu */}
-              <div className={`grid transition-all duration-200 ease-in-out ${isSystemUtilitiesOpen ? 'grid-rows-[1fr] opacity-100 mt-1' : 'grid-rows-[0fr] opacity-0 overflow-hidden'}`}>
-                <ul className={`overflow-hidden space-y-1 ${isCollapsed ? 'pl-0 mx-2 flex flex-col items-center' : 'pl-5 border-l-2 border-slate-300/60 ml-6'}`}>
-                  <li>
-                    <Link 
-                      className={`flex items-center ${isCollapsed ? 'justify-center p-2' : 'gap-2.5 px-3 py-2'} rounded-lg text-xs font-medium transition-all ${
-                        isActive('/Dashboard/audit-logs') ? 'text-[#2C2D86] font-semibold bg-white shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
-                      }`} 
-                      to="/Dashboard/audit-logs"
-                      title="Audit Logs"
-                    >
-                      <RiHistoryLine size={14} />
-                      {!isCollapsed && 'Audit Logs'}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link 
-                      className={`flex items-center ${isCollapsed ? 'justify-center p-2' : 'gap-2.5 px-3 py-2'} rounded-lg text-xs font-medium transition-all ${
-                        isActive('/Dashboard/backup-restore') ? 'text-[#2C2D86] font-semibold bg-white shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
-                      }`} 
-                      to="/Dashboard/backup-restore"
-                      title="Backup & Restore"
-                    >
-                      <RiDatabase2Line size={14} />
-                      {!isCollapsed && 'Backup & Restore'}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link 
-                      className={`flex items-center ${isCollapsed ? 'justify-center p-2' : 'gap-2.5 px-3 py-2'} rounded-lg text-xs font-medium transition-all ${
-                        isActive('/Dashboard/system-settings') ? 'text-[#2C2D86] font-semibold bg-white shadow-sm border border-slate-100' : 'text-slate-500 hover:text-slate-900 hover:bg-white/50'
-                      }`} 
-                      to="/Dashboard/system-settings"
-                      title="System Settings"
-                    >
-                      <RiSettings4Line size={14} />
-                      {!isCollapsed && 'System Settings'}
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </li>
+              </li>
+            )}
           </ul>
         </nav>
         

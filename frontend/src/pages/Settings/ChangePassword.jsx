@@ -79,6 +79,10 @@ function ChangePassword() {
       setNewPassword('');
       setConfirmPassword('');
       
+      setTimeout(() => {
+        navigate(getDashboardPath());
+      }, 2000);
+      
     } catch (err) {
       setError(err.response?.data?.error || 'An error occurred. Please try again later.');
     } finally {
