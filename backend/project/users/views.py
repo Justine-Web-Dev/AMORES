@@ -855,7 +855,7 @@ def get_all_applicants(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
-@permission_classes([IsAdministrator])
+@permission_classes([AllowAny])
 def get_system_settings(request):
     settings_obj, created = SystemSettings.objects.get_or_create(id=1)
     
