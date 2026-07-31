@@ -1,5 +1,4 @@
 import React from 'react'
-import LoginForm from './pages/auth/LoginForm'
 import { Routes, Route } from 'react-router-dom'
 import AdminDashboard from './pages/Users/Admin/AdminDashboard'
 import PersonnelDashboard from './pages/Users/PersonnelRecruiter/PersonnelDashboard'
@@ -16,7 +15,6 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path='/LoginUsers' element={<LoginForm />} />
         {/* Secure Admin Dashboard */}
         <Route 
           path='/Dashboard/*' 

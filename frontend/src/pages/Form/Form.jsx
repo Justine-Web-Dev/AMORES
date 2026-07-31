@@ -47,7 +47,7 @@ function Form() {
         const email = String(parsed.email || "").trim();
         const tc = String(parsed.tracking_code || "").trim();
         
-        if ((fName.length > 0 || lName.length > 0 || email.length > 0 || tc.length > 0) && isReload) {
+        if (fName.length > 0 || lName.length > 0 || email.length > 0 || tc.length > 0) {
           shouldOpen = false;
         }
       }
@@ -161,6 +161,7 @@ function Form() {
         tracking_code: formData.tracking_code,
       });
 
+      window.scrollTo(0, 0);
       navigate("../document-submission", {
         state: { formData },
         relative: "path",
