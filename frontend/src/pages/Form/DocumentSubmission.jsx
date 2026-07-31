@@ -2,7 +2,40 @@ import React, { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { HiArrowNarrowLeft, HiOutlineCloudUpload, HiX } from "react-icons/hi";
 import { api } from '../../../api/api'
-import { get, set, del } from 'idb-keyval';
+
+// Native IndexedDB helper to avoid external dependencies in monorepo
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("DocumentStore", 1);
+    request.onupgradeneeded = (e) => e.target.result.createObjectStore("files");
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+async function getDocs() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const req = db.transaction("files", "readonly").objectStore("files").get("docs");
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+async function setDocs(val) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const req = db.transaction("files", "readwrite").objectStore("files").put(val, "docs");
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+async function delDocs() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const req = db.transaction("files", "readwrite").objectStore("files").delete("docs");
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
 
 let cachedDocuments = null;
 
@@ -36,7 +69,7 @@ function DocumentSubmission() {
   useEffect(() => {
     // Load from IndexedDB on initial mount if memory cache is empty
     if (!cachedDocuments) {
-      get('uploadedDocuments').then(val => {
+      getDocs().then(val => {
         if (val) {
           setDocuments(val);
           cachedDocuments = val;
@@ -51,7 +84,7 @@ function DocumentSubmission() {
     // Save to IndexedDB (asynchronously so it doesn't block rendering)
     const hasFiles = Object.values(documents).some(file => file !== null);
     if (hasFiles) {
-      set('uploadedDocuments', documents).catch(console.error);
+      setDocs(documents).catch(console.error);
     }
   }, [documents]);
 
@@ -141,7 +174,7 @@ function DocumentSubmission() {
 
       localStorage.removeItem('applicationFormData')
       cachedDocuments = null; // Clear cached files on success
-      del('uploadedDocuments').catch(console.error); // Clear IndexedDB cache
+      delDocs().catch(console.error); // Clear IndexedDB cache
       navigate('../success-submit', { state: { trackingCode: code }, relative: 'path' })
     } catch (err) {
       console.error("Submission error data:", err?.response?.data);
