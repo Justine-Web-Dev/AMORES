@@ -889,8 +889,12 @@ def update_system_settings(request):
             is_new_date_range = True
 
     if (was_closed and is_opening_manually) or is_new_date_range:
-        # Increment batch number
-        settings_obj.current_batch += 1
+        # Increment batch number or loop back to 1
+        if settings_obj.current_batch < 2:
+            settings_obj.current_batch += 1
+        else:
+            settings_obj.current_batch = 1
+        
         settings_obj.save()
         create_audit_log(None, 'BATCH_INCREMENT', f"New recruitment batch started: Batch {settings_obj.current_batch}", performer_name='System')
 

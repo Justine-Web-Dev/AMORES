@@ -131,8 +131,26 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
 
 
 
-            {/* System Utilities Section - For Super Admin and Administrator */}
-            {['SUPER_ADMIN', 'Administrator'].includes(localStorage.getItem('role')) && (
+            {/* System Settings - For Administrator (Non-collapsible) */}
+            {localStorage.getItem('role') === 'Administrator' && (
+              <li className="pt-2">
+                <Link 
+                  className={`flex items-center justify-between py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                    isActive('/Dashboard/system-settings') ? 'text-[#2C2D86] bg-indigo-50 font-semibold shadow-sm border border-indigo-100/50' : 'text-slate-600 hover:bg-white/80'
+                  } ${isCollapsed ? 'justify-center mx-2 px-0' : 'px-4'}`}
+                  to="/Dashboard/system-settings"
+                  title="System Settings"
+                >
+                  <div className={`flex items-center ${isCollapsed ? 'justify-center w-full' : 'gap-3'}`}>
+                    <RiSettings4Line size={18} className={isActive('/Dashboard/system-settings') ? 'text-[#2C2D86]' : 'text-slate-400'} />
+                    {!isCollapsed && <span>System Settings</span>}
+                  </div>
+                </Link>
+              </li>
+            )}
+
+            {/* System Utilities Section - For Super Admin */}
+            {localStorage.getItem('role') === 'SUPER_ADMIN' && (
               <li className="pt-2">
                 <button 
                   type="button"
@@ -158,10 +176,6 @@ function Sidebar({ isCollapsed, setIsCollapsed }) {
                 {/* Collapsible Dropdown Submenu */}
                 <div className={`grid transition-all duration-200 ease-in-out ${isSystemUtilitiesOpen ? 'grid-rows-[1fr] opacity-100 mt-1' : 'grid-rows-[0fr] opacity-0 overflow-hidden'}`}>
                   <ul className={`overflow-hidden space-y-1 ${isCollapsed ? 'pl-0 mx-2 flex flex-col items-center' : 'pl-5 border-l-2 border-slate-300/60 ml-6'}`}>
-                    {localStorage.getItem('role') === 'SUPER_ADMIN' && (
-                      <>
-                      </>
-                    )}
                     <li>
                       <Link 
                         className={`flex items-center ${isCollapsed ? 'justify-center p-2' : 'gap-2.5 px-3 py-2'} rounded-lg text-xs font-medium transition-all ${
