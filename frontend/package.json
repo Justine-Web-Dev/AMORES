@@ -13,6 +13,7 @@
     "@tailwindcss/vite": "^4.3.0",
     "axios": "^1.13.6",
     "dotenv": "^17.4.2",
+    "idb-keyval": "^6.3.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-easy-crop": "^6.2.2",

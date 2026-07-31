@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { HiArrowNarrowLeft, HiOutlineCloudUpload, HiX } from "react-icons/hi";
 import { api } from '../../../api/api'
+import { get, set, del } from 'idb-keyval';
+
+let cachedDocuments = null;
 
 function DocumentSubmission() {
   const location = useLocation()
@@ -12,7 +15,7 @@ function DocumentSubmission() {
   )
 
   // Every single required document now has its own individual state
-  const [documents, setDocuments] = useState({
+  const [documents, setDocuments] = useState(cachedDocuments || {
     // PSA
     birthCert: null,
     // Scholastic
@@ -29,6 +32,28 @@ function DocumentSubmission() {
     pd907: null,
     csProf: null
   })
+
+  useEffect(() => {
+    // Load from IndexedDB on initial mount if memory cache is empty
+    if (!cachedDocuments) {
+      get('uploadedDocuments').then(val => {
+        if (val) {
+          setDocuments(val);
+          cachedDocuments = val;
+        }
+      }).catch(console.error);
+    }
+  }, []);
+
+  useEffect(() => {
+    cachedDocuments = documents;
+    
+    // Save to IndexedDB (asynchronously so it doesn't block rendering)
+    const hasFiles = Object.values(documents).some(file => file !== null);
+    if (hasFiles) {
+      set('uploadedDocuments', documents).catch(console.error);
+    }
+  }, [documents]);
 
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -115,6 +140,8 @@ function DocumentSubmission() {
       }
 
       localStorage.removeItem('applicationFormData')
+      cachedDocuments = null; // Clear cached files on success
+      del('uploadedDocuments').catch(console.error); // Clear IndexedDB cache
       navigate('../success-submit', { state: { trackingCode: code }, relative: 'path' })
     } catch (err) {
       console.error("Submission error data:", err?.response?.data);
