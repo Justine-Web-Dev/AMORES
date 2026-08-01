@@ -169,7 +169,7 @@ def register_user(request):
                 break
 
     registration_data = request.data.copy()
-    registration_data['password'] = make_password(raw_password)
+    registration_data['password'] = raw_password
     # Always require password change for newly registered users by admin
     registration_data['must_change_password'] = True
 
@@ -246,6 +246,15 @@ def login_user(request):
   
   token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
   create_audit_log(user, 'LOGIN', f"User '{user.email}' logged in successfully.")
+
+  # Automatically deactivate other Administrators when one successfully logs in
+  if user.role == User.Roles.ADMINISTRATOR:
+      other_admins = User.objects.filter(role=User.Roles.ADMINISTRATOR, is_archived=False).exclude(id=user.id)
+      if other_admins.exists():
+          for old_admin in other_admins:
+              old_admin.is_archived = True
+              old_admin.save()
+          create_audit_log(user, 'SYSTEM', f"Administrator '{user.email}' logged in. Older Administrators were deactivated automatically.")
 
   return Response({
     "token": token,
