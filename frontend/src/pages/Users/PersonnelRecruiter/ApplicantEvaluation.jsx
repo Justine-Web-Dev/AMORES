@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { api } from "../../../../api/api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import * as XLSX from "xlsx";
 import { RiFileExcel2Line } from "react-icons/ri";
 import {
@@ -21,10 +21,11 @@ import StatusManagement from "./StatusManagement";
 
 function ApplicantEvaluation({ isInterviewer = false }) {
   const [searchTerm, setSearchTerm] = useState("");
+  const location = useLocation();
   const [statusFilter, setStatusFilter] = useState(
-    isInterviewer ? "Final Interview" : "All",
+    location.state?.tab ? location.state.tab : (isInterviewer ? "Final Interview" : "All"),
   );
-  const [sortBy, setSortBy] = useState("date");
+  const [sortBy, setSortBy] = useState("default");
   const [evaluatingApplicant, setEvaluatingApplicant] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -309,7 +310,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
   const fetchInfo = async (isSilent = false) => {
     !isSilent && setLoading(true);
     try {
-      const response = await api.get("users/applicants/all");
+      const response = await api.get("users/applicants/all/");
       setApplicantInfo(response.data);
       console.log(response.data);
     } catch (err) {
@@ -354,6 +355,10 @@ function ApplicantEvaluation({ isInterviewer = false }) {
           const nameA = `${a.firstname} ${a.lastname}`.toLowerCase();
           const nameB = `${b.firstname} ${b.lastname}`.toLowerCase();
           return nameA.localeCompare(nameB);
+        } else if (sortBy === "default") {
+          const dateA = new Date(a.created_at);
+          const dateB = new Date(b.created_at);
+          return dateB - dateA;
         } else if (sortBy === "date") {
           const dateA = new Date(a.created_at);
           const dateB = new Date(b.created_at);
@@ -555,6 +560,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
             onChange={(e) => setSortBy(e.target.value)}
             className="sort-select"
           >
+            <option value="default">Sort By</option>
             <option value="date">Sort by Date</option>
             <option value="name">Sort by Name</option>
             <option value="batch1">Sort by Batch 1</option>

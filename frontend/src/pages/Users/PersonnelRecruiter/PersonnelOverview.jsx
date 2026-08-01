@@ -1,12 +1,13 @@
 import React, { useEffect, useState, useMemo } from 'react'
 import { api } from '../../../../api/api'
+import { useNavigate } from 'react-router-dom'
 import { 
   PieChart, Pie, BarChart, Bar, XAxis, YAxis, CartesianGrid, 
   Tooltip, ResponsiveContainer, Cell, AreaChart, Area, LabelList
 } from 'recharts'
 
 function PersonnelOverview() {
-    const [users, setUsers] = useState([])
+    const navigate = useNavigate();
     const [applicants, setApplicants] = useState([])
     const [loading, setLoading] = useState(true)
     
@@ -49,7 +50,7 @@ function PersonnelOverview() {
     useEffect(() => {
       const fetchDashboardData = async () => {
         try {
-          const applicantsRes = await api.get('users/get_applicant_info/')
+          const applicantsRes = await api.get('users/dashboard-applicants/')
           const applicantsData = applicantsRes.data
           setApplicants(applicantsData)
           
@@ -283,81 +284,146 @@ function PersonnelOverview() {
         <div className='System-overview-container'>
           <h3 className="text-lg font-semibold mb-4 text-[#2C2D86]">System Summary</h3>
           <div className='stat-card-container top-summary-cards'>
-            <div className='admin-summary-card total-applicants'>
+            <div 
+              className='admin-summary-card total-applicants'
+              onClick={() => navigate('/PersonnelDashboard/applications', { state: { tab: 'All' } })}
+              style={{ cursor: 'pointer' }}
+              title="View Applications"
+            >
               <div className='flex flex-col-reverse items-center'>
                 <span className='summary-label'>Total Applicants</span>
                 <span className='summary-value'>{filteredApplicantCount}</span>
               </div>
             </div>
-            <div className='admin-summary-card new-applicants'>
+            <div 
+              className='admin-summary-card new-applicants'
+              onClick={() => navigate('/PersonnelDashboard/applications', { state: { tab: 'New Applicant' } })}
+              style={{ cursor: 'pointer' }}
+              title="View New Applicants"
+            >
               <div className='flex flex-col-reverse items-center'>
                 <span className='summary-label'>New Applicants</span>
-                <span className='summary-value'>{statusCounts['New Applicant']}</span>
+                <span className='summary-value'>{statusCounts['New Applicant'] || 0}</span>
               </div>
             </div>
 
-            <div className='admin-summary-card under-review'>
+            <div 
+              className='admin-summary-card under-review'
+              onClick={() => navigate('/PersonnelDashboard/applications', { state: { tab: 'All' } })}
+              style={{ cursor: 'pointer' }}
+              title="View Screening"
+            >
               <div className='flex flex-col-reverse items-center'>
                 <span className='summary-label'>Screening</span>
-                <span className='summary-value'>{statusCounts['Screening']}</span>
+                <span className='summary-value'>{statusCounts['Screening'] || 0}</span>
               </div>
             </div>
-            <div className='admin-summary-card qualified'>
+            <div 
+              className='admin-summary-card qualified'
+              onClick={() => navigate('/PersonnelDashboard/applications', { state: { tab: 'Qualified' } })}
+              style={{ cursor: 'pointer' }}
+              title="View Qualified Applicants"
+            >
               <div className='flex flex-col-reverse items-center'>
                 <span className='summary-label'>Qualified</span>
-                <span className='summary-value'>{statusCounts['Qualified']}</span>
+                <span className='summary-value'>{statusCounts['Qualified'] || 0}</span>
               </div>
             </div>
-            <div className='admin-summary-card accepted'>
+            <div 
+              className='admin-summary-card accepted'
+              onClick={() => navigate('/PersonnelDashboard/applications', { state: { tab: 'Accepted' } })}
+              style={{ cursor: 'pointer' }}
+              title="View Successful Applicants"
+            >
               <div className='flex flex-col-reverse items-center'>
                 <span className='summary-label'>Successful Applicants</span>
-                <span className='summary-value'>{statusCounts['Accepted']}</span>
+                <span className='summary-value'>{statusCounts['Accepted'] || 0}</span>
               </div>
             </div>
-            <div className='admin-summary-card rejected'>
+            <div 
+              className='admin-summary-card rejected'
+              onClick={() => navigate('/PersonnelDashboard/applications', { state: { tab: 'Failed' } })}
+              style={{ cursor: 'pointer' }}
+              title="View Disqualified Applicants"
+            >
               <div className='flex flex-col-reverse items-center'>
                 <span className='summary-label'>Disqualified</span>
-                <span className='summary-value'>{statusCounts['Failed']}</span>
+                <span className='summary-value'>{statusCounts['Failed'] || 0}</span>
               </div>
             </div>
 
-            <div className='admin-summary-card bmi'>
+            <div 
+              className='admin-summary-card bmi'
+              onClick={() => navigate('/PersonnelDashboard/applications', { state: { tab: 'Body Mass Index' } })}
+              style={{ cursor: 'pointer' }}
+              title="View BMI Applicants"
+            >
               <div className='flex flex-col-reverse items-center'>
                 <span className='summary-label'>BMI</span>
                 <span className='summary-value'>{statusCounts['BMI'] || 0}</span>
               </div>
             </div>
-            <div className='admin-summary-card pat'>
+            <div 
+              className='admin-summary-card pat'
+              onClick={() => navigate('/PersonnelDashboard/applications', { state: { tab: 'Physical Agility Test' } })}
+              style={{ cursor: 'pointer' }}
+              title="View PAT Applicants"
+            >
               <div className='flex flex-col-reverse items-center'>
                 <span className='summary-label'>PAT</span>
                 <span className='summary-value'>{statusCounts['PAT'] || 0}</span>
               </div>
             </div>
-            <div className='admin-summary-card psych'>
+            <div 
+              className='admin-summary-card psych'
+              onClick={() => navigate('/PersonnelDashboard/applications', { state: { tab: 'Neuro Examination' } })}
+              style={{ cursor: 'pointer' }}
+              title="View Neuro Examination Applicants"
+            >
               <div className='flex flex-col-reverse items-center'>
                 <span className='summary-label'>Neuro</span>
                 <span className='summary-value'>{statusCounts['Neuro'] || 0}</span>
               </div>
             </div>
-            <div className='admin-summary-card medical'>
+            <div 
+              className='admin-summary-card medical'
+              onClick={() => navigate('/PersonnelDashboard/applications', { state: { tab: 'Medical' } })}
+              style={{ cursor: 'pointer' }}
+              title="View Medical Applicants"
+            >
               <div className='flex flex-col-reverse items-center'>
                 <span className='summary-label'>Medical</span>
                 <span className='summary-value'>{statusCounts['Medical'] || 0}</span>
               </div>
             </div>
-            <div className='admin-summary-card drug-test'>
+            <div 
+              className='admin-summary-card drug-test'
+              onClick={() => navigate('/PersonnelDashboard/applications', { state: { tab: 'Drug Test' } })}
+              style={{ cursor: 'pointer' }}
+              title="View Drug Test Applicants"
+            >
               <div className='flex flex-col-reverse items-center'>
                 <span className='summary-label'>Drug Test</span>
                 <span className='summary-value'>{statusCounts['Drug Test'] || 0}</span>
               </div>
             </div>
-            <div className='admin-summary-card final-interview'>
+            <div 
+              className='admin-summary-card final-interview'
+              onClick={() => navigate('/PersonnelDashboard/applications', { state: { tab: 'Final Interview' } })}
+              style={{ cursor: 'pointer' }}
+              title="View Final Interview Applicants"
+            >
               <div className='flex flex-col-reverse items-center'>
                 <span className='summary-label'>Final Interview</span>
                 <span className='summary-value'>{statusCounts['Final Interview'] || 0}</span>
               </div>
             </div>
-            <div className='admin-summary-card oath-taking'>
+            <div 
+              className='admin-summary-card oath-taking'
+              onClick={() => navigate('/PersonnelDashboard/applications', { state: { tab: 'Oath Taking' } })}
+              style={{ cursor: 'pointer' }}
+              title="View Oath Taking Applicants"
+            >
               <div className='flex flex-col-reverse items-center'>
                 <span className='summary-label'>Oath Taking</span>
                 <span className='summary-value'>{statusCounts['Oath Taking'] || 0}</span>

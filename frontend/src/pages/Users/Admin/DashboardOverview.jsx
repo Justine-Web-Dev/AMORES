@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { api } from "../../../../api/api";
+import { useNavigate } from "react-router-dom";
 import {
   PieChart,
   Pie,
@@ -15,11 +16,17 @@ import {
   Area,
   LabelList
 } from "recharts";
+import { FiActivity, FiAlertCircle, FiClock, FiCheckCircle, FiFileText, FiUsers } from "react-icons/fi";
 
 function DashboardOverview() {
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [applicants, setApplicants] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [auditLogsLoading, setAuditLogsLoading] = useState(true);
+  const [alerts, setAlerts] = useState([]);
+  const [funnelData, setFunnelData] = useState([]);
 
   // Analytics States
   const [statusData, setStatusData] = useState([]);
@@ -58,13 +65,12 @@ function DashboardOverview() {
   }, [applicants, selectedYear]);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const fetchData = async () => {
       try {
-        const [applicantsRes, usersRes] = await Promise.all([
-          api.get("users/get_applicant_info/"),
+        const [usersRes, applicantsRes] = await Promise.all([
           api.get("users/get_user/"),
+          api.get("users/dashboard-applicants/")
         ]);
-
         const applicantsData = applicantsRes.data;
         setApplicants(applicantsData);
         setUsers(usersRes.data);
@@ -87,7 +93,20 @@ function DashboardOverview() {
         loading && setLoading(false);
       }
     };
-    fetchDashboardData();
+
+    const fetchAuditLogs = async () => {
+      try {
+        const logsRes = await api.get("users/audit-logs/");
+        setAuditLogs(logsRes.data.slice(0, 10));
+      } catch (err) {
+        console.error("Error fetching audit logs:", err);
+      } finally {
+        setAuditLogsLoading(false);
+      }
+    };
+
+    fetchData();
+    fetchAuditLogs();
   }, []);
 
   const processMetrics = (allData, yearFilter, batchFilter) => {
@@ -108,7 +127,6 @@ function DashboardOverview() {
 
     const statuses = {
       "New Applicant": 0,
-      Screening: 0,
       Qualified: 0,
       Accepted: 0,
       Failed: 0,
@@ -121,7 +139,6 @@ function DashboardOverview() {
 
     data.forEach((a) => {
       if (a.status === "New Applicant") statuses["New Applicant"]++;
-      else if (screeningStages.includes(a.status)) statuses["Screening"]++;
       else if (a.status === "Qualified") statuses["Qualified"]++;
       else if (a.status === "Accepted") statuses["Accepted"]++;
       else if (a.status === "Failed") statuses["Failed"]++;
@@ -151,6 +168,31 @@ function DashboardOverview() {
         })
     );
     setStatusCounts(statuses);
+
+    // Calculate Alerts
+    const newAlerts = [];
+    if (statuses["New Applicant"] > 0) {
+      newAlerts.push({ id: 1, type: "info", message: `${statuses["New Applicant"]} applicants are in 'New Applicant' status.` });
+    }
+    if (statuses["Medical"] > 0) {
+      newAlerts.push({ id: 2, type: "warning", message: `${statuses["Medical"]} applicants are currently undergoing Medical.` });
+    }
+    if (statuses["Final Interview"] > 0) {
+      newAlerts.push({ id: 3, type: "info", message: `${statuses["Final Interview"]} applicants are ready for Final Interview.` });
+    }
+    setAlerts(newAlerts);
+
+    // Calculate Funnel
+    const totalScreened = (statuses["Qualified"]||0) + (statuses["BMI"]||0) + (statuses["PAT"]||0) + (statuses["Neuro"]||0) + (statuses["Medical"]||0) + (statuses["Drug Test"]||0) + (statuses["Final Interview"]||0) + (statuses["Oath Taking"]||0) + (statuses["Accepted"]||0);
+    const passedBmiPat = (statuses["Neuro"]||0) + (statuses["Medical"]||0) + (statuses["Drug Test"]||0) + (statuses["Final Interview"]||0) + (statuses["Oath Taking"]||0) + (statuses["Accepted"]||0);
+    const passedMedical = (statuses["Final Interview"]||0) + (statuses["Oath Taking"]||0) + (statuses["Accepted"]||0);
+    setFunnelData([
+      { stage: "Applied", count: data.length, color: "#2196F3" },
+      { stage: "Screened", count: totalScreened, color: "#22C55E" },
+      { stage: "Passed BMI/PAT", count: passedBmiPat, color: "#F97316" },
+      { stage: "Passed Medical", count: passedMedical, color: "#EC4899" },
+      { stage: "Accepted", count: statuses["Accepted"] || 0, color: "#166534" },
+    ]);
 
     const monthlyCount = {};
     data.forEach((a) => {
@@ -341,83 +383,220 @@ function DashboardOverview() {
               <span className="summary-value">{user_length}</span>
             </div>
           </div>
-          <div className="admin-summary-card total-applicants">
+          <div 
+            className="admin-summary-card total-applicants"
+            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'All' } })}
+            style={{ cursor: "pointer" }}
+            title="View Applications"
+          >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">Total Applicants</span>
               <span className="summary-value">{filteredApplicantCount}</span>
             </div>
           </div>
-          <div className="admin-summary-card new-applicants">
+          <div 
+            className="admin-summary-card new-applicants"
+            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'New Applicant' } })}
+            style={{ cursor: "pointer" }}
+            title="View New Applicants"
+          >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">New Applicants</span>
               <span className="summary-value">{statusCounts["New Applicant"] || 0}</span>
             </div>
           </div>
-          <div className="admin-summary-card under-review">
-            <div className="flex flex-col-reverse items-center">
-              <span className="summary-label">Screening</span>
-              <span className="summary-value">{statusCounts["Screening"] || 0}</span>
-            </div>
-          </div>
-          <div className="admin-summary-card qualified">
+          <div 
+            className="admin-summary-card qualified"
+            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'Qualified' } })}
+            style={{ cursor: "pointer" }}
+            title="View Qualified Applicants"
+          >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">Qualified</span>
               <span className="summary-value">{statusCounts["Qualified"] || 0}</span>
             </div>
           </div>
-          <div className="admin-summary-card accepted">
+          <div 
+            className="admin-summary-card accepted"
+            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'Accepted' } })}
+            style={{ cursor: "pointer" }}
+            title="View Successful Applicants"
+          >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">Successful Applicants</span>
               <span className="summary-value">{statusCounts["Accepted"] || 0}</span>
             </div>
           </div>
-          <div className="admin-summary-card rejected">
+          <div 
+            className="admin-summary-card rejected"
+            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'Failed' } })}
+            style={{ cursor: "pointer" }}
+            title="View Disqualified Applicants"
+          >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">Disqualified</span>
               <span className="summary-value">{statusCounts["Failed"] || 0}</span>
             </div>
           </div>
-          <div className="admin-summary-card bmi">
+          <div 
+            className="admin-summary-card bmi"
+            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'Body Mass Index' } })}
+            style={{ cursor: "pointer" }}
+            title="View BMI Applicants"
+          >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">BMI</span>
               <span className="summary-value">{statusCounts["BMI"] || 0}</span>
             </div>
           </div>
-          <div className="admin-summary-card pat">
+          <div 
+            className="admin-summary-card pat"
+            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'Physical Agility Test' } })}
+            style={{ cursor: "pointer" }}
+            title="View PAT Applicants"
+          >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">PAT</span>
               <span className="summary-value">{statusCounts["PAT"] || 0}</span>
             </div>
           </div>
-          <div className="admin-summary-card psych">
+          <div 
+            className="admin-summary-card psych"
+            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'Neuro Examination' } })}
+            style={{ cursor: "pointer" }}
+            title="View Neuro Examination Applicants"
+          >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">Neuro</span>
               <span className="summary-value">{statusCounts["Neuro"] || 0}</span>
             </div>
           </div>
-          <div className="admin-summary-card medical">
+          <div 
+            className="admin-summary-card medical"
+            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'Medical' } })}
+            style={{ cursor: "pointer" }}
+            title="View Medical Applicants"
+          >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">Medical</span>
               <span className="summary-value">{statusCounts["Medical"] || 0}</span>
             </div>
           </div>
-          <div className="admin-summary-card drug-test">
+          <div 
+            className="admin-summary-card drug-test"
+            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'Drug Test' } })}
+            style={{ cursor: "pointer" }}
+            title="View Drug Test Applicants"
+          >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">Drug Test</span>
               <span className="summary-value">{statusCounts["Drug Test"] || 0}</span>
             </div>
           </div>
-          <div className="admin-summary-card final-interview">
+          <div 
+            className="admin-summary-card final-interview"
+            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'Final Interview' } })}
+            style={{ cursor: "pointer" }}
+            title="View Final Interview Applicants"
+          >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">Final Interview</span>
               <span className="summary-value">{statusCounts["Final Interview"] || 0}</span>
             </div>
           </div>
-          <div className="admin-summary-card oath-taking">
+          <div 
+            className="admin-summary-card oath-taking"
+            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'Oath Taking' } })}
+            style={{ cursor: "pointer" }}
+            title="View Oath Taking Applicants"
+          >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">Oath Taking</span>
               <span className="summary-value">{statusCounts["Oath Taking"] || 0}</span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* New Enhanced Features Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8 mt-6 lg:mt-8">
+        
+        {/* Recruitment Funnel */}
+        <div className="chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-1 flex flex-col">
+          <h3 className="mb-4 text-[#2C2D86] font-semibold flex items-center gap-2"><FiActivity /> Recruitment Funnel</h3>
+          <div className="flex-1 flex flex-col justify-center space-y-3">
+            {funnelData.map((item, i) => (
+              <div key={i} className="flex flex-col">
+                <div className="flex justify-between text-xs font-medium text-slate-600 mb-1">
+                  <span>{item.stage}</span>
+                  <span>{item.count}</span>
+                </div>
+                <div className="w-full bg-slate-100 rounded-full h-3">
+                  <div 
+                    className="h-3 rounded-full transition-all duration-500" 
+                    style={{ 
+                      width: `${filteredApplicantCount > 0 ? (item.count / filteredApplicantCount) * 100 : 0}%`,
+                      backgroundColor: item.color 
+                    }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Actionable Alerts & Quick Actions */}
+        <div className="chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-1 flex flex-col gap-4">
+          <div>
+            <h3 className="mb-4 text-[#2C2D86] font-semibold flex items-center gap-2"><FiAlertCircle /> Pending Actions</h3>
+            <div className="space-y-2">
+              {alerts.length > 0 ? alerts.map((alert) => (
+                <div key={alert.id} className={`p-3 rounded-lg text-sm border-l-4 shadow-sm ${alert.type === 'warning' ? 'bg-orange-50 border-orange-400 text-orange-800' : 'bg-blue-50 border-blue-400 text-blue-800'}`}>
+                  {alert.message}
+                </div>
+              )) : (
+                <div className="p-3 bg-green-50 border-l-4 border-green-400 text-green-800 rounded-lg text-sm flex items-center gap-2">
+                  <FiCheckCircle /> All clear! No pending alerts.
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="mt-auto pt-4 border-t border-slate-100">
+            <h3 className="mb-3 text-[#2C2D86] font-semibold">Quick Links</h3>
+            <div className="grid grid-cols-2 gap-2">
+              <button onClick={() => navigate("/Dashboard/applications")} className="flex items-center gap-2 p-2 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg text-sm font-medium transition-colors border border-slate-100">
+                <FiFileText /> Applications
+              </button>
+              <button onClick={() => navigate("/Dashboard/user-management")} className="flex items-center gap-2 p-2 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg text-sm font-medium transition-colors border border-slate-100">
+                <FiUsers /> Users
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Audit Logs / Recent Activity */}
+        <div className="chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-1 flex flex-col h-[350px]">
+          <h3 className="mb-4 text-[#2C2D86] font-semibold flex items-center gap-2"><FiClock /> Recent Activity</h3>
+          <div className="overflow-y-auto pr-2 space-y-3 flex-1 scrollbar-thin">
+            {auditLogsLoading ? (
+              <div className="space-y-4 pt-2">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="animate-pulse pb-3 border-b border-slate-50 last:border-0">
+                    <div className="h-4 bg-slate-200 rounded w-1/3 mb-2.5"></div>
+                    <div className="h-3 bg-slate-100 rounded w-4/5 mb-2"></div>
+                    <div className="h-2 bg-slate-100 rounded w-1/4"></div>
+                  </div>
+                ))}
+              </div>
+            ) : auditLogs.length > 0 ? auditLogs.map((log) => (
+              <div key={log.id} className="text-sm pb-3 border-b border-slate-50 last:border-0">
+                <div className="font-medium text-slate-700">{log.action || log.action_type || "Activity"}</div>
+                <div className="text-slate-500 text-xs mt-1 break-words">{log.details || log.description || `Action by ${log.user_email || 'System'}`}</div>
+                <div className="text-slate-400 text-[10px] mt-1">{new Date(log.timestamp).toLocaleString()}</div>
+              </div>
+            )) : (
+              <div className="text-slate-500 text-sm">No recent activity.</div>
+            )}
           </div>
         </div>
       </div>

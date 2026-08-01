@@ -401,3 +401,50 @@ class MasterLookupSerializer(serializers.ModelSerializer):
     class Meta:
         model = MasterLookup
         fields = '__all__'
+
+class ApplicantDashboardSerializer(serializers.ModelSerializer):
+    """
+    Lightweight serializer specifically for dashboard overview and metrics.
+    Only includes fields necessary for aggregation and basic display.
+    """
+    created_at = serializers.SerializerMethodField()
+    age = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+    batch = serializers.SerializerMethodField()
+    school = serializers.CharField(source='name_of_school', read_only=True)
+    is_reapplied = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Applicant
+        fields = [
+            'id', 'created_at', 'batch', 'status', 'gender', 'age', 
+            'program', 'school', 'province', 'is_reapplied'
+        ]
+
+    def get_is_reapplied(self, obj):
+        return getattr(obj, 'is_reapplied', False)
+
+    def get_age(self, obj):
+        return getattr(obj, 'age', None)
+
+    def _get_app(self, obj):
+        if hasattr(obj, 'prefetched_applications'):
+            return obj.prefetched_applications[0] if obj.prefetched_applications else None
+        return obj.active_application
+
+    def get_created_at(self, obj):
+        app = self._get_app(obj)
+        if app and app.created_at:
+            return app.created_at.date()
+        if obj.created_at:
+            return obj.created_at.date()
+        return None
+
+    def get_status(self, obj):
+        app = self._get_app(obj)
+        return app.status if app else None
+
+    def get_batch(self, obj):
+        app = self._get_app(obj)
+        return app.batch if app else None
+

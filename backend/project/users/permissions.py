@@ -11,7 +11,17 @@ class IsAdministrator(BasePermission):
 
 class IsRecruiter(BasePermission):
     def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and request.user.role in [User.Roles.SUPER_ADMIN, User.Roles.ADMINISTRATOR, User.Roles.RECRUITER])
+        is_auth = bool(request.user and request.user.is_authenticated)
+        role = getattr(request.user, 'role', None)
+        has_perm = is_auth and role in [User.Roles.SUPER_ADMIN, User.Roles.ADMINISTRATOR, User.Roles.RECRUITER]
+        print(f"[DEBUG IsRecruiter] user: {request.user}, is_auth: {is_auth}, role: {role}, has_perm: {has_perm}", flush=True)
+        return has_perm
+
+class IsRecruiterOrInterviewer(BasePermission):
+    def has_permission(self, request, view):
+        is_auth = bool(request.user and request.user.is_authenticated)
+        role = getattr(request.user, 'role', None)
+        return is_auth and role in [User.Roles.SUPER_ADMIN, User.Roles.ADMINISTRATOR, User.Roles.RECRUITER, User.Roles.INTERVIEWER]
 
 class IsInterviewer(BasePermission):
     def has_permission(self, request, view):

@@ -5,6 +5,9 @@ from rest_framework.exceptions import AuthenticationFailed
 from .models import User
 
 class JWTAuthentication(BaseAuthentication):
+    def authenticate_header(self, request):
+        return 'Bearer'
+
     def authenticate(self, request):
         token = request.headers.get('X-User-Token') or request.headers.get('Authorization')
         

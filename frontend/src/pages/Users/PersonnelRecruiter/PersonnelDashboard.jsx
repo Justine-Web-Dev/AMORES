@@ -11,6 +11,7 @@ import Form from "../../Form/Form";
 import DocumentSubmission from "../../Form/DocumentSubmission";
 import SubmitApplicationModal from "../../../Modals/SubmitApplicationModal";
 import AccountSettings from "../../Settings/AccountSettings";
+import GenerateReport from "../../GenerateReport";
 
 function PersonnelDashboard() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -29,6 +30,7 @@ function PersonnelDashboard() {
           <Route path="document-submission" element={<DocumentSubmission />} />
           <Route path="success-submit" element={<SubmitApplicationModal />} />
           <Route path="account-settings" element={<AccountSettings />} />
+          <Route path="generate-report" element={<GenerateReport />} />
         </Routes>
       </div>
     </div>

@@ -15,6 +15,7 @@ function StatusManagement({
   const [rejectionReason, setRejectionReason] = useState(
     currentRejectionReason || "",
   );
+  const isInterviewer = localStorage.getItem("role") === "Interviewer";
   const [isUpdating, setIsUpdating] = useState(false);
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
@@ -400,8 +401,9 @@ function StatusManagement({
                   value={bmiHeight}
                   onChange={(e) => setBmiHeight(e.target.value)}
                   onBlur={handleBmiBlur}
-                  className="w-full p-2 border border-gray-300 rounded mt-1 text-sm h-[38px] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+                  className={`w-full p-2 border border-gray-300 rounded mt-1 text-sm h-[38px] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all ${(!schDate || !schTime) ? "bg-gray-100 cursor-not-allowed" : ""}`}
                   placeholder="cm"
+                  disabled={!schDate || !schTime}
                 />
               </div>
               <div className="flex-1">
@@ -413,8 +415,9 @@ function StatusManagement({
                   value={bmiWeight}
                   onChange={(e) => setBmiWeight(e.target.value)}
                   onBlur={handleBmiBlur}
-                  className="w-full p-2 border border-gray-300 rounded mt-1 text-sm h-[38px] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+                  className={`w-full p-2 border border-gray-300 rounded mt-1 text-sm h-[38px] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all ${(!schDate || !schTime) ? "bg-gray-100 cursor-not-allowed" : ""}`}
                   placeholder="kg"
+                  disabled={!schDate || !schTime}
                 />
               </div>
               <div className="flex-1">
@@ -643,6 +646,11 @@ function StatusManagement({
             <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">
               Final Interview Scoring Sheet
             </label>
+            {!isInterviewer && (
+              <div className="mb-3 text-xs font-semibold text-rose-500 bg-rose-50 p-2 rounded border border-rose-200">
+                Only Interviewers can evaluate and input scores for the Final Interview.
+              </div>
+            )}
             <div className="border border-gray-200 rounded-lg p-5 text-sm bg-white shadow-sm">
               {/* Communication Skills */}
               <div className="mb-6">
@@ -650,15 +658,15 @@ function StatusManagement({
                 <div className="grid grid-cols-3 gap-6">
                   <div>
                     <label className="text-xs text-gray-600 font-semibold uppercase">a. Voice Quality (10%)</label>
-                    <input type="number" min="0" max="10" step="0.1" value={fiVoice} onChange={(e) => setFiVoice(e.target.value)} className="w-full p-2.5 border border-gray-300 rounded-md mt-1.5 text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50" placeholder="Score /10" />
+                    <input type="number" min="0" max="10" step="0.1" value={fiVoice} onChange={(e) => setFiVoice(e.target.value)} disabled={!isInterviewer} className={`w-full p-2.5 border border-gray-300 rounded-md mt-1.5 text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50 ${!isInterviewer ? "cursor-not-allowed opacity-70" : ""}`} placeholder="Score /10" />
                   </div>
                   <div>
                     <label className="text-xs text-gray-600 font-semibold uppercase">b. Comprehension (10%)</label>
-                    <input type="number" min="0" max="10" step="0.1" value={fiComprehension} onChange={(e) => setFiComprehension(e.target.value)} className="w-full p-2.5 border border-gray-300 rounded-md mt-1.5 text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50" placeholder="Score /10" />
+                    <input type="number" min="0" max="10" step="0.1" value={fiComprehension} onChange={(e) => setFiComprehension(e.target.value)} disabled={!isInterviewer} className={`w-full p-2.5 border border-gray-300 rounded-md mt-1.5 text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50 ${!isInterviewer ? "cursor-not-allowed opacity-70" : ""}`} placeholder="Score /10" />
                   </div>
                   <div>
                     <label className="text-xs text-gray-600 font-semibold uppercase">c. Gesture (10%)</label>
-                    <input type="number" min="0" max="10" step="0.1" value={fiGesture} onChange={(e) => setFiGesture(e.target.value)} className="w-full p-2.5 border border-gray-300 rounded-md mt-1.5 text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50" placeholder="Score /10" />
+                    <input type="number" min="0" max="10" step="0.1" value={fiGesture} onChange={(e) => setFiGesture(e.target.value)} disabled={!isInterviewer} className={`w-full p-2.5 border border-gray-300 rounded-md mt-1.5 text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50 ${!isInterviewer ? "cursor-not-allowed opacity-70" : ""}`} placeholder="Score /10" />
                   </div>
                 </div>
               </div>
@@ -667,15 +675,15 @@ function StatusManagement({
               <div className="grid grid-cols-3 gap-6">
                 <div>
                   <h4 className="text-sm font-bold text-[#2C2D86] mb-3 border-b border-gray-100 pb-2">II. BEARING (20%)</h4>
-                  <input type="number" min="0" max="20" step="0.1" value={fiBearing} onChange={(e) => setFiBearing(e.target.value)} className="w-full p-2.5 border border-gray-300 rounded-md text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50" placeholder="Score /20" />
+                  <input type="number" min="0" max="20" step="0.1" value={fiBearing} onChange={(e) => setFiBearing(e.target.value)} disabled={!isInterviewer} className={`w-full p-2.5 border border-gray-300 rounded-md text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50 ${!isInterviewer ? "cursor-not-allowed opacity-70" : ""}`} placeholder="Score /20" />
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-[#2C2D86] mb-3 border-b border-gray-100 pb-2">III. KNOWLEDGE (25%)</h4>
-                  <input type="number" min="0" max="25" step="0.1" value={fiGeneralKnowledge} onChange={(e) => setFiGeneralKnowledge(e.target.value)} className="w-full p-2.5 border border-gray-300 rounded-md text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50" placeholder="Score /25" />
+                  <input type="number" min="0" max="25" step="0.1" value={fiGeneralKnowledge} onChange={(e) => setFiGeneralKnowledge(e.target.value)} disabled={!isInterviewer} className={`w-full p-2.5 border border-gray-300 rounded-md text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50 ${!isInterviewer ? "cursor-not-allowed opacity-70" : ""}`} placeholder="Score /25" />
                 </div>
                 <div>
                   <h4 className="text-sm font-bold text-[#2C2D86] mb-3 border-b border-gray-100 pb-2">IV. ELOQUENCE (25%)</h4>
-                  <input type="number" min="0" max="25" step="0.1" value={fiEloquence} onChange={(e) => setFiEloquence(e.target.value)} className="w-full p-2.5 border border-gray-300 rounded-md text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50" placeholder="Score /25" />
+                  <input type="number" min="0" max="25" step="0.1" value={fiEloquence} onChange={(e) => setFiEloquence(e.target.value)} disabled={!isInterviewer} className={`w-full p-2.5 border border-gray-300 rounded-md text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50 ${!isInterviewer ? "cursor-not-allowed opacity-70" : ""}`} placeholder="Score /25" />
                 </div>
               </div>
 
@@ -724,9 +732,19 @@ function StatusManagement({
       )}
       <button
         onClick={handleUpdate}
-        disabled={isUpdating || currentStatus === "Failed"}
+        disabled={
+          isUpdating || 
+          currentStatus === "Failed" ||
+          (selectedStatus === "Body Mass Index" && (!bmiHeight || !bmiWeight)) ||
+          (selectedStatus === "Physical Agility Test" && (patPushups === "" || patSitups === "" || patRun === "")) ||
+          (selectedStatus === "Final Interview" && (fiVoice === "" || fiComprehension === "" || fiGesture === "" || fiBearing === "" || fiGeneralKnowledge === "" || fiEloquence === ""))
+        }
         className={`rounded-[4px] text-white font-semibold save-changes-btn mt-6 h-11 transition-all ${
-          isUpdating || currentStatus === "Failed"
+          isUpdating || 
+          currentStatus === "Failed" ||
+          (selectedStatus === "Body Mass Index" && (!bmiHeight || !bmiWeight)) ||
+          (selectedStatus === "Physical Agility Test" && (patPushups === "" || patSitups === "" || patRun === "")) ||
+          (selectedStatus === "Final Interview" && (fiVoice === "" || fiComprehension === "" || fiGesture === "" || fiBearing === "" || fiGeneralKnowledge === "" || fiEloquence === ""))
             ? "bg-gray-400 cursor-not-allowed"
             : "cursor-pointer bg-[#2C2D86] hover:bg-[#1e1f5e] shadow-md hover:shadow-lg active:scale-[0.98]"
         }`}

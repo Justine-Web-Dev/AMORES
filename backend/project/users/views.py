@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.db import transaction
 from .serializers import (
     UsersSerializers, ApplicantSerializer, ApplicantFullSerializer, ApplicantDocumentSerializer, 
-    SystemSettingsSerializer, AuditLogSerializer
+    SystemSettingsSerializer, AuditLogSerializer, ApplicantDashboardSerializer
 )
 from .models import User, Applicant, Application, Evaluation, ApplicantDocument, SystemSettings, AuditLog
 from .utils import (
@@ -23,7 +23,7 @@ from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.contrib.auth.hashers import check_password, make_password
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .permissions import IsSuperAdmin, IsAdministrator, IsRecruiter, IsInterviewer
+from .permissions import IsSuperAdmin, IsAdministrator, IsRecruiter, IsInterviewer, IsRecruiterOrInterviewer
 from rest_framework.decorators import permission_classes
 
 import jwt
@@ -388,7 +388,59 @@ def get_applicant_form(request):
   return Response(serializer.data)
 
 @api_view(['GET'])
-@permission_classes([IsRecruiter])
+def get_dashboard_applicants(request):
+    from django.db.models import Subquery, OuterRef
+    from datetime import date
+    
+    latest_app_subquery = Application.objects.filter(
+        applicant=OuterRef('pk')
+    ).order_by('-created_at')
+
+    applicants = Applicant.objects.annotate(
+        app_created_at=Subquery(latest_app_subquery.values('created_at')[:1]),
+        app_status=Subquery(latest_app_subquery.values('status')[:1]),
+        app_batch=Subquery(latest_app_subquery.values('batch')[:1])
+    ).values(
+        'id', 'created_at', 'app_created_at', 'app_batch', 'app_status',
+        'gender', 'birthdate', 'program', 'name_of_school', 'province', 'is_reapplied'
+    )
+
+    today = date.today()
+    data = []
+    for a in applicants:
+        age = None
+        if a['birthdate']:
+            b = a['birthdate']
+            age = today.year - b.year - ((today.month, today.day) < (b.month, b.day))
+            
+        app_created_at = a['app_created_at']
+        created_at = a['created_at']
+        
+        # Handle string or datetime objects safely
+        if hasattr(app_created_at, 'date'):
+            created_at_val = app_created_at.date()
+        elif hasattr(created_at, 'date'):
+            created_at_val = created_at.date()
+        else:
+            created_at_val = app_created_at or created_at
+            
+        data.append({
+            'id': a['id'],
+            'created_at': created_at_val,
+            'batch': a['app_batch'],
+            'status': a['app_status'],
+            'gender': a['gender'],
+            'age': age,
+            'program': a['program'],
+            'school': a['name_of_school'],
+            'province': a['province'],
+            'is_reapplied': a['is_reapplied']
+        })
+        
+    return Response(data)
+
+@api_view(['GET'])
+@permission_classes([IsRecruiterOrInterviewer])
 def get_single_applicant(request, pk):
     try:
         applicant = Applicant.objects.get(pk=pk)
@@ -621,7 +673,7 @@ def send_schedule_email(applicant_email, applicant_name, scheduled_date, schedul
         print(f"[AMORES] Schedule email send failed for {applicant_email}: {e}", flush=True)
 
 @api_view(['PUT'])
-@permission_classes([IsRecruiter])
+@permission_classes([IsRecruiterOrInterviewer])
 def update_applicant_status(request, pk):
     try:
         applicant = Applicant.objects.get(pk=pk)
@@ -840,7 +892,7 @@ def scan_document(request, doc_id):
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
-@permission_classes([IsRecruiter])
+@permission_classes([IsRecruiterOrInterviewer])
 def get_active_applicants(request):
     # Applicants whose active_application is not 'Failed'
     applicants = get_applicant_queryset().exclude(applications__status='Failed').distinct()
@@ -848,8 +900,9 @@ def get_active_applicants(request):
     return Response(serializer.data)
 
 @api_view(['GET'])
-@permission_classes([IsRecruiter])
+@permission_classes([IsRecruiterOrInterviewer])
 def get_all_applicants(request):
+    print(f"[DEBUG get_all_applicants] user: {request.user}, is_auth: {request.user.is_authenticated}, role: {getattr(request.user, 'role', None)}")
     # Fetch all applicants including declined/rejected ones
     applicants = get_applicant_queryset().order_by('-created_at')
     serializer = ApplicantFullSerializer(applicants, many=True)
@@ -923,7 +976,7 @@ def update_system_settings(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
-@permission_classes([IsSuperAdmin])
+@permission_classes([IsAdministrator])
 def get_audit_logs(request):
     logs = AuditLog.objects.all().order_by('-timestamp')[:500]
     serializer = AuditLogSerializer(logs, many=True)
@@ -983,7 +1036,7 @@ def update_global_setting(request):
     return Response(GlobalSettingSerializer(setting).data)
 
 @api_view(['POST'])
-@permission_classes([IsSuperAdmin])
+@permission_classes([IsAdministrator])
 def backup_database(request):
     db_settings = settings.DATABASES.get('default', {})
     engine = db_settings.get('ENGINE', '')
@@ -1080,7 +1133,7 @@ def send_screening_notification(applicant_email, applicant_name, status, remarks
 
 
 @api_view(['POST'])
-@permission_classes([IsRecruiter])
+@permission_classes([IsRecruiterOrInterviewer])
 def screen_initial_application(request):
     applicant_id = request.data.get('application_id') # We'll keep the key the same to avoid frontend breaking but it represents applicant_id
     if not applicant_id:
@@ -1191,6 +1244,11 @@ def reapply_update_view(request, tracking_code):
         # Reset the application status to New Applicant
         application.status = "New Applicant"
         application.rejection_reason = None
+        
+        from .models import SystemSettings
+        settings_obj = SystemSettings.objects.first()
+        current_batch = settings_obj.current_batch if settings_obj else 1
+        application.batch = current_batch
         from django.utils import timezone
         now = timezone.now()
         

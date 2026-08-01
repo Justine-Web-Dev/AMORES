@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import register_user,login_user, get_user,update_user, change_password, get_applicant_form,register_applicant_form, track_status,track_application_status, retrieve_application_data, upload_document,get_applicant_documents, scan_document, get_single_applicant,update_applicant_status,get_active_applicants, get_all_applicants, get_system_settings, update_system_settings, get_global_settings, update_global_setting, get_audit_logs, backup_database, restore_database, validate_applicant_form, SubmitApplicationView, reapply_update_view, get_system_health, api_keys_list, api_key_detail, master_lookup_list, anonymize_applicant, export_applicant_data
+from .views import register_user,login_user, get_user,update_user, change_password, get_applicant_form,register_applicant_form, track_status,track_application_status, retrieve_application_data, upload_document,get_applicant_documents, scan_document, get_single_applicant,update_applicant_status,get_active_applicants, get_all_applicants, get_system_settings, update_system_settings, get_global_settings, update_global_setting, get_audit_logs, backup_database, restore_database, validate_applicant_form, SubmitApplicationView, reapply_update_view, get_system_health, api_keys_list, api_key_detail, master_lookup_list, anonymize_applicant, export_applicant_data, get_dashboard_applicants
 
 urlpatterns = [
   #Login Users
@@ -15,6 +15,7 @@ urlpatterns = [
 
   #Applicants
     path("get_applicant_info/",get_applicant_form,name='get_applicant_form'),
+    path("dashboard-applicants/", get_dashboard_applicants, name='get_dashboard_applicants'),
     path("validate_applicant_form/", validate_applicant_form, name='validate_applicant_form'),
     path("register_applicant_info/", register_applicant_form,name='register_applicant_form'),
     path("applications/submit/", SubmitApplicationView.as_view(), name='submit_application'),

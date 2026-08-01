@@ -73,6 +73,12 @@ function SidebarRecruiter({ isCollapsed, setIsCollapsed }) {
 
 
 
+            <li>
+              <Link className={linkClass('/PersonnelDashboard/generate-report')} to="/PersonnelDashboard/generate-report">
+                <RiDraftLine size={18} className={isActive('/PersonnelDashboard/generate-report') ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'} />
+                {!isCollapsed && <span>Generate Report</span>}
+              </Link>
+            </li>
           </ul>
         </nav>
         
