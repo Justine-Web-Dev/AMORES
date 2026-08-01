@@ -269,8 +269,8 @@ function DashboardOverview() {
     setMetrics({
       genderData,
       ageData,
-      programData: getTop5("program"),
-      schoolData: getTop5("name_of_school"),
+      programData: getTop5("program", true),
+      schoolData: getTop5("school", true),
       provinceData: getTop5("province", true),
       assessmentData,
     });
