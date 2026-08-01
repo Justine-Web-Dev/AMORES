@@ -107,6 +107,9 @@ class Applicant(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date Registered")
 
+    # Adding is_reapplied field to track if the applicant has re-applied
+    is_reapplied = models.BooleanField(default=False)
+
     @property
     def address(self):
         parts = [self.barangay, self.city_municipality, self.province, self.zip_code]

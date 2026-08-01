@@ -1,15 +1,8 @@
 import React, { useEffect, useState } from 'react'
-
 import { HiArrowNarrowLeft } from "react-icons/hi";
-
 import { useNavigate } from 'react-router';
-
 import './ViewDetailsCss.css'
-
-
-import InitialScreeningChecklist from './Users/PersonnelRecruiter/InitialScreeningChecklist'
 import ApplicantInfoView from './ApplicantInfoView'
-
 import { api } from '../../api/api'
 import { useParams, useLocation } from 'react-router'
 import ViewDocumentSubmitted from '../ViewDocumentSubmitted';
@@ -98,7 +91,7 @@ function ViewDetails() {
             </div>
 
             <div className="flex flex-col gap-2 text-sm text-gray-500 mt-4">
-              <label htmlFor="">Applied on:</label>
+              <label htmlFor="">{applicant.is_reapplied ? 'Re-Application Date:' : 'Applied on:'}</label>
               <p>{applicant.created_at}</p>
             </div>
           </div> 

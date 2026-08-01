@@ -27,10 +27,10 @@ function SubmitApplicationModal({ trackingCode: trackingCodeProp }) {
       </div>
       <div className='space-y-2'>
         <h1 className='text-2xl sm:text-3xl font-bold text-gray-800'>
-          Thank you for Applying!
+          {location.state?.isReapply ? 'Thank you for Re-Applying!' : 'Thank you for Applying!'}
         </h1>
         <h2 className='text-base sm:text-lg text-gray-600 leading-relaxed'>
-          Your application has been successfully submitted.
+          {location.state?.isReapply ? 'Your re-application has been successfully submitted.' : 'Your application has been successfully submitted.'}
         </h2>
       </div>
     </div>

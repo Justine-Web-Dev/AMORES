@@ -57,7 +57,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
 class ApplicantSerializer(serializers.ModelSerializer):
     date_graduated = FlexibleDateField()
     birthdate = FlexibleDateField(required=False, allow_null=True)
-    created_at = serializers.DateTimeField(read_only=True)
+    created_at = serializers.SerializerMethodField()
     age = serializers.SerializerMethodField()
     address = serializers.ReadOnlyField()
     
@@ -69,10 +69,14 @@ class ApplicantSerializer(serializers.ModelSerializer):
     lastname = serializers.CharField(source='last_name', read_only=True)
     cp_number = serializers.CharField(source='contact_number', read_only=True)
     middle_initial = serializers.SerializerMethodField()
+    is_reapplied = serializers.SerializerMethodField()
 
     class Meta:
         model = Applicant
         fields = '__all__'
+    
+    def get_is_reapplied(self, obj):
+        return getattr(obj, 'is_reapplied', False)
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -96,6 +100,16 @@ class ApplicantSerializer(serializers.ModelSerializer):
                 
         return attrs
     
+    def get_created_at(self, obj):
+        app = getattr(obj, 'active_application', None)
+        if app and app.created_at:
+            # We return ISO format here because it was previously a DateTimeField.
+            # Let's return just the date string or datetime.
+            return app.created_at
+        if obj.created_at:
+            return obj.created_at
+        return None
+
     def get_middle_initial(self, obj):
         if obj.middle_name:
             return f"{obj.middle_name[0]}."
@@ -147,6 +161,8 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
     pat_run = serializers.SerializerMethodField()
     pat_run_passed = serializers.SerializerMethodField()
     status_updated_at = serializers.SerializerMethodField()
+    is_reapplied = serializers.SerializerMethodField()
+    created_at = serializers.SerializerMethodField()
     
     class Meta:
         model = Applicant
@@ -163,8 +179,12 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
             'psychological_result', 'medical_result', 'drug_test_result', 
             'final_interview_score',
             'pat_pushups', 'pat_pushups_passed', 'pat_situps', 
-            'pat_situps_passed', 'pat_run', 'pat_run_passed'
+            'pat_situps_passed', 'pat_run', 'pat_run_passed',
+            'is_reapplied'
         ]
+
+    def get_is_reapplied(self, obj):
+        return getattr(obj, 'is_reapplied', False)
 
     def get_middle_initial(self, obj):
         if obj.middle_name:
@@ -175,6 +195,9 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
         return getattr(obj, 'age', None)
 
     def get_created_at(self, obj):
+        app = self._get_app(obj)
+        if app and app.created_at:
+            return app.created_at.date()
         if obj.created_at:
             return obj.created_at.date()
         return None

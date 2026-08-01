@@ -47,24 +47,39 @@ function DocumentSubmission() {
     location.state?.formData || JSON.parse(localStorage.getItem('applicationFormData')) || {}
   )
 
-  // Every single required document now has its own individual state
-  const [documents, setDocuments] = useState(cachedDocuments || {
-    // PSA
-    birthCert: null,
-    // Scholastic
-    otr: null,
-    diploma: null,
-    // Clearances
-    barangayClearance: null,
-    policeClearance: null,
-    prosecutorClearance: null,
-    nbiClearance: null,
-    // Eligibilities (Applicant selects one or multiple that apply to them)
-    prc: null,
-    napolcom: null,
-    pd907: null,
-    csProf: null
-  })
+  const initialDocs = () => {
+    if (cachedDocuments) return cachedDocuments;
+    const defaults = {
+      birthCert: null, otr: null, diploma: null, barangayClearance: null,
+      policeClearance: null, prosecutorClearance: null, nbiClearance: null,
+      prc: null, napolcom: null, pd907: null, csProf: null
+    };
+
+    if (formData.documents) {
+      const typeMap = {
+        'BIRTH_CERT': 'birthCert', 'OTR': 'otr', 'DIPLOMA': 'diploma',
+        'BRGY_CLEARANCE': 'barangayClearance', 'POLICE_CLEARANCE': 'policeClearance',
+        'PROS_CLEARANCE': 'prosecutorClearance', 'NBI_CLEARANCE': 'nbiClearance',
+        'PRC': 'prc', 'NAPOLCOM': 'napolcom', 'PD907': 'pd907', 'CS_PROF': 'csProf'
+      };
+      
+      formData.documents.forEach(doc => {
+        const key = typeMap[doc.document_type];
+        if (key && doc.file_url) {
+          // Construct a mock file object to represent the existing document
+          defaults[key] = {
+            name: doc.file ? doc.file.split('/').pop() : 'Previous Document.pdf',
+            file_url: doc.file_url,
+            isExisting: true,
+            id: doc.id
+          };
+        }
+      });
+    }
+    return defaults;
+  };
+
+  const [documents, setDocuments] = useState(initialDocs())
 
   useEffect(() => {
     // Load from IndexedDB on initial mount if memory cache is empty
@@ -156,7 +171,8 @@ function DocumentSubmission() {
       const uploadPromises = []
 
       uploadQueue.forEach(item => {
-        if (item.file) {
+        // Only upload if it's a real File object (not an existing document loaded from backend)
+        if (item.file && !item.file.isExisting) {
           const docFormData = new FormData()
           docFormData.append('applicant', applicantId)
           docFormData.append('document_type', item.label)
@@ -175,7 +191,9 @@ function DocumentSubmission() {
       localStorage.removeItem('applicationFormData')
       cachedDocuments = null; // Clear cached files on success
       delDocs().catch(console.error); // Clear IndexedDB cache
-      navigate('../success-submit', { state: { trackingCode: code }, relative: 'path' })
+      
+      const isReapply = !!formData.tracking_code;
+      navigate('../success-submit', { state: { trackingCode: code, isReapply: isReapply }, relative: 'path' })
     } catch (err) {
       console.error("Submission error data:", err?.response?.data);
       let errorMessage = "Submission failed.";
@@ -231,7 +249,7 @@ function DocumentSubmission() {
               </button>
             </div>
             <iframe
-              src={`${URL.createObjectURL(file)}#toolbar=0&navpanes=0&scrollbar=0`}
+              src={file.isExisting ? `${file.file_url}#toolbar=0&navpanes=0&scrollbar=0` : `${URL.createObjectURL(file)}#toolbar=0&navpanes=0&scrollbar=0`}
               title="PDF Preview"
               className="w-full h-48 border border-gray-200 rounded-lg pointer-events-none"
             />

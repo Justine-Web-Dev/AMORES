@@ -246,9 +246,12 @@ function Form() {
                 updatedData[key] = data[key];
               }
             });
-            // Explicitly ensure tracking_code is saved even if it was missing in old cached schema
+            // Explicitly ensure tracking_code and documents are saved even if missing in old cached schema
             if (data.tracking_code) {
               updatedData.tracking_code = data.tracking_code;
+            }
+            if (data.documents) {
+              updatedData.documents = data.documents;
             }
             setFormData(updatedData);
             localStorage.setItem("applicationFormData", JSON.stringify(updatedData));

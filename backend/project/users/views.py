@@ -730,7 +730,8 @@ def retrieve_application_data(request):
       "phil_health_id_num": applicant.phil_health_id_num,
       "height": applicant.height,
       "tribe_affiliated": getattr(applicant, 'tribe', ''),
-      "tracking_code": application.tracking_code
+      "tracking_code": application.tracking_code,
+      "documents": ApplicantDocumentSerializer(applicant.documents.all(), many=True).data
     }
     
     return Response(data, status=status.HTTP_200_OK)
@@ -863,8 +864,21 @@ def get_system_settings(request):
     today = datetime.date.today()
     if settings_obj.is_application_open and settings_obj.application_end_date and today > settings_obj.application_end_date:
         settings_obj.is_application_open = False
+        
+        # Automatic batch logic:
+        # If we reached end of Batch 1, go to Batch 2
+        # If we reached end of Batch 2, reset to Batch 1 and clear dates
+        if settings_obj.current_batch == 2:
+            settings_obj.current_batch = 1
+            settings_obj.application_start_date = None
+            settings_obj.application_end_date = None
+            log_msg = "Applications automatically closed (Batch 2 ended). Resetting to Batch 1 and clearing dates."
+        else:
+            settings_obj.current_batch = 2
+            log_msg = "Applications automatically closed (Batch 1 ended). Moving to Batch 2."
+            
         settings_obj.save()
-        create_audit_log(None, 'SYSTEM', "Applications automatically closed (End date reached).", performer_name='System')
+        create_audit_log(None, 'SYSTEM', log_msg, performer_name='System')
 
     serializer = SystemSettingsSerializer(settings_obj)
     return Response(serializer.data)
@@ -873,7 +887,6 @@ def get_system_settings(request):
 @permission_classes([IsAdministrator])
 def update_system_settings(request):
     settings_obj, created = SystemSettings.objects.get_or_create(id=1)
-    
     # Check for batch increment triggers:
     # 1. Manual toggle from False to True
     was_closed = not settings_obj.is_application_open
@@ -889,15 +902,17 @@ def update_system_settings(request):
             is_new_date_range = True
 
     if (was_closed and is_opening_manually) or is_new_date_range:
-        # Increment batch number or loop back to 1
-        if settings_obj.current_batch < 2:
-            settings_obj.current_batch += 1
-        else:
+        # If we are starting a new application window, increment batch or reset to 1
+        if settings_obj.current_batch == 2:
             settings_obj.current_batch = 1
-        
+            # We don't clear dates here because the admin is explicitly saving new dates in this PUT request
+            log_msg = "New application window opened. Reset to Batch 1."
+        else:
+            settings_obj.current_batch = 2
+            log_msg = "New application window opened. Moved to Batch 2."
+            
         settings_obj.save()
-        create_audit_log(None, 'BATCH_INCREMENT', f"New recruitment batch started: Batch {settings_obj.current_batch}", performer_name='System')
-
+        create_audit_log(None, 'BATCH_INCREMENT', log_msg, performer_name='System')
     serializer = SystemSettingsSerializer(settings_obj, data=request.data)
     if serializer.is_valid():
         serializer.save()
@@ -1123,6 +1138,13 @@ class SubmitApplicationView(APIView):
                     existing_app = applicant.applications.exclude(status='Failed').first()
                     if existing_app:
                         return Response({'error': 'You already have an active application.'}, status=status.HTTP_400_BAD_REQUEST)
+                    
+                    # They are re-applying, so update their created_at date
+                    from django.utils import timezone
+                    now = timezone.now()
+                    applicant.created_at = now
+                    applicant.save()
+                    Applicant.objects.filter(id=applicant.id).update(created_at=now)
                 
                 application = Application.objects.create(
                     applicant=applicant,
@@ -1169,7 +1191,18 @@ def reapply_update_view(request, tracking_code):
         # Reset the application status to New Applicant
         application.status = "New Applicant"
         application.rejection_reason = None
+        from django.utils import timezone
+        now = timezone.now()
+        
+        # Set re-applied flag on applicant
+        applicant.is_reapplied = True
+        applicant.save()
+        
+        application.created_at = now
         application.save()
+
+        # Force database update for auto_now_add fields
+        Application.objects.filter(id=application.id).update(created_at=now)
         
         # Clear the old evaluation results for a fresh start
         if hasattr(application, 'evaluation'):
@@ -1177,7 +1210,7 @@ def reapply_update_view(request, tracking_code):
         from .models import Evaluation
         Evaluation.objects.create(application=application)
         
-        # Send Re-Application email
+        # Send confirmation email
         send_application_received_email(
             name=f"{applicant.first_name} {applicant.last_name}",
             email=applicant.email,
