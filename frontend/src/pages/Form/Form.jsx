@@ -676,7 +676,7 @@ function Form() {
         isOpen={isErrorModalOpen}
         onClose={() => setIsErrorModalOpen(false)}
         type="error"
-        title="Validation Error"
+        title="Invalid Input"
         message={errorMessage}
       />
       <DraftCodeSuccessModal
