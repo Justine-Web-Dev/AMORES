@@ -1396,3 +1396,79 @@ def export_applicant_data(request, applicant_id):
         return Response(serializer.data, status=status.HTTP_200_OK)
     except Applicant.DoesNotExist:
         return Response({"error": "Applicant not found."}, status=status.HTTP_404_NOT_FOUND)
+
+import secrets
+import string
+from .models import ApplicationDraft
+
+def send_draft_code_email(email, draft_code, name):
+    """Sends draft code to applicant email."""
+    subject = "Application Draft Saved – AMORES"
+    message = (
+        f"Hi {name},\n\n"
+        f"You have successfully saved your application progress. You can retrieve and continue your application at any time using your Draft Code.\n\n"
+        f"Your Draft Code is: {draft_code}\n\n"
+        f"Please do not share this code with anyone.\n\n"
+        f"Regards,\nAMORES Team"
+    )
+    try:
+        from django.core.mail import send_mail
+        from django.conf import settings
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[email],
+            fail_silently=False,
+        )
+    except Exception as e:
+        print(f"[AMORES] Draft code email send failed for {email}: {e}", flush=True)
+
+@api_view(['POST'])
+def save_application_draft(request):
+    try:
+        form_data = request.data
+        
+        # generate a random draft code, e.g. DRF-XXXXXX
+        chars = string.ascii_uppercase + string.digits
+        draft_code = "DRF-" + ''.join(secrets.choice(chars) for _ in range(6))
+        
+        # Ensure it's unique
+        while ApplicationDraft.objects.filter(draft_code=draft_code).exists():
+            draft_code = "DRF-" + ''.join(secrets.choice(chars) for _ in range(6))
+            
+        draft = ApplicationDraft.objects.create(
+            draft_code=draft_code,
+            form_data=form_data
+        )
+        
+        email = form_data.get('email', '').strip()
+        firstname = form_data.get('firstname', '').strip()
+        lastname = form_data.get('lastname', '').strip()
+        name = "Applicant"
+        if firstname or lastname:
+            name = f"{firstname} {lastname}".strip()
+            
+        if email:
+            import threading
+            threading.Thread(
+                target=send_draft_code_email,
+                args=(email, draft.draft_code, name)
+            ).start()
+        
+        return Response({
+            "message": "Draft saved successfully",
+            "draft_code": draft.draft_code
+        }, status=status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def retrieve_application_draft(request, draft_code):
+    try:
+        draft = ApplicationDraft.objects.get(draft_code=draft_code)
+        return Response({
+            "form_data": draft.form_data
+        }, status=status.HTTP_200_OK)
+    except ApplicationDraft.DoesNotExist:
+        return Response({"error": "Draft not found"}, status=status.HTTP_404_NOT_FOUND)

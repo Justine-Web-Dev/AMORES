@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Applicant, Application, Evaluation, ApplicantDocument, AuditLog, SystemSettings
+from .models import User, Applicant, Application, Evaluation, ApplicantDocument, AuditLog, SystemSettings, ApplicationDraft
 
 class UserAdmin(admin.ModelAdmin):
     list_display = ("name", "email", "role", "is_archived")
@@ -58,3 +58,10 @@ class EvaluationAdmin(admin.ModelAdmin):
     search_fields = ("application__tracking_code", "application__applicant__last_name")
 
 admin.site.register(Evaluation, EvaluationAdmin)
+
+class ApplicationDraftAdmin(admin.ModelAdmin):
+    list_display = ("draft_code", "created_at", "updated_at")
+    search_fields = ("draft_code",)
+    list_filter = ("created_at", "updated_at")
+
+admin.site.register(ApplicationDraft, ApplicationDraftAdmin)

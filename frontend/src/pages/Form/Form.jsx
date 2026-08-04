@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../../../api/api";
 import MessageModal from "../../Modals/MessageModal";
 import ApplicationTypeModal from "../../Modals/ApplicationTypeModal";
+import DraftCodeSuccessModal from "../../Modals/DraftCodeSuccessModal";
 import "./FormCss.css";
 
 function Form() {
@@ -32,6 +33,8 @@ function Form() {
   });
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [draftCode, setDraftCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isTypeModalOpen, setIsTypeModalOpen] = useState(() => {
     let shouldOpen = true;
@@ -206,6 +209,28 @@ function Form() {
     localStorage.removeItem("applicationFormData");
   };
 
+  const handleSaveProgress = async (e) => {
+    e.preventDefault();
+    
+    if (!formData.email || formData.email.trim() === "") {
+      setErrorMessage("Please provide your Email Address so we can send your Draft Code securely.");
+      setIsErrorModalOpen(true);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const res = await api.post("users/applications/draft/save/", formData);
+      setDraftCode(res.data.draft_code);
+      setIsSuccessModalOpen(true);
+    } catch (error) {
+      setErrorMessage("Failed to save progress. Please try again.");
+      setIsErrorModalOpen(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const requiredFields = [
     "lastname",
     "firstname",
@@ -286,6 +311,18 @@ function Form() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
               </svg>
               <span className="text-xs font-semibold">Clear Form</span>
+            </button>
+            <button
+              className="flex items-center gap-2 h-9 px-3 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 active:scale-95 shadow-sm"
+              type="button"
+              onClick={handleSaveProgress}
+              disabled={isLoading}
+              title="Save progress for later"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+              </svg>
+              <span className="text-xs font-semibold">Save progress</span>
             </button>
           </div>
         </div>
@@ -641,6 +678,11 @@ function Form() {
         type="error"
         title="Validation Error"
         message={errorMessage}
+      />
+      <DraftCodeSuccessModal
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        draftCode={draftCode}
       />
     </div>
   );

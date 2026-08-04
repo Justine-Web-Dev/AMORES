@@ -7,6 +7,7 @@ import HeaderLanding from "../../Components/Header/HeaderLanding";
 import Form from "../Form/Form";
 import DocumentSubmission from "../Form/DocumentSubmission";
 import NotFound from "../../NotFound";
+import DraftCodeApplication from "../../Modals/DraftCodeApplication";
 
 function LandingpageMain() {
   const [isApplicationOpen, setIsApplicationOpen] = useState(true);
@@ -122,6 +123,8 @@ function LandingpageMain() {
             </>
           }
         />
+        <Route path="/draft-code" element={<DraftCodeApplication />} />
+
         <Route
           path="/document-submission"
           element={
@@ -133,7 +136,6 @@ function LandingpageMain() {
             </>
           }
         />
-
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>
