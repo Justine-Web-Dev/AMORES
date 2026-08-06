@@ -146,8 +146,6 @@ def _prepare_postgresql_restore_script(backup_path):
     os.close(fd)
 
     truncate_tables = [
-        'users_masterlookup',
-        'users_apikey',
         'users_rolepermission',
         'users_permission',
         'users_role',

@@ -1306,60 +1306,7 @@ def get_system_health(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-from .models import ApiKey, MasterLookup
-from .serializers import ApiKeySerializer, MasterLookupSerializer
 
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated, IsSuperAdmin])
-def api_keys_list(request):
-    if request.method == 'GET':
-        keys = ApiKey.objects.all()
-        serializer = ApiKeySerializer(keys, many=True)
-        return Response(serializer.data)
-    elif request.method == 'POST':
-        # Provide a hash and store it securely
-        import secrets
-        import hashlib
-        raw_key = secrets.token_urlsafe(32)
-        key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
-        
-        serializer = ApiKeySerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(key_hash=key_hash, created_by=request.user)
-            return Response({
-                "message": "API Key created successfully. Store this raw key immediately as it will not be shown again.",
-                "raw_key": raw_key,
-                "data": serializer.data
-            }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated, IsSuperAdmin])
-def api_key_detail(request, pk):
-    try:
-        api_key = ApiKey.objects.get(pk=pk)
-    except ApiKey.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-        
-    if request.method == 'DELETE':
-        api_key.delete()
-        log_action(request.user, "API_KEY_DELETE", f"Deleted API key {api_key.name}", request, target_resource="APIKey")
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated, IsSuperAdmin])
-def master_lookup_list(request):
-    if request.method == 'GET':
-        lookups = MasterLookup.objects.all()
-        serializer = MasterLookupSerializer(lookups, many=True)
-        return Response(serializer.data)
-    elif request.method == 'POST':
-        serializer = MasterLookupSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            log_action(request.user, "MASTER_LOOKUP_CREATE", f"Created lookup {serializer.validated_data.get('category')} - {serializer.validated_data.get('key')}", request, target_resource="MasterLookup")
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # --- Data Privacy & Governance ---
 

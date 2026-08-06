@@ -325,31 +325,6 @@ class RolePermission(models.Model):
 
 # --- System Operations Models ---
 
-class ApiKey(models.Model):
-    name = models.CharField(max_length=100, verbose_name="Integration Name")
-    key_hash = models.CharField(max_length=128, unique=True, verbose_name="Key Hash")
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='created_api_keys')
-    created_at = models.DateTimeField(auto_now_add=True)
-    last_used_at = models.DateTimeField(null=True, blank=True)
-    is_active = models.BooleanField(default=True)
-    
-    def __str__(self):
-        return self.name
-
-class MasterLookup(models.Model):
-    category = models.CharField(max_length=50, verbose_name="Category (e.g., DEPARTMENT)")
-    key = models.CharField(max_length=100, verbose_name="Key")
-    value = models.CharField(max_length=255, verbose_name="Display Value")
-    sort_order = models.IntegerField(default=0)
-    is_active = models.BooleanField(default=True)
-    
-    class Meta:
-        unique_together = ('category', 'key')
-        ordering = ['category', 'sort_order', 'value']
-
-    def __str__(self):
-        return f"{self.category} - {self.value}"
-
 class ApplicationDraft(models.Model):
     draft_code = models.CharField(max_length=20, unique=True, verbose_name="Draft Code")
     form_data = models.JSONField(verbose_name="Form Data")

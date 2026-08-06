@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from users.models import AuditLog, ApiKey
+from users.models import AuditLog
 from datetime import timedelta
 
 class Command(BaseCommand):
@@ -23,9 +23,4 @@ class Command(BaseCommand):
         log_count = old_logs.count()
         old_logs.delete()
         self.stdout.write(self.style.SUCCESS(f'Successfully deleted {log_count} old audit logs (older than {days} days).'))
-        
-        # 2. Prune unused API keys (older than 1 year and inactive)
-        inactive_keys = ApiKey.objects.filter(is_active=False, created_at__lt=cutoff_date)
-        key_count = inactive_keys.count()
-        inactive_keys.delete()
-        self.stdout.write(self.style.SUCCESS(f'Successfully deleted {key_count} inactive and old API keys.'))
+

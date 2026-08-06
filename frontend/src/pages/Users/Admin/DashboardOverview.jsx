@@ -172,13 +172,13 @@ function DashboardOverview() {
     // Calculate Alerts
     const newAlerts = [];
     if (statuses["New Applicant"] > 0) {
-      newAlerts.push({ id: 1, type: "info", message: `${statuses["New Applicant"]} applicants are in 'New Applicant' status.` });
+      newAlerts.push({ id: 1, type: "info", message: `${statuses["New Applicant"]} applicants are in 'New Applicant' status.`, targetStatus: "New Applicant" });
     }
     if (statuses["Medical"] > 0) {
-      newAlerts.push({ id: 2, type: "warning", message: `${statuses["Medical"]} applicants are currently undergoing Medical.` });
+      newAlerts.push({ id: 2, type: "warning", message: `${statuses["Medical"]} applicants are currently undergoing Medical.`, targetStatus: "Medical" });
     }
     if (statuses["Final Interview"] > 0) {
-      newAlerts.push({ id: 3, type: "info", message: `${statuses["Final Interview"]} applicants are ready for Final Interview.` });
+      newAlerts.push({ id: 3, type: "info", message: `${statuses["Final Interview"]} applicants are ready for Final Interview.`, targetStatus: "Final Interview" });
     }
     setAlerts(newAlerts);
 
@@ -551,7 +551,11 @@ function DashboardOverview() {
             <h3 className="mb-4 text-[#2C2D86] font-semibold flex items-center gap-2"><FiAlertCircle /> Pending Actions</h3>
             <div className="space-y-2">
               {alerts.length > 0 ? alerts.map((alert) => (
-                <div key={alert.id} className={`p-3 rounded-lg text-sm border-l-4 shadow-sm ${alert.type === 'warning' ? 'bg-orange-50 border-orange-400 text-orange-800' : 'bg-blue-50 border-blue-400 text-blue-800'}`}>
+                <div 
+                  key={alert.id} 
+                  onClick={() => navigate("/Dashboard/applications", { state: { tab: alert.targetStatus } })}
+                  className={`p-3 rounded-lg text-sm border-l-4 shadow-sm cursor-pointer hover:scale-[1.02] hover:shadow-md transition-all ${alert.type === 'warning' ? 'bg-orange-50 border-orange-400 text-orange-800 hover:bg-orange-100' : 'bg-blue-50 border-blue-400 text-blue-800 hover:bg-blue-100'}`}
+                >
                   {alert.message}
                 </div>
               )) : (
@@ -561,17 +565,7 @@ function DashboardOverview() {
               )}
             </div>
           </div>
-          <div className="mt-auto pt-4 border-t border-slate-100">
-            <h3 className="mb-3 text-[#2C2D86] font-semibold">Quick Links</h3>
-            <div className="grid grid-cols-2 gap-2">
-              <button onClick={() => navigate("/Dashboard/applications")} className="flex items-center gap-2 p-2 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg text-sm font-medium transition-colors border border-slate-100">
-                <FiFileText /> Applications
-              </button>
-              <button onClick={() => navigate("/Dashboard/user-management")} className="flex items-center gap-2 p-2 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg text-sm font-medium transition-colors border border-slate-100">
-                <FiUsers /> Users
-              </button>
-            </div>
-          </div>
+
         </div>
 
         {/* Audit Logs / Recent Activity */}

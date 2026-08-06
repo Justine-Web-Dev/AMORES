@@ -13,6 +13,7 @@ import { HiOutlineDocumentReport } from 'react-icons/hi'
 import { FiMoon, FiSun, FiShield } from 'react-icons/fi'
 import './Header.css'
 import logoAcc from '../../assets/RRSU1 logo.png'
+import { api } from '../../../api/api'
 
 function Header() {
   const location = useLocation();
@@ -59,6 +60,21 @@ function Header() {
   const initialProfilePic = payload?.profile_picture || logoAcc;
   
   const [profilePic, setProfilePic] = useState(initialProfilePic);
+  const [healthStatus, setHealthStatus] = useState('Checking...');
+
+  useEffect(() => {
+    let interval;
+    if (rawRole === 'SUPER_ADMIN') {
+      const fetchHealth = () => {
+        api.get('users/system-health/')
+          .then(res => setHealthStatus(res.data.status === 'healthy' ? 'Active' : 'Alert'))
+          .catch(() => setHealthStatus('Offline'));
+      };
+      fetchHealth();
+      interval = setInterval(fetchHealth, 10000);
+    }
+    return () => clearInterval(interval);
+  }, [rawRole]);
 
   useEffect(() => {
     const handleProfilePicUpdate = (e) => {
@@ -144,11 +160,11 @@ function Header() {
         {/* Environment & Security Indicators (Super Admin Only) */}
         {role === 'Super Admin' && (
           <div className="hidden lg:flex items-center gap-2 border-r pr-4 border-gray-100">
-            <span className="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded uppercase tracking-wider">
-              PROD
+            <span className={`px-2 py-1 text-[10px] font-bold rounded uppercase tracking-wider ${import.meta.env.DEV ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
+              {import.meta.env.DEV ? 'DEV' : 'PROD'}
             </span>
-            <div className="flex items-center gap-1 text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
-              <FiShield /> Sec: Active
+            <div className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded ${healthStatus === 'Active' ? 'text-indigo-600 bg-indigo-50' : healthStatus === 'Checking...' ? 'text-gray-500 bg-gray-100' : 'text-red-600 bg-red-50'}`}>
+              <FiShield /> Sec: {healthStatus}
             </div>
           </div>
         )}

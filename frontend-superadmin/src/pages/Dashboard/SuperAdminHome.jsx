@@ -212,68 +212,68 @@ function SuperAdminHome() {
             </div>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col relative overflow-hidden group">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-4 lg:gap-6">
+            <div className="bg-white p-4 lg:p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col relative overflow-hidden group">
               <div className="absolute -right-4 -top-4 w-24 h-24 bg-gradient-to-br from-green-50 to-green-100 rounded-full group-hover:scale-110 transition-transform duration-500"></div>
-              <div className="flex items-center gap-4 relative z-10">
-                <div className={`p-4 rounded-xl ${health.status === 'healthy' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'} shadow-sm`}>
+              <div className="flex items-center gap-3 lg:gap-4 relative z-10">
+                <div className={`p-3 lg:p-4 rounded-xl ${health.status === 'healthy' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'} shadow-sm shrink-0`}>
                   <FaServer size={24} />
                 </div>
-                <div>
-                  <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">Status</p>
-                  <h3 className="text-2xl font-black uppercase text-gray-800">{health.status}</h3>
+                <div className="min-w-0 flex-1">
+                  <p className="text-gray-500 text-[10px] lg:text-xs font-bold uppercase tracking-wider mb-1 truncate">Status</p>
+                  <h3 className="text-lg lg:text-2xl font-black uppercase text-gray-800 truncate">{health.status}</h3>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col relative overflow-hidden group">
+            <div className="bg-white p-4 lg:p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col relative overflow-hidden group">
               <div className="absolute -right-4 -top-4 w-24 h-24 bg-gradient-to-br from-blue-50 to-blue-100 rounded-full group-hover:scale-110 transition-transform duration-500"></div>
-              <div className="flex items-center gap-4 relative z-10">
-                <div className="p-4 rounded-xl bg-blue-100 text-blue-600 shadow-sm">
+              <div className="flex items-center gap-3 lg:gap-4 relative z-10">
+                <div className="p-3 lg:p-4 rounded-xl bg-blue-100 text-blue-600 shadow-sm shrink-0">
                   <FaDatabase size={24} />
                 </div>
-                <div>
-                  <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">DB Latency</p>
-                  <h3 className="text-2xl font-black text-gray-800">{health.metrics?.db_latency_ms || 0} <span className="text-sm font-medium text-gray-400">ms</span></h3>
+                <div className="min-w-0 flex-1">
+                  <p className="text-gray-500 text-[10px] lg:text-xs font-bold uppercase tracking-wider mb-1 truncate">DB Latency</p>
+                  <h3 className="text-lg lg:text-2xl font-black text-gray-800 truncate">{health.metrics?.db_latency_ms || 0} <span className="text-xs lg:text-sm font-medium text-gray-400">ms</span></h3>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col relative overflow-hidden group">
+            <div className="bg-white p-4 lg:p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col relative overflow-hidden group">
               <div className="absolute -right-4 -top-4 w-24 h-24 bg-gradient-to-br from-teal-50 to-teal-100 rounded-full group-hover:scale-110 transition-transform duration-500"></div>
-              <div className="flex items-center gap-4 relative z-10">
-                <div className="p-4 rounded-xl bg-teal-100 text-teal-600 shadow-sm">
+              <div className="flex items-center gap-3 lg:gap-4 relative z-10">
+                <div className="p-3 lg:p-4 rounded-xl bg-teal-100 text-teal-600 shadow-sm shrink-0">
                   <FaServer size={24} />
                 </div>
-                <div>
-                  <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">DB Storage</p>
-                  <h3 className="text-2xl font-black text-gray-800">{health.metrics?.db_size_mb || 0} <span className="text-sm font-medium text-gray-400">MB</span></h3>
+                <div className="min-w-0 flex-1">
+                  <p className="text-gray-500 text-[10px] lg:text-xs font-bold uppercase tracking-wider mb-1 truncate">DB Storage</p>
+                  <h3 className="text-lg lg:text-2xl font-black text-gray-800 truncate">{health.metrics?.db_size_mb || 0} <span className="text-xs lg:text-sm font-medium text-gray-400">MB</span></h3>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col relative overflow-hidden group">
+            <div className="bg-white p-4 lg:p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col relative overflow-hidden group">
               <div className="absolute -right-4 -top-4 w-24 h-24 bg-gradient-to-br from-purple-50 to-purple-100 rounded-full group-hover:scale-110 transition-transform duration-500"></div>
-              <div className="flex items-center gap-4 relative z-10">
-                <div className="p-4 rounded-xl bg-purple-100 text-purple-600 shadow-sm">
+              <div className="flex items-center gap-3 lg:gap-4 relative z-10">
+                <div className="p-3 lg:p-4 rounded-xl bg-purple-100 text-purple-600 shadow-sm shrink-0">
                   <FaMicrochip size={24} />
                 </div>
-                <div>
-                  <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">CPU Usage</p>
-                  <h3 className="text-2xl font-black text-gray-800">{health.metrics?.cpu_percent || 0}<span className="text-sm font-medium text-gray-400">%</span></h3>
+                <div className="min-w-0 flex-1">
+                  <p className="text-gray-500 text-[10px] lg:text-xs font-bold uppercase tracking-wider mb-1 truncate">CPU Usage</p>
+                  <h3 className="text-lg lg:text-2xl font-black text-gray-800 truncate">{health.metrics?.cpu_percent || 0}<span className="text-xs lg:text-sm font-medium text-gray-400">%</span></h3>
                 </div>
               </div>
             </div>
             
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col relative overflow-hidden group">
+            <div className="bg-white p-4 lg:p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col relative overflow-hidden group">
               <div className="absolute -right-4 -top-4 w-24 h-24 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-full group-hover:scale-110 transition-transform duration-500"></div>
-              <div className="flex items-center gap-4 relative z-10">
-                <div className="p-4 rounded-xl bg-yellow-100 text-yellow-600 shadow-sm">
+              <div className="flex items-center gap-3 lg:gap-4 relative z-10">
+                <div className="p-3 lg:p-4 rounded-xl bg-yellow-100 text-yellow-600 shadow-sm shrink-0">
                   <FaMemory size={24} />
                 </div>
-                <div>
-                  <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">RAM Usage</p>
-                  <h3 className="text-2xl font-black text-gray-800">{health.metrics?.memory_percent || 0}<span className="text-sm font-medium text-gray-400">%</span></h3>
+                <div className="min-w-0 flex-1">
+                  <p className="text-gray-500 text-[10px] lg:text-xs font-bold uppercase tracking-wider mb-1 truncate">RAM Usage</p>
+                  <h3 className="text-lg lg:text-2xl font-black text-gray-800 truncate">{health.metrics?.memory_percent || 0}<span className="text-xs lg:text-sm font-medium text-gray-400">%</span></h3>
                 </div>
               </div>
             </div>

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Applicant, Application, Evaluation, ApplicantDocument, SystemSettings, AuditLog, GlobalSetting, Role, Permission, RolePermission, ApiKey, MasterLookup
+from .models import User, Applicant, Application, Evaluation, ApplicantDocument, SystemSettings, AuditLog, GlobalSetting, Role, Permission, RolePermission
 from django.utils.dateparse import parse_datetime
 from django.contrib.auth.hashers import make_password, identify_hasher
 
@@ -388,19 +388,6 @@ class RolePermissionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 # --- System Operations Serializers ---
-
-class ApiKeySerializer(serializers.ModelSerializer):
-    created_by_name = serializers.CharField(source='created_by.name', read_only=True)
-    
-    class Meta:
-        model = ApiKey
-        fields = ['id', 'name', 'created_by_name', 'created_at', 'last_used_at', 'is_active']
-        # key_hash is deliberately excluded for security
-
-class MasterLookupSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = MasterLookup
-        fields = '__all__'
 
 class ApplicantDashboardSerializer(serializers.ModelSerializer):
     """
