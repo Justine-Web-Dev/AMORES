@@ -139,7 +139,32 @@ function ViewDocumentSubmitted({ applicantId }) {
     }
   }
 
-  if (loading) return <div>Loading Documents...</div>
+  if (loading) {
+    return (
+      <div className='rounded-[12px] ViewDocumentSubmitted'>
+        <h1 className="text-lg font-bold text-[1.7rem] submitted-doc-title">Submitted Documents</h1>
+        <div className="space-y-6 mt-4">
+          {[1, 2, 3].map((sectionIndex) => (
+            <div key={sectionIndex}>
+              <div className="h-4 bg-gray-200 rounded w-1/4 mb-3 animate-pulse"></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {[1, 2].map((cardIndex) => (
+                  <div key={cardIndex} className="border rounded-lg shadow-sm bg-white overflow-hidden image-docs-container animate-pulse">
+                    <div className="w-full h-48 bg-gray-200"></div>
+                    <div className="p-3 space-y-2 mt-2">
+                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                      <div className="h-2 bg-gray-200 rounded w-1/3"></div>
+                      <div className="h-2 bg-gray-200 rounded w-1/4 mt-2"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   if (documents.length === 0) {
     return (

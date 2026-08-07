@@ -1,5 +1,6 @@
 import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { useState } from 'react'
 import LoginForm from '../../frontend/src/pages/auth/LoginForm'
 import SuperAdminDashboard from './pages/Dashboard/Dashboard'
 
@@ -12,7 +13,7 @@ import ForceChangePasswordModal from '../../frontend/src/Modals/ForceChangePassw
 function ProtectedSuperAdminRoute({ children }) {
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
-  const [showForcePasswordModal, setShowForcePasswordModal] = React.useState(
+  const [showForcePasswordModal, setShowForcePasswordModal] = useState(
     localStorage.getItem('must_change_password') === 'true'
   );
 
@@ -36,19 +37,6 @@ function ProtectedSuperAdminRoute({ children }) {
 }
 
 function App() {
-  const token = localStorage.getItem('token');
-  const role = localStorage.getItem('role');
-  
-  // Find out where they should be redirected by default
-  const getDashboardPath = () => {
-    if (role === 'SUPER_ADMIN' || role === 'Administrator') return "/Dashboard";
-    if (role === 'Interviewer') return "/InterviewDashboard";
-    if (role === 'Recruiter') return "/PersonnelDashboard";
-    return "/login";
-  };
-  
-  const isLoggedIn = !!token && !!role;
-
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} /> 

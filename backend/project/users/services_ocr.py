@@ -5,8 +5,15 @@ import pytesseract
 from PIL import Image
 from .models import ApplicantDocument
 
-# Set tesseract path for Windows
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+import sys
+
+# Set tesseract path based on Operating System
+if sys.platform.startswith('win'):
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+    os.environ["PATH"] += os.pathsep + r'C:\Program Files\Tesseract-OCR'
+else:
+    # For Linux (like Render), it will be installed in the system PATH
+    pytesseract.pytesseract.tesseract_cmd = 'tesseract'
 
 def process_document_ocr(document_id):
     try:
@@ -37,6 +44,14 @@ def process_document_ocr(document_id):
             
         # Run OCR
         try:
+            import subprocess
+            cmd_path = pytesseract.pytesseract.tesseract_cmd
+            path_exists = os.path.exists(cmd_path)
+            try:
+                test_output = subprocess.check_output([cmd_path, '--version'], stderr=subprocess.STDOUT)
+            except Exception as test_ex:
+                test_output = str(test_ex)
+                
             img = Image.open(temp_path)
             extracted_text = pytesseract.image_to_string(img)
             extracted_text_lower = extracted_text.lower()
@@ -281,10 +296,14 @@ def process_document_ocr(document_id):
                 application.save()
             
         except Exception as e:
+            debug_info = ""
+            if 'path_exists' in locals():
+                debug_info = f" | path_exists: {path_exists} | cmd_path: {cmd_path} | test_output: {test_output}"
+                
             document.ai_verified = False
-            document.ai_remarks = f"OCR Error: {str(e)}"
+            document.ai_remarks = f"OCR Error: {str(e)}{debug_info}"
             document.save()
-            print(f"OCR Error for doc {document.id}: {e}")
+            print(f"OCR Error for doc {document.id}: {e}{debug_info}")
         finally:
             # Clean up temp file
             os.remove(temp_path)
