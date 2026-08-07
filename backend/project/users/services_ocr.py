@@ -12,8 +12,8 @@ if sys.platform.startswith('win'):
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
     os.environ["PATH"] += os.pathsep + r'C:\Program Files\Tesseract-OCR'
 else:
-    # For Linux (like Render), it will be installed in the system PATH
-    pytesseract.pytesseract.tesseract_cmd = 'tesseract'
+    # For Linux (like Render Docker container)
+    pytesseract.pytesseract.tesseract_cmd = '/usr/bin/tesseract'
 
 def process_document_ocr(document_id):
     try:
