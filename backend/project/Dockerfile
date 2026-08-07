@@ -28,4 +28,5 @@ RUN python manage.py collectstatic --no-input
 
 # Run the Django application using Gunicorn for production
 # (Render dynamically assigns the PORT environment variable)
-CMD gunicorn project.wsgi:application --bind 0.0.0.0:${PORT:-8000}
+# Added memory limits and timeout increases for Render Free Tier
+CMD gunicorn project.wsgi:application --bind 0.0.0.0:${PORT:-8000} --workers 1 --threads 4 --timeout 120
