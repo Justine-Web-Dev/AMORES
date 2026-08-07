@@ -53,6 +53,12 @@ def process_document_ocr(document_id):
                 test_output = str(test_ex)
                 
             img = Image.open(temp_path)
+            
+            # CRITICAL FIX for Render Free Tier:
+            # High-resolution images cause Tesseract to consume >500MB RAM, causing OOM kills.
+            # We resize the image down to max 1200px before running OCR to save memory.
+            img.thumbnail((1200, 1200), Image.Resampling.LANCZOS)
+            
             extracted_text = pytesseract.image_to_string(img)
             extracted_text_lower = extracted_text.lower()
             
