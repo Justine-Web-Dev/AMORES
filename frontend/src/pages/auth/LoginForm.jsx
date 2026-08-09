@@ -103,6 +103,16 @@ function LoginForm() {
     }
   }
 
+  const params = new URLSearchParams(location.search);
+  if (params.get('token')) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-slate-50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#2C2D86]"></div>
+        <span className="ml-3 text-slate-500 font-medium">Redirecting to Dashboard...</span>
+      </div>
+    );
+  }
+
   return (
     <div className='LoginForm'>
         <form onSubmit={handleLogin} className='form'>
