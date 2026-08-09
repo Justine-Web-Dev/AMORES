@@ -106,7 +106,6 @@ def send_password_changed_email(name, email, new_password):
         f"YOUR NEW PASSWORD:\n"
         f"{new_password}\n"
         f"----------------------------------------\n\n"
-        f"If you did not make this change, please contact the system administrator immediately.\n\n"
         f"Best regards,\n"
         f"PNP-AMORES System\n\n"
         f"Generated on: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"

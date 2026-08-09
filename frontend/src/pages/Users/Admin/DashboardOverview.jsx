@@ -14,9 +14,16 @@ import {
   Cell,
   AreaChart,
   Area,
-  LabelList
+  LabelList,
 } from "recharts";
-import { FiActivity, FiAlertCircle, FiClock, FiCheckCircle, FiFileText, FiUsers } from "react-icons/fi";
+import {
+  FiActivity,
+  FiAlertCircle,
+  FiClock,
+  FiCheckCircle,
+  FiFileText,
+  FiUsers,
+} from "react-icons/fi";
 
 function DashboardOverview() {
   const navigate = useNavigate();
@@ -54,13 +61,11 @@ function DashboardOverview() {
       });
     }
     const uniqueBatches = [
-      ...new Set(
-        filteredApplicants
-          .map((a) => a.batch)
-          .filter(Boolean)
-      ),
-    ].sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
-    
+      ...new Set(filteredApplicants.map((a) => a.batch).filter(Boolean)),
+    ].sort((a, b) =>
+      String(a).localeCompare(String(b), undefined, { numeric: true }),
+    );
+
     return uniqueBatches.slice(0, 2);
   }, [applicants, selectedYear]);
 
@@ -69,7 +74,7 @@ function DashboardOverview() {
       try {
         const [usersRes, applicantsRes] = await Promise.all([
           api.get("users/get_user/"),
-          api.get("users/dashboard-applicants/")
+          api.get("users/dashboard-applicants/"),
         ]);
         const applicantsData = applicantsRes.data;
         setApplicants(applicantsData);
@@ -122,7 +127,7 @@ function DashboardOverview() {
     if (batchFilter !== "All") {
       data = data.filter((a) => String(a.batch) === String(batchFilter));
     }
-    
+
     setFilteredApplicantCount(data.length);
 
     const statuses = {
@@ -133,16 +138,14 @@ function DashboardOverview() {
       "Oath Taking": 0,
     };
 
-    const screeningStages = [
-      "Technical Interview",
-    ];
+    const screeningStages = ["Technical Interview"];
 
     data.forEach((a) => {
       if (a.status === "New Applicant") statuses["New Applicant"]++;
       else if (a.status === "Qualified") statuses["Qualified"]++;
       else if (a.status === "Accepted") statuses["Accepted"]++;
       else if (a.status === "Failed") statuses["Failed"]++;
-      else if (a.status === "Oath Taking") statuses["Oath Taking"]++; 
+      else if (a.status === "Oath Taking") statuses["Oath Taking"]++;
       else if (a.status === "Body Mass Index")
         statuses["BMI"] = (statuses["BMI"] || 0) + 1;
       else if (a.status === "Physical Agility Test")
@@ -165,27 +168,60 @@ function DashboardOverview() {
           if (name === "Accepted") displayName = "Successful Applicants";
           if (name === "Failed") displayName = "Disqualified";
           return { name: displayName, value: statuses[name] };
-        })
+        }),
     );
     setStatusCounts(statuses);
 
     // Calculate Alerts
     const newAlerts = [];
     if (statuses["New Applicant"] > 0) {
-      newAlerts.push({ id: 1, type: "info", message: `${statuses["New Applicant"]} applicants are in 'New Applicant' status.`, targetStatus: "New Applicant" });
+      newAlerts.push({
+        id: 1,
+        type: "info",
+        message: `${statuses["New Applicant"]} applicants are in 'New Applicant' status.`,
+        targetStatus: "New Applicant",
+      });
     }
     if (statuses["Medical"] > 0) {
-      newAlerts.push({ id: 2, type: "warning", message: `${statuses["Medical"]} applicants are currently undergoing Medical.`, targetStatus: "Medical" });
+      newAlerts.push({
+        id: 2,
+        type: "warning",
+        message: `${statuses["Medical"]} applicants are currently undergoing Medical.`,
+        targetStatus: "Medical",
+      });
     }
     if (statuses["Final Interview"] > 0) {
-      newAlerts.push({ id: 3, type: "info", message: `${statuses["Final Interview"]} applicants are ready for Final Interview.`, targetStatus: "Final Interview" });
+      newAlerts.push({
+        id: 3,
+        type: "info",
+        message: `${statuses["Final Interview"]} applicants are ready for Final Interview.`,
+        targetStatus: "Final Interview",
+      });
     }
     setAlerts(newAlerts);
 
     // Calculate Funnel
-    const totalScreened = (statuses["Qualified"]||0) + (statuses["BMI"]||0) + (statuses["PAT"]||0) + (statuses["Neuro"]||0) + (statuses["Medical"]||0) + (statuses["Drug Test"]||0) + (statuses["Final Interview"]||0) + (statuses["Oath Taking"]||0) + (statuses["Accepted"]||0);
-    const passedBmiPat = (statuses["Neuro"]||0) + (statuses["Medical"]||0) + (statuses["Drug Test"]||0) + (statuses["Final Interview"]||0) + (statuses["Oath Taking"]||0) + (statuses["Accepted"]||0);
-    const passedMedical = (statuses["Final Interview"]||0) + (statuses["Oath Taking"]||0) + (statuses["Accepted"]||0);
+    const totalScreened =
+      (statuses["Qualified"] || 0) +
+      (statuses["BMI"] || 0) +
+      (statuses["PAT"] || 0) +
+      (statuses["Neuro"] || 0) +
+      (statuses["Medical"] || 0) +
+      (statuses["Drug Test"] || 0) +
+      (statuses["Final Interview"] || 0) +
+      (statuses["Oath Taking"] || 0) +
+      (statuses["Accepted"] || 0);
+    const passedBmiPat =
+      (statuses["Neuro"] || 0) +
+      (statuses["Medical"] || 0) +
+      (statuses["Drug Test"] || 0) +
+      (statuses["Final Interview"] || 0) +
+      (statuses["Oath Taking"] || 0) +
+      (statuses["Accepted"] || 0);
+    const passedMedical =
+      (statuses["Final Interview"] || 0) +
+      (statuses["Oath Taking"] || 0) +
+      (statuses["Accepted"] || 0);
     setFunnelData([
       { stage: "Applied", count: data.length, color: "#2196F3" },
       { stage: "Screened", count: totalScreened, color: "#22C55E" },
@@ -240,7 +276,7 @@ function DashboardOverview() {
       data.forEach((a) => {
         const val = a[attr];
         if (excludeOther && (!val || val === "Other")) return;
-        
+
         const finalVal = val || "Other";
         counts[finalVal] = (counts[finalVal] || 0) + 1;
       });
@@ -315,19 +351,22 @@ function DashboardOverview() {
       });
     }
     const newAvailableBatches = [
-      ...new Set(
-        newFilteredApplicants
-          .map((a) => a.batch)
-          .filter(Boolean)
-      ),
-    ].sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true })).slice(0, 2);
+      ...new Set(newFilteredApplicants.map((a) => a.batch).filter(Boolean)),
+    ]
+      .sort((a, b) =>
+        String(a).localeCompare(String(b), undefined, { numeric: true }),
+      )
+      .slice(0, 2);
 
     let newBatch = selectedBatch;
-    if (selectedBatch !== "All" && !newAvailableBatches.includes(selectedBatch)) {
+    if (
+      selectedBatch !== "All" &&
+      !newAvailableBatches.includes(selectedBatch)
+    ) {
       newBatch = "All";
       setSelectedBatch("All");
     }
-    
+
     processMetrics(applicants, val, newBatch);
   };
 
@@ -342,32 +381,48 @@ function DashboardOverview() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 lg:mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800">Dashboard Overview</h2>
-          <p className="text-gray-500">System metrics and recruitment analytics at a glance.</p>
+          <h2 className="text-2xl font-bold text-gray-800">
+            Dashboard Overview
+          </h2>
+          <p className="text-gray-500">
+            System metrics and recruitment analytics at a glance.
+          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-4 bg-gray-50 p-2 rounded-lg border border-gray-100 w-full md:w-auto">
           <div className="flex items-center gap-2">
-            <label className="text-xs font-bold text-gray-600 uppercase tracking-tight">Year:</label>
+            <label className="text-xs font-bold text-gray-600 uppercase tracking-tight">
+              Year:
+            </label>
             <select
               value={selectedYear}
               onChange={handleYearChange}
               className="bg-white border border-gray-200 rounded px-3 py-1.5 text-sm font-medium outline-none focus:ring-2 focus:ring-[#2C2D86] shadow-sm"
             >
               <option value="All">All Years</option>
-              {years.map((year) => <option key={year} value={year}>{year}</option>)}
+              {years.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
             </select>
           </div>
 
           <div className="flex items-center gap-2 border-t md:border-t-0 pt-2 md:pt-0 target-border-gray-200">
-            <label className="text-xs font-bold text-gray-600 uppercase tracking-tight">Batch:</label>
+            <label className="text-xs font-bold text-gray-600 uppercase tracking-tight">
+              Batch:
+            </label>
             <select
               value={selectedBatch}
               onChange={handleBatchChange}
               className="bg-white border border-gray-200 rounded px-3 py-1.5 text-sm font-medium outline-none focus:ring-2 focus:ring-[#2C2D86] shadow-sm"
             >
               <option value="All">All Batches</option>
-              {availableBatches.map((batch) => <option key={batch} value={batch}>{batch}</option>)}
+              {availableBatches.map((batch) => (
+                <option key={batch} value={batch}>
+                  {batch}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -375,7 +430,9 @@ function DashboardOverview() {
 
       {/* Summary Cards */}
       <div className="System-overview-container">
-        <h3 className="text-lg font-semibold mb-4 text-[#2C2D86]">System Summary</h3>
+        <h3 className="text-lg font-semibold mb-4 text-[#2C2D86]">
+          System Summary
+        </h3>
         <div className="stat-card-container top-summary-cards">
           <div className="admin-summary-card users">
             <div className="flex flex-col-reverse items-center">
@@ -383,9 +440,11 @@ function DashboardOverview() {
               <span className="summary-value">{user_length}</span>
             </div>
           </div>
-          <div 
+          <div
             className="admin-summary-card total-applicants"
-            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'All' } })}
+            onClick={() =>
+              navigate("/Dashboard/applications", { state: { tab: "All" } })
+            }
             style={{ cursor: "pointer" }}
             title="View Applications"
           >
@@ -394,53 +453,79 @@ function DashboardOverview() {
               <span className="summary-value">{filteredApplicantCount}</span>
             </div>
           </div>
-          <div 
+          <div
             className="admin-summary-card new-applicants"
-            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'New Applicant' } })}
+            onClick={() =>
+              navigate("/Dashboard/applications", {
+                state: { tab: "New Applicant" },
+              })
+            }
             style={{ cursor: "pointer" }}
             title="View New Applicants"
           >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">New Applicants</span>
-              <span className="summary-value">{statusCounts["New Applicant"] || 0}</span>
+              <span className="summary-value">
+                {statusCounts["New Applicant"] || 0}
+              </span>
             </div>
           </div>
-          <div 
+          <div
             className="admin-summary-card qualified"
-            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'Qualified' } })}
+            onClick={() =>
+              navigate("/Dashboard/applications", {
+                state: { tab: "Qualified" },
+              })
+            }
             style={{ cursor: "pointer" }}
             title="View Qualified Applicants"
           >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">Qualified</span>
-              <span className="summary-value">{statusCounts["Qualified"] || 0}</span>
+              <span className="summary-value">
+                {statusCounts["Qualified"] || 0}
+              </span>
             </div>
           </div>
-          <div 
+          <div
             className="admin-summary-card accepted"
-            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'Accepted' } })}
+            onClick={() =>
+              navigate("/Dashboard/applications", {
+                state: { tab: "Accepted" },
+              })
+            }
             style={{ cursor: "pointer" }}
             title="View Successful Applicants"
           >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">Successful Applicants</span>
-              <span className="summary-value">{statusCounts["Accepted"] || 0}</span>
+              <span className="summary-value">
+                {statusCounts["Accepted"] || 0}
+              </span>
             </div>
           </div>
-          <div 
+          <div
             className="admin-summary-card rejected"
-            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'Failed' } })}
+            onClick={() =>
+              navigate("/Dashboard/applications", { state: { tab: "Failed" } })
+            }
             style={{ cursor: "pointer" }}
             title="View Disqualified Applicants"
           >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">Disqualified</span>
-              <span className="summary-value">{statusCounts["Failed"] || 0}</span>
+              <span className="summary-value">
+                {statusCounts["Failed"] || 0}
+              </span>
             </div>
           </div>
-          <div 
+          <div
             className="admin-summary-card bmi"
-            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'Body Mass Index' } })}
+            onClick={() =>
+              navigate("/Dashboard/applications", {
+                state: { tab: "Body Mass Index" },
+              })
+            }
             style={{ cursor: "pointer" }}
             title="View BMI Applicants"
           >
@@ -449,9 +534,13 @@ function DashboardOverview() {
               <span className="summary-value">{statusCounts["BMI"] || 0}</span>
             </div>
           </div>
-          <div 
+          <div
             className="admin-summary-card pat"
-            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'Physical Agility Test' } })}
+            onClick={() =>
+              navigate("/Dashboard/applications", {
+                state: { tab: "Physical Agility Test" },
+              })
+            }
             style={{ cursor: "pointer" }}
             title="View PAT Applicants"
           >
@@ -460,59 +549,87 @@ function DashboardOverview() {
               <span className="summary-value">{statusCounts["PAT"] || 0}</span>
             </div>
           </div>
-          <div 
+          <div
             className="admin-summary-card psych"
-            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'Neuro Examination' } })}
+            onClick={() =>
+              navigate("/Dashboard/applications", {
+                state: { tab: "Neuro Examination" },
+              })
+            }
             style={{ cursor: "pointer" }}
             title="View Neuro Examination Applicants"
           >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">Neuro</span>
-              <span className="summary-value">{statusCounts["Neuro"] || 0}</span>
+              <span className="summary-value">
+                {statusCounts["Neuro"] || 0}
+              </span>
             </div>
           </div>
-          <div 
+          <div
             className="admin-summary-card medical"
-            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'Medical' } })}
+            onClick={() =>
+              navigate("/Dashboard/applications", { state: { tab: "Medical" } })
+            }
             style={{ cursor: "pointer" }}
             title="View Medical Applicants"
           >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">Medical</span>
-              <span className="summary-value">{statusCounts["Medical"] || 0}</span>
+              <span className="summary-value">
+                {statusCounts["Medical"] || 0}
+              </span>
             </div>
           </div>
-          <div 
+          <div
             className="admin-summary-card drug-test"
-            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'Drug Test' } })}
+            onClick={() =>
+              navigate("/Dashboard/applications", {
+                state: { tab: "Drug Test" },
+              })
+            }
             style={{ cursor: "pointer" }}
             title="View Drug Test Applicants"
           >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">Drug Test</span>
-              <span className="summary-value">{statusCounts["Drug Test"] || 0}</span>
+              <span className="summary-value">
+                {statusCounts["Drug Test"] || 0}
+              </span>
             </div>
           </div>
-          <div 
+          <div
             className="admin-summary-card final-interview"
-            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'Final Interview' } })}
+            onClick={() =>
+              navigate("/Dashboard/applications", {
+                state: { tab: "Final Interview" },
+              })
+            }
             style={{ cursor: "pointer" }}
             title="View Final Interview Applicants"
           >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">Final Interview</span>
-              <span className="summary-value">{statusCounts["Final Interview"] || 0}</span>
+              <span className="summary-value">
+                {statusCounts["Final Interview"] || 0}
+              </span>
             </div>
           </div>
-          <div 
+          <div
             className="admin-summary-card oath-taking"
-            onClick={() => navigate("/Dashboard/applications", { state: { tab: 'Oath Taking' } })}
+            onClick={() =>
+              navigate("/Dashboard/applications", {
+                state: { tab: "Oath Taking" },
+              })
+            }
             style={{ cursor: "pointer" }}
             title="View Oath Taking Applicants"
           >
             <div className="flex flex-col-reverse items-center">
               <span className="summary-label">Oath Taking</span>
-              <span className="summary-value">{statusCounts["Oath Taking"] || 0}</span>
+              <span className="summary-value">
+                {statusCounts["Oath Taking"] || 0}
+              </span>
             </div>
           </div>
         </div>
@@ -520,10 +637,11 @@ function DashboardOverview() {
 
       {/* New Enhanced Features Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8 mt-6 lg:mt-8">
-        
         {/* Recruitment Funnel */}
         <div className="chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-1 flex flex-col">
-          <h3 className="mb-4 text-[#2C2D86] font-semibold flex items-center gap-2"><FiActivity /> Recruitment Funnel</h3>
+          <h3 className="mb-4 text-[#2C2D86] font-semibold flex items-center gap-2">
+            <FiActivity /> Recruitment Funnel
+          </h3>
           <div className="flex-1 flex flex-col justify-center space-y-3">
             {funnelData.map((item, i) => (
               <div key={i} className="flex flex-col">
@@ -532,11 +650,11 @@ function DashboardOverview() {
                   <span>{item.count}</span>
                 </div>
                 <div className="w-full bg-slate-100 rounded-full h-3">
-                  <div 
-                    className="h-3 rounded-full transition-all duration-500" 
-                    style={{ 
+                  <div
+                    className="h-3 rounded-full transition-all duration-500"
+                    style={{
                       width: `${filteredApplicantCount > 0 ? (item.count / filteredApplicantCount) * 100 : 0}%`,
-                      backgroundColor: item.color 
+                      backgroundColor: item.color,
                     }}
                   ></div>
                 </div>
@@ -548,47 +666,72 @@ function DashboardOverview() {
         {/* Actionable Alerts & Quick Actions */}
         <div className="chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-1 flex flex-col gap-4">
           <div>
-            <h3 className="mb-4 text-[#2C2D86] font-semibold flex items-center gap-2"><FiAlertCircle /> Pending Actions</h3>
+            <h3 className="mb-4 text-[#2C2D86] font-semibold flex items-center gap-2">
+              <FiAlertCircle /> Pending Actions
+            </h3>
             <div className="space-y-2">
-              {alerts.length > 0 ? alerts.map((alert) => (
-                <div 
-                  key={alert.id} 
-                  onClick={() => navigate("/Dashboard/applications", { state: { tab: alert.targetStatus } })}
-                  className={`p-3 rounded-lg text-sm border-l-4 shadow-sm cursor-pointer hover:scale-[1.02] hover:shadow-md transition-all ${alert.type === 'warning' ? 'bg-orange-50 border-orange-400 text-orange-800 hover:bg-orange-100' : 'bg-blue-50 border-blue-400 text-blue-800 hover:bg-blue-100'}`}
-                >
-                  {alert.message}
-                </div>
-              )) : (
+              {alerts.length > 0 ? (
+                alerts.map((alert) => (
+                  <div
+                    key={alert.id}
+                    onClick={() =>
+                      navigate("/Dashboard/applications", {
+                        state: { tab: alert.targetStatus },
+                      })
+                    }
+                    className={`p-3 rounded-lg text-sm border-l-4 shadow-sm cursor-pointer hover:scale-[1.02] hover:shadow-md transition-all ${alert.type === "warning" ? "bg-orange-50 border-orange-400 text-orange-800 hover:bg-orange-100" : "bg-blue-50 border-blue-400 text-blue-800 hover:bg-blue-100"}`}
+                  >
+                    {alert.message}
+                  </div>
+                ))
+              ) : (
                 <div className="p-3 bg-green-50 border-l-4 border-green-400 text-green-800 rounded-lg text-sm flex items-center gap-2">
                   <FiCheckCircle /> All clear! No pending alerts.
                 </div>
               )}
             </div>
           </div>
-
         </div>
 
         {/* Audit Logs / Recent Activity */}
         <div className="chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-1 flex flex-col h-[350px]">
-          <h3 className="mb-4 text-[#2C2D86] font-semibold flex items-center gap-2"><FiClock /> Recent Activity</h3>
+          <h3 className="mb-4 text-[#2C2D86] font-semibold flex items-center gap-2">
+            <FiClock /> Recent Activity
+          </h3>
           <div className="overflow-y-auto pr-2 space-y-3 flex-1 scrollbar-thin">
             {auditLogsLoading ? (
               <div className="space-y-4 pt-2">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="animate-pulse pb-3 border-b border-slate-50 last:border-0">
+                  <div
+                    key={i}
+                    className="animate-pulse pb-3 border-b border-slate-50 last:border-0"
+                  >
                     <div className="h-4 bg-slate-200 rounded w-1/3 mb-2.5"></div>
                     <div className="h-3 bg-slate-100 rounded w-4/5 mb-2"></div>
                     <div className="h-2 bg-slate-100 rounded w-1/4"></div>
                   </div>
                 ))}
               </div>
-            ) : auditLogs.length > 0 ? auditLogs.map((log) => (
-              <div key={log.id} className="text-sm pb-3 border-b border-slate-50 last:border-0">
-                <div className="font-medium text-slate-700">{log.action || log.action_type || "Activity"}</div>
-                <div className="text-slate-500 text-xs mt-1 break-words">{log.details || log.description || `Action by ${log.user_email || 'System'}`}</div>
-                <div className="text-slate-400 text-[10px] mt-1">{new Date(log.timestamp).toLocaleString()}</div>
-              </div>
-            )) : (
+            ) : auditLogs.length > 0 ? (
+              auditLogs.map((log) => (
+                <div
+                  key={log.id}
+                  className="text-sm pb-3 border-b border-slate-50 last:border-0"
+                >
+                  <div className="font-medium text-slate-700">
+                    {log.action || log.action_type || "Activity"}
+                  </div>
+                  <div className="text-slate-500 text-xs mt-1 break-words">
+                    {log.details ||
+                      log.description ||
+                      `Action by ${log.user_email || "System"}`}
+                  </div>
+                  <div className="text-slate-400 text-[10px] mt-1">
+                    {new Date(log.timestamp).toLocaleString()}
+                  </div>
+                </div>
+              ))
+            ) : (
               <div className="text-slate-500 text-sm">No recent activity.</div>
             )}
           </div>
@@ -596,9 +739,11 @@ function DashboardOverview() {
       </div>
 
       {/* Grid Layout Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-8 mt-6 lg:mt-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8 mt-6 lg:mt-8">
         <div className="chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h3 className="mb-4 text-[#2C2D86] font-semibold">Applicant Status Distribution</h3>
+          <h3 className="mb-4 text-[#2C2D86] font-semibold">
+            Applicant Status Distribution
+          </h3>
           <ResponsiveContainer debounce={200} width="100%" height={300}>
             <PieChart>
               <Pie
@@ -609,24 +754,36 @@ function DashboardOverview() {
                 outerRadius={100}
                 paddingAngle={5}
                 dataKey="value"
-                label={({ name, value, percent }) => percent > 0 ? `${name}: ${value} (${(percent * 100).toFixed(0)}%)` : ""}
+                label={({ name, value, percent }) =>
+                  percent > 0
+                    ? `${name}: ${value} (${(percent * 100).toFixed(0)}%)`
+                    : ""
+                }
               >
                 {statusData.map((entry, index) => {
                   const colors = {
-                    'Disqualified': '#EF4444',
-                    'Successful Applicants': '#166534',
-                    'Qualified': '#22C55E',
-                    'New Applicant': '#2196F3',
-                    'Screening': '#FFC107',
-                    'BMI': '#3B82F6',
-                    'PAT': '#F97316',
-                    'Neuro': '#8B5CF6',
-                    'Medical': '#EC4899',
-                    'Drug Test': '#F59E0B',
-                    'Final Interview': '#14B8A6',
-                    'Oath Taking': '#1E3A8A'
+                    Disqualified: "#EF4444",
+                    "Successful Applicants": "#166534",
+                    Qualified: "#22C55E",
+                    "New Applicant": "#2196F3",
+                    Screening: "#FFC107",
+                    BMI: "#3B82F6",
+                    PAT: "#F97316",
+                    Neuro: "#8B5CF6",
+                    Medical: "#EC4899",
+                    "Drug Test": "#F59E0B",
+                    "Final Interview": "#14B8A6",
+                    "Oath Taking": "#1E3A8A",
                   };
-                  return <Cell key={`cell-${index}`} fill={colors[entry.name] || CHART_COLORS[index % CHART_COLORS.length]} />;
+                  return (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={
+                        colors[entry.name] ||
+                        CHART_COLORS[index % CHART_COLORS.length]
+                      }
+                    />
+                  );
                 })}
               </Pie>
               <Tooltip />
@@ -635,20 +792,29 @@ function DashboardOverview() {
         </div>
 
         <div className="chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h3 className="mb-4 text-[#2C2D86] font-semibold">Monthly Applicant Registration</h3>
+          <h3 className="mb-4 text-[#2C2D86] font-semibold">
+            Monthly Applicant Registration
+          </h3>
           <ResponsiveContainer debounce={200} width="100%" height={300}>
             <BarChart data={monthlyData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip cursor={{ fill: "#f3f4f6" }} />
-              <Bar dataKey="applicants" fill="#2C2D86" radius={[4, 4, 0, 0]} barSize={40} />
+              <Bar
+                dataKey="applicants"
+                fill="#2C2D86"
+                radius={[4, 4, 0, 0]}
+                barSize={40}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         <div className="chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h3 className="mb-4 text-[#2C2D86] font-semibold">Gender Distribution</h3>
+          <h3 className="mb-4 text-[#2C2D86] font-semibold">
+            Gender Distribution
+          </h3>
           <ResponsiveContainer debounce={200} width="100%" height={300}>
             <PieChart>
               <Pie
@@ -660,7 +826,10 @@ function DashboardOverview() {
                 label={({ name, value }) => `${name}: ${value}`}
               >
                 {metrics.genderData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={CHART_COLORS[index % CHART_COLORS.length]}
+                  />
                 ))}
               </Pie>
               <Tooltip />
@@ -669,14 +838,21 @@ function DashboardOverview() {
         </div>
 
         <div className="chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h3 className="mb-4 text-[#2C2D86] font-semibold">Age Distribution</h3>
+          <h3 className="mb-4 text-[#2C2D86] font-semibold">
+            Age Distribution
+          </h3>
           <ResponsiveContainer debounce={200} width="100%" height={300}>
             <BarChart data={metrics.ageData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="range" />
               <YAxis />
               <Tooltip cursor={{ fill: "#f3f4f6" }} />
-              <Bar dataKey="count" fill="#EB612A" radius={[4, 4, 0, 0]} barSize={50} />
+              <Bar
+                dataKey="count"
+                fill="#EB612A"
+                radius={[4, 4, 0, 0]}
+                barSize={50}
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -687,7 +863,12 @@ function DashboardOverview() {
             <BarChart data={metrics.programData} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis type="number" />
-              <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 11 }} />
+              <YAxis
+                dataKey="name"
+                type="category"
+                width={100}
+                tick={{ fontSize: 11 }}
+              />
               <Tooltip cursor={{ fill: "#f3f4f6" }} />
               <Bar dataKey="count" fill="#2C2D86" radius={[0, 4, 4, 0]} />
             </BarChart>
@@ -700,7 +881,12 @@ function DashboardOverview() {
             <BarChart data={metrics.schoolData} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis type="number" />
-              <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 11 }} />
+              <YAxis
+                dataKey="name"
+                type="category"
+                width={100}
+                tick={{ fontSize: 11 }}
+              />
               <Tooltip cursor={{ fill: "#f3f4f6" }} />
               <Bar dataKey="count" fill="#6366F1" radius={[0, 4, 4, 0]} />
             </BarChart>
@@ -708,27 +894,35 @@ function DashboardOverview() {
         </div>
 
         {/* CHANGED TO FULL WIDTH HORIZONTAL CHART LAYOUT */}
-        <div className="chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2 transition-all hover:shadow-md">
+        <div className="chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-3 transition-all hover:shadow-md">
           <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-100 pb-4 gap-2">
             <div>
-              <h3 className="text-lg font-bold text-gray-900 tracking-tight">Geographic Breakdown: Top 5 Provinces</h3>
-              <p className="text-xs text-gray-500 mt-0.5">Distribution of applicants based on regional data entries.</p>
+              <h3 className="text-lg font-bold text-gray-900 tracking-tight">
+                Geographic Breakdown: Top 5 Provinces
+              </h3>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Distribution of applicants based on regional data entries.
+              </p>
             </div>
             <span className="text-xs font-semibold px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full w-fit">
               Filtered Submissions
             </span>
           </div>
-          
+
           <div className="w-full min-h-[280px] bg-gray-50/40 p-4 rounded-xl border border-gray-100/50 flex items-center">
             <ResponsiveContainer debounce={200} width="100%" height={280}>
-              <BarChart 
-                data={metrics.provinceData} 
+              <BarChart
+                data={metrics.provinceData}
                 layout="vertical"
                 margin={{ top: 10, right: 40, left: 10, bottom: 5 }}
               >
-                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#eef0f3" />
-                <XAxis 
-                  type="number" 
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  horizontal={false}
+                  stroke="#eef0f3"
+                />
+                <XAxis
+                  type="number"
                   tick={{ fontSize: 11, fill: "#9CA3AF" }}
                   axisLine={false}
                   tickLine={false}
@@ -741,25 +935,25 @@ function DashboardOverview() {
                   axisLine={false}
                   tickLine={false}
                 />
-                <Tooltip 
+                <Tooltip
                   cursor={{ fill: "rgba(44, 45, 134, 0.04)", radius: 4 }}
-                  contentStyle={{ 
-                    backgroundColor: "#FFFFFF", 
-                    border: "1px solid #E5E7EB", 
+                  contentStyle={{
+                    backgroundColor: "#FFFFFF",
+                    border: "1px solid #E5E7EB",
                     borderRadius: "8px",
                     fontSize: "12px",
-                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)"
+                    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
                   }}
                 />
-                <Bar 
-                  dataKey="count" 
-                  fill="#2C2D86" 
+                <Bar
+                  dataKey="count"
+                  fill="#2C2D86"
                   radius={[0, 6, 6, 0]}
                   barSize={24}
                 >
-                  <LabelList 
-                    dataKey="count" 
-                    position="right" 
+                  <LabelList
+                    dataKey="count"
+                    position="right"
                     className="fill-[#2C2D86] font-bold text-xs"
                     dx={10}
                   />
@@ -769,9 +963,13 @@ function DashboardOverview() {
           </div>
         </div>
 
-        <div className="chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-2">
-          <h3 className="mb-2 text-[#2C2D86] font-semibold">Assessment Pipeline Progress</h3>
-          <p className="text-sm text-gray-500 mb-6">Volume of applicants processed through key assessment stages.</p>
+        <div className="chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100 lg:col-span-3">
+          <h3 className="mb-2 text-[#2C2D86] font-semibold">
+            Assessment Pipeline Progress
+          </h3>
+          <p className="text-sm text-gray-500 mb-6">
+            Volume of applicants processed through key assessment stages.
+          </p>
           <ResponsiveContainer debounce={200} width="100%" height={350}>
             <AreaChart data={metrics.assessmentData}>
               <defs>
@@ -781,10 +979,25 @@ function DashboardOverview() {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="name" interval={0} angle={-45} textAnchor="end" height={60} tick={{ fontSize: 12 }} />
+              <XAxis
+                dataKey="name"
+                interval={0}
+                angle={-45}
+                textAnchor="end"
+                height={60}
+                tick={{ fontSize: 12 }}
+              />
               <YAxis />
               <Tooltip />
-              <Area type="monotone" dataKey="completed" stroke="#2C2D86" strokeWidth={3} fillOpacity={1} fill="url(#colorComp)" name="Applicants" />
+              <Area
+                type="monotone"
+                dataKey="completed"
+                stroke="#2C2D86"
+                strokeWidth={3}
+                fillOpacity={1}
+                fill="url(#colorComp)"
+                name="Applicants"
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>

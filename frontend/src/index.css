@@ -185,3 +185,10 @@ select:focus {
   margin: 1px 0;
   z-index: 10;
 }
+
+
+/* Dashboard Modern UI Overrides */
+.modern-chart-card {
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
