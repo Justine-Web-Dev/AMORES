@@ -1,5 +1,6 @@
 import axios from "axios"; 
-const baseURL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8000/api").replace(/\/$/, "");
+//import.meta.env.VITE_API_URL || 
+const baseURL = ("http://127.0.0.1:8000/api").replace(/\/$/, "");
 
 export const api = axios.create({
   baseURL,
@@ -14,7 +15,7 @@ api.interceptors.request.use(
       config.url = config.url.slice(1);
     }
 
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (token) {
       config.headers["X-User-Token"] = token;
     }
@@ -28,8 +29,13 @@ api.interceptors.response.use(
   (error) => {
     // If backend returns 401 Unauthorized, automatically log out
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("role");
+      
+      // Redirect to login page if we aren't already there
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

@@ -8,7 +8,7 @@ import ApplicantEvaluation from "../PersonnelRecruiter/ApplicantEvaluation";
 import ViewDetails from "../../ViewDetails";
 
 function InterviewMain() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   return (
     <div className="PersonnelDashboard">

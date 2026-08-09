@@ -261,9 +261,9 @@ function UserManagement() {
                           {activeTab === "active" ? (
                             <button
                               onClick={() => handleArchive(user)}
-                              className="text-left  cursor-pointer view-details-btn-action"
+                              className="text-left cursor-pointer deactivate-btn-action text-red-500 hover:text-white"
                             >
-                              Archive
+                              Deactivate
                             </button>
                           ) : (
                             <button

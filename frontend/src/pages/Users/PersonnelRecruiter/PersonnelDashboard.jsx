@@ -14,7 +14,7 @@ import AccountSettings from "../../Settings/AccountSettings";
 import GenerateReport from "../../GenerateReport";
 
 function PersonnelDashboard() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   return (
     <div className="PersonnelDashboard">

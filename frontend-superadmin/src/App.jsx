@@ -11,10 +11,10 @@ import ProtectedRoute from '../../frontend/src/Components/ProtectedRoute'
 import ForceChangePasswordModal from '../../frontend/src/Modals/ForceChangePasswordModal'
 
 function ProtectedSuperAdminRoute({ children }) {
-  const token = localStorage.getItem('token');
-  const role = localStorage.getItem('role');
+  const token = sessionStorage.getItem('token');
+  const role = sessionStorage.getItem('role');
   const [showForcePasswordModal, setShowForcePasswordModal] = useState(
-    localStorage.getItem('must_change_password') === 'true'
+    sessionStorage.getItem('must_change_password') === 'true'
   );
 
   if (!token || (role !== 'SUPER_ADMIN' && role !== 'Administrator')) {
@@ -29,7 +29,7 @@ function ProtectedSuperAdminRoute({ children }) {
         token={token}
         onSuccess={() => {
           setShowForcePasswordModal(false);
-          localStorage.setItem('must_change_password', 'false');
+          sessionStorage.setItem('must_change_password', 'false');
         }}
       />
     </>

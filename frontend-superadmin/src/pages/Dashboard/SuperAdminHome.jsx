@@ -104,7 +104,7 @@ function SuperAdminHome() {
       return JSON.parse(decodeURIComponent(atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')));
     } catch { return null; }
   };
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   const payload = parseJwt(token);
   const adminName = payload?.name || 'Super Admin';
 

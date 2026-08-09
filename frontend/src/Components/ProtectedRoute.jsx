@@ -4,9 +4,9 @@ import ForceChangePasswordModal from '../Modals/ForceChangePasswordModal';
 
 const ProtectedRoute = ({ children, allowedRole }) => {
   const navigate = useNavigate();
-  const token = localStorage.getItem('token');
-  const userRole = localStorage.getItem('role');
-  const [showForcePasswordModal, setShowForcePasswordModal] = useState(localStorage.getItem('must_change_password') === 'true');
+  const token = sessionStorage.getItem('token');
+  const userRole = sessionStorage.getItem('role');
+  const [showForcePasswordModal, setShowForcePasswordModal] = useState(sessionStorage.getItem('must_change_password') === 'true');
 
   const checkTokenStatus = () => {
     if (!token) return { valid: false, timeRemaining: 0 };
@@ -31,18 +31,18 @@ const ProtectedRoute = ({ children, allowedRole }) => {
   const { valid, timeRemaining } = checkTokenStatus();
 
   const getLoginPath = () => {
-    return window.location.port === '5174' ? '/login' : '/LoginUsers';
+    return '/login';
   };
 
   useEffect(() => {
     if (!valid) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('role');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('role');
       navigate(getLoginPath(), { replace: true });
     } else if (timeRemaining !== null && timeRemaining > 0) {
       const timer = setTimeout(() => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('role');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('role');
         navigate(getLoginPath(), { replace: true });
       }, timeRemaining);
 
@@ -73,7 +73,7 @@ const ProtectedRoute = ({ children, allowedRole }) => {
         token={token}
         onSuccess={() => {
           setShowForcePasswordModal(false);
-          localStorage.setItem('must_change_password', 'false');
+          sessionStorage.setItem('must_change_password', 'false');
         }}
       />
     </>

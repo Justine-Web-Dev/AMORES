@@ -50,8 +50,8 @@ function UserCard({users, onEdit,search}) {
                               Edit
                             </button>
                             <button 
-                              className="text-left  cursor-pointer view-details-btn-action">
-                              Archive
+                              className="text-left px-2 py-1 cursor-pointer deactivate-btn-action text-red-500 hover:text-white">
+                              Deactivate
                             </button>
                           </ul>
                         </div>

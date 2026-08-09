@@ -88,7 +88,7 @@ function AddNewUserForm({ onClose, user }) {
     e.preventDefault();
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       let currentUser = "Unknown";
       if (token) {
         try {

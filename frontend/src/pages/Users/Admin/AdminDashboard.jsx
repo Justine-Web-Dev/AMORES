@@ -20,7 +20,7 @@ import GenerateReport from '../../GenerateReport'
 import AccountSettings from '../../Settings/AccountSettings'
 
 function AdminDashboard() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   return (
     <div className='AdminDashboard'>

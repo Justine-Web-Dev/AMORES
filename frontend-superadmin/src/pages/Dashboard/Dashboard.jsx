@@ -18,8 +18,8 @@ import BackupRestore from '../../../../frontend/src/pages/Users/Admin/BackupRest
 import AccountSettings from '../../../../frontend/src/pages/Settings/AccountSettings';
 
 function Dashboard() {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const role = localStorage.getItem('role');
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const role = sessionStorage.getItem('role');
 
   return (
     <div className='AdminDashboard'>

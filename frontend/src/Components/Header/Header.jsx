@@ -53,7 +53,7 @@ function Header() {
     }
   };
 
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   const payload = parseJwt(token);
   const name = payload?.name || 'User';
   const rawRole = payload?.role || '';

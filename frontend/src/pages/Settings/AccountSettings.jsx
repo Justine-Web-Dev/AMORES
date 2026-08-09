@@ -48,7 +48,7 @@ function AccountSettings() {
     }
   };
 
-  const token = localStorage.getItem('token');
+  const token = sessionStorage.getItem('token');
   const payload = parseJwt(token);
   const name = payload?.name || 'User';
   const rawRole = payload?.role || '';
@@ -120,7 +120,7 @@ function AccountSettings() {
       
       // Update token in localStorage so it persists across reloads/navigations
       if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
+        sessionStorage.setItem('token', response.data.token);
       }
       
       // Update UI with new profile picture

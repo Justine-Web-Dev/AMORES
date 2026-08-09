@@ -15,7 +15,7 @@ function StatusManagement({
   const [rejectionReason, setRejectionReason] = useState(
     currentRejectionReason || "",
   );
-  const isInterviewer = localStorage.getItem("role") === "Interviewer";
+  const isInterviewer = sessionStorage.getItem("role") === "Interviewer";
   const [isUpdating, setIsUpdating] = useState(false);
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
@@ -194,7 +194,7 @@ function StatusManagement({
     setIsUpdating(true);
     try {
       // Get the current user from the token for audit logging
-      const token = localStorage.getItem("token");
+      const token = sessionStorage.getItem("token");
       let currentUser = "Unknown";
       if (token) {
         try {

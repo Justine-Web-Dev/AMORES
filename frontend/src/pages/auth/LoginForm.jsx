@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import '../../pages/auth/LoginForm.css'
-import { useNavigate, Navigate, Link } from 'react-router-dom'
+import { useNavigate, Navigate, useLocation } from 'react-router-dom'
 import { api } from '../../../api/api'
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
@@ -17,6 +17,17 @@ function LoginForm() {
   const [errorMessage, setErrorMessage] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const urlToken = params.get('token');
+    if (urlToken) {
+      sessionStorage.setItem('token', urlToken);
+      sessionStorage.setItem('role', 'SUPER_ADMIN');
+      navigate('/Dashboard', { replace: true });
+    }
+  }, [location, navigate]);
 
   async function handleLogin(e) {
     e.preventDefault()
@@ -45,11 +56,15 @@ function LoginForm() {
         
         console.log("Login data:", data);
 
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", routeRole);
-        localStorage.setItem("must_change_password", data.must_change_password ? "true" : "false");
+        sessionStorage.setItem("token", data.token);
+        sessionStorage.setItem("role", routeRole);
+        sessionStorage.setItem("must_change_password", data.must_change_password ? "true" : "false");
         
         if (data.role === 'SUPER_ADMIN') {
+          if (window.location.port !== '5174') {
+            window.location.href = `http://localhost:5174/login?token=${data.token}`;
+            return;
+          }
           navigate("/Dashboard");
           return;
         }
@@ -72,8 +87,8 @@ function LoginForm() {
     }
   }
 
-  const token = localStorage.getItem('token');
-  const role = localStorage.getItem('role');
+  const token = sessionStorage.getItem('token');
+  const role = sessionStorage.getItem('role');
   
   if (token && role) {
     switch(role){

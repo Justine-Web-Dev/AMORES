@@ -33,7 +33,7 @@ function SystemSettings() {
     setSaving(true);
     try {
       // Get the current user from the token for audit logging
-      const token = localStorage.getItem('token');
+      const token = sessionStorage.getItem('token');
       let currentUser = 'Unknown';
       if (token) {
         try {

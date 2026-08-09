@@ -19,7 +19,7 @@ function SidebarRecruiter({ isCollapsed, setIsCollapsed }) {
 
   // Premium navigation link styling
   const linkClass = (path) => `
-    flex items-center ${isCollapsed ? 'justify-center mx-2' : 'gap-3 px-4'} py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group
+    relative flex items-center ${isCollapsed ? 'justify-center mx-2' : 'gap-3 px-4'} py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group
     ${isActive(path) 
       ? 'bg-[#2C2D86] text-white shadow-md shadow-indigo-900/30 font-semibold translate-x-1' 
       : 'text-slate-600 hover:bg-white/80 hover:text-slate-900 hover:shadow-sm'}
@@ -54,12 +54,13 @@ function SidebarRecruiter({ isCollapsed, setIsCollapsed }) {
         </div>
 
         {/* Recruiter Navigation List */}
-        <nav className="flex-1 overflow-y-auto p-4 space-y-1 scrollbar-thin">
+        <nav className={`flex-1 p-4 space-y-1 scrollbar-thin ${isCollapsed ? 'overflow-visible' : 'overflow-y-auto'}`}>
           <ul className="space-y-1">
             <li>
               <Link className={linkClass('/PersonnelDashboard')} to="/PersonnelDashboard">
                 <RiDashboardLine size={18} className={isActive('/PersonnelDashboard') ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'} />
                 {!isCollapsed && <span>Dashboard</span>}
+                {isCollapsed && <div className="absolute left-14 hidden group-hover:block bg-slate-800 text-white text-[11px] leading-tight font-medium px-2 py-1.5 rounded shadow-lg z-[100] w-max whitespace-nowrap">Dashboard</div>}
               </Link>
             </li>
 
@@ -67,6 +68,7 @@ function SidebarRecruiter({ isCollapsed, setIsCollapsed }) {
               <Link className={linkClass('/PersonnelDashboard/applications')} to="/PersonnelDashboard/applications">
                 <RiFileTextLine size={18} className={isActive('/PersonnelDashboard/applications') ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'} />
                 {!isCollapsed && <span>Applications</span>}
+                {isCollapsed && <div className="absolute left-14 hidden group-hover:block bg-slate-800 text-white text-[11px] leading-tight font-medium px-2 py-1.5 rounded shadow-lg z-[100] w-max whitespace-nowrap">Applications</div>}
               </Link>
             </li>
 
@@ -77,6 +79,7 @@ function SidebarRecruiter({ isCollapsed, setIsCollapsed }) {
               <Link className={linkClass('/PersonnelDashboard/generate-report')} to="/PersonnelDashboard/generate-report">
                 <RiDraftLine size={18} className={isActive('/PersonnelDashboard/generate-report') ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'} />
                 {!isCollapsed && <span>Generate Report</span>}
+                {isCollapsed && <div className="absolute left-14 hidden group-hover:block bg-slate-800 text-white text-[11px] leading-tight font-medium px-2 py-1.5 rounded shadow-lg z-[100] w-max whitespace-nowrap">Generate Report</div>}
               </Link>
             </li>
           </ul>
@@ -87,11 +90,12 @@ function SidebarRecruiter({ isCollapsed, setIsCollapsed }) {
           <button 
             type="button"
             onClick={handleLogout}
-            className={`w-full flex items-center justify-center ${isCollapsed ? 'px-2' : 'gap-2 px-4'} py-2.5 bg-red-500/10 hover:bg-red-500 hover:text-white text-red-600 font-semibold rounded-xl text-sm transition-all duration-200 shadow-sm hover:shadow-md hover:shadow-red-500/20`}
+            className={`group relative w-full flex items-center justify-center ${isCollapsed ? 'px-2' : 'gap-2 px-4'} py-2.5 bg-red-500/10 hover:bg-red-500 hover:text-white text-red-600 font-semibold rounded-xl text-sm transition-all duration-200 shadow-sm hover:shadow-md hover:shadow-red-500/20`}
             title="Logout"
           > 
             <FiLogOut size={16}/> 
             {!isCollapsed && <span>Logout</span>}
+                {isCollapsed && <div className="absolute left-14 hidden group-hover:block bg-slate-800 text-white text-[11px] leading-tight font-medium px-2 py-1.5 rounded shadow-lg z-[100] w-max whitespace-nowrap">Logout</div>}
           </button>
         </div>
       </div>
