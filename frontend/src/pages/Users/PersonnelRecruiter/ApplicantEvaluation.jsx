@@ -61,9 +61,27 @@ function ApplicantEvaluation({ isInterviewer = false }) {
   };
 
   useEffect(() => {
-    handleScroll();
+    const handleScrollWithDelay = () => {
+      handleScroll();
+      setTimeout(handleScroll, 100);
+      setTimeout(handleScroll, 500);
+    };
+
+    handleScrollWithDelay();
     window.addEventListener("resize", handleScroll);
-    return () => window.removeEventListener("resize", handleScroll);
+    
+    let observer;
+    if (scrollRef.current) {
+      observer = new ResizeObserver(() => handleScroll());
+      observer.observe(scrollRef.current);
+    }
+
+    return () => {
+      window.removeEventListener("resize", handleScroll);
+      if (observer) {
+        observer.disconnect();
+      }
+    };
   }, [applicantInfo]);
 
   const scrollTabs = (direction) => {
@@ -673,11 +691,11 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                 <th scope="col" className="th text-center">
                   Status
                 </th>
-                {statusFilter !== "New Applicant" && (
+                {/* {statusFilter !== "New Applicant" && (
                   <th scope="col" className="th text-center whitespace-nowrap">
                     Date Updated
                   </th>
-                )}
+                )} */}
 
                 {statusFilter === "Failed" && (
                   <th scope="col" className="th text-center">
@@ -759,7 +777,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                         {applicant.status}
                       </span>
                     </td>
-                    {statusFilter !== "New Applicant" && (
+                    {/* {statusFilter !== "New Applicant" && (
                       <td className="text-center text-xs whitespace-nowrap text-gray-500">
                         {applicant.status !== "New Applicant" &&
                         applicant.status_updated_at
@@ -768,7 +786,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                             ).toLocaleDateString()
                           : "-"}
                       </td>
-                    )}
+                    )} */}
 
                     {statusFilter === "Failed" && (
                       <td

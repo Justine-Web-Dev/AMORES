@@ -29,6 +29,11 @@ function LoginForm() {
     }
   }, [location, navigate]);
 
+  // Force light mode on the login page
+  useEffect(() => {
+    document.documentElement.classList.remove('dark');
+  }, []);
+
   async function handleLogin(e) {
     e.preventDefault()
     if (loading) return;

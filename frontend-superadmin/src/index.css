@@ -186,3 +186,213 @@ select:focus {
   margin: 1px 0;
   z-index: 10;
 }
+
+@import url('https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single:wght@100..900&family=Bitcount+Single:wght@100..900&family=Comfortaa:wght@300..700&family=Fuzzy+Bubbles:wght@400;700&family=Happy+Monkey&family=Karla:ital,wght@0,200..800;1,200..800&family=Koulen&family=Mozilla+Text:wght@200..700&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Orbitron:wght@400..900&family=Playwrite+AU+QLD:wght@100..400&family=Quicksand:wght@300..700&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&family=Savate:ital,wght@0,200..900;1,200..900&family=Silkscreen:wght@400;700&display=swap');
+
+@import 'tailwindcss';
+@source "../../frontend/src";
+
+input[type='email'],
+input[type='password'],
+input[type='text'],
+input[type="number"],
+input[type="date"],
+select {
+  height: 38px;
+  width: 100%;
+  padding: 0 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  outline: none;
+  transition: 0.2s;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+input[type='email']:focus,
+input[type='password']:focus, 
+input[type='text']:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+select:focus {
+  border-color: #8486e9;
+  box-shadow: 0 0 0 3px rgba(132, 134, 233, 0.2);
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes stampPlay {
+  0% {
+    opacity: 0;
+    transform: scale(2) rotate(-10deg);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(0.95) rotate(-3deg);
+  }
+  80% {
+    transform: scale(1.05) rotate(-1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(-2deg);
+  }
+}
+
+@layer utilities {
+  .stamp-animation {
+    animation: stampPlay 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+}
+
+.stamp-circle {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 900;
+  text-transform: uppercase;
+  text-align: center;
+  position: relative;
+  border: 6px solid currentColor;
+  box-shadow: inset 0 0 0 3px #F9FAFB, inset 0 0 0 5px currentColor;
+  transform: rotate(-15deg);
+  opacity: 0;
+  background-color: transparent;
+  user-select: none;
+}
+.stamp-circle::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  bottom: 4px;
+  border: 2px dashed currentColor;
+  border-radius: 50%;
+  opacity: 0.6;
+  pointer-events: none;
+}
+.stamp-circle .stamp-text {
+  font-size: 1.85rem;
+  letter-spacing: 1px;
+  margin: 0;
+  line-height: 1;
+  z-index: 10;
+}
+.stamp-circle .stamp-subtext {
+  font-size: 0.7rem;
+  font-weight: 800;
+  margin-top: 4px;
+  letter-spacing: 1px;
+  z-index: 10;
+  max-width: 85%;
+  word-wrap: break-word;
+  line-height: 1.1;
+}
+.stamp-circle .stars {
+  font-size: 1rem;
+  letter-spacing: 6px;
+  margin: 2px 0;
+  z-index: 10;
+}
+
+.stamp-circle-sm {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 900;
+  text-transform: uppercase;
+  text-align: center;
+  position: relative;
+  border: 2px solid currentColor;
+  box-shadow: inset 0 0 0 1px #F9FAFB, inset 0 0 0 2px currentColor;
+  transform: rotate(-15deg);
+  background-color: transparent;
+  user-select: none;
+}
+.stamp-circle-sm::before {
+  content: '';
+  position: absolute;
+  top: 1px; left: 1px; right: 1px; bottom: 1px;
+  border: 1px dashed currentColor;
+  border-radius: 50%;
+  opacity: 0.6;
+  pointer-events: none;
+}
+.stamp-circle-sm .stamp-text {
+  font-size: 0.55rem;
+  letter-spacing: 0px;
+  margin: 0;
+  line-height: 1;
+  z-index: 10;
+  max-width: 90%;
+}
+.stamp-circle-sm .stamp-subtext {
+  font-size: 0.35rem;
+  font-weight: 800;
+  margin-top: 1px;
+  letter-spacing: 0px;
+  z-index: 10;
+  max-width: 85%;
+  word-wrap: break-word;
+  line-height: 1.1;
+}
+.stamp-circle-sm .stars {
+  font-size: 0.4rem;
+  letter-spacing: 2px;
+  margin: 1px 0;
+  z-index: 10;
+}
+
+/* Dashboard Modern UI Overrides */
+.modern-chart-card {
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Basic Dark Mode Implementation */
+html {
+  transition: filter 0.4s ease, background-color 0.4s ease;
+}
+
+html.dark {
+  filter: invert(0.92) hue-rotate(180deg) brightness(1.05) contrast(0.95);
+  background-color: #e5e7eb; /* Inverts to a smooth, sleek dark gray/black */
+}
+
+/* Revert images and some elements that should not be inverted */
+html.dark img, html.dark video, html.dark .stamp-circle, html.dark .stamp-circle-sm {
+  filter: invert(1) hue-rotate(180deg);
+}
