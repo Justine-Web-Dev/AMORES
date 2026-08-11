@@ -69,8 +69,8 @@ function LoginForm() {
         sessionStorage.setItem("must_change_password", data.must_change_password ? "true" : "false");
         
         if (data.role === 'SUPER_ADMIN') {
-          if (window.location.port !== '5174') {
-            const superAdminUrl = import.meta.env.VITE_SUPER_ADMIN_URL || 'http://localhost:5174';
+          const superAdminUrl = import.meta.env.VITE_SUPER_ADMIN_URL;
+          if (superAdminUrl && !window.location.href.startsWith(superAdminUrl)) {
             window.location.href = `${superAdminUrl}/login?token=${data.token}`;
             return;
           }
