@@ -57,7 +57,10 @@ function LoginForm() {
 
       setTimeout(() => {
         const isAdmin = data.role === "Administrator" || (data.email && data.email.toLowerCase().startsWith("admin@"));
-        const routeRole = isAdmin ? "Administrator" : (data.role || "Recruiter");
+        let routeRole = isAdmin ? "Administrator" : (data.role || "Recruiter");
+        if (data.role === 'SUPER_ADMIN') {
+          routeRole = 'SUPER_ADMIN';
+        }
         
         console.log("Login data:", data);
 
@@ -67,7 +70,8 @@ function LoginForm() {
         
         if (data.role === 'SUPER_ADMIN') {
           if (window.location.port !== '5174') {
-            window.location.href = `http://localhost:5174/login?token=${data.token}`;
+            const superAdminUrl = import.meta.env.VITE_SUPER_ADMIN_URL || 'http://localhost:5174';
+            window.location.href = `${superAdminUrl}/login?token=${data.token}`;
             return;
           }
           navigate("/Dashboard");

@@ -299,7 +299,7 @@ function UserManagement() {
         onClose={() => setShowConfirmModal(false)}
         onConfirm={confirmArchive}
         title="Archive User"
-        message={`Are you sure you want to archive "${userToArchive?.username}"? This will disable their account but preserve their data.`}
+        message={`Are you sure you want to archive "${userToArchive?.name}"? This will disable their account but preserve their data.`}
       />
 
       <RestoreModal
@@ -307,7 +307,7 @@ function UserManagement() {
         onClose={() => setShowRestoreModal(false)}
         onConfirm={confirmRestore}
         title="Restore User"
-        message={`Are you sure you want to restore user "${userToRestore?.username}"? This will reactivate their account.`}
+        message={`Are you sure you want to restore user "${userToRestore?.name}"? This will reactivate their account.`}
       />
 
       <MessageModal
