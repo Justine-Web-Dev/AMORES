@@ -714,9 +714,9 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                 <th scope="col" className="th">
                   Permanent Address
                 </th>
-                <th scope="col" className="th">
+                {/* <th scope="col" className="th">
                   Name of School
-                </th>
+                </th> */}
                 <th scope="col" className="th whitespace-nowrap">
                   Date Graduated
                 </th>
@@ -800,7 +800,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                     <td>{applicant.gender}</td>
                     <td>{applicant.program}</td>
                     <td>{applicant.address || "N/A"}</td>
-                    <td>{applicant.name_of_school}</td>
+                    {/* <td>{applicant.name_of_school}</td> */}
                     <td>{applicant.date_graduated}</td>
 
                     <td>{applicant.created_at}</td>

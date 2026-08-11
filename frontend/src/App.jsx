@@ -15,7 +15,6 @@ function App() {
   return (
     <>
       <Routes>
-        {/* Secure Admin Dashboard */}
         <Route 
           path='/Dashboard/*' 
           element={
@@ -25,7 +24,6 @@ function App() {
           } 
         />
 
-        {/* Secure Personnel Dashboard */}
         <Route 
           path='/PersonnelDashboard/*' 
           element={
@@ -48,7 +46,6 @@ function App() {
         <Route path='/success-submit' element={<SubmitApplicationModal />} />
         <Route path='/disclaimer' element={<Disclaimer />} />
         
-        {/* Landing Page & Sub-routes (Track, Form, etc.) handled by LandingpageMain */}
         <Route path='/*' element={<LandingpageMain />} />
         <Route path='/application-type' element={<ApplicationTypeModal/>}/>
         <Route path='/instruction-reapply' element={ <InstructionReApply />}/>

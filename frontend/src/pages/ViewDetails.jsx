@@ -7,6 +7,8 @@ import { api } from '../../api/api'
 import { useParams, useLocation } from 'react-router'
 import ViewDocumentSubmitted from '../ViewDocumentSubmitted';
 
+import StatusManagement from './Users/PersonnelRecruiter/StatusManagement';
+
 function ViewDetails() {
   const {id} = useParams()
   const [applicant,setApplicant] = useState(null)
@@ -99,6 +101,17 @@ function ViewDetails() {
         <ApplicantInfoView data={applicant}/>
         <ViewDocumentSubmitted applicantId={id}/>
 
+        {applicant.status === "New Applicant" && (
+          <div className="mt-4 bg-white rounded-[12px]">
+            <StatusManagement
+              applicantId={applicant.id}
+              applicantData={applicant}
+              currentStatus={applicant.status}
+              currentRejectionReason={applicant.rejection_reason}
+              onUpdate={fetchApplicantDetails}
+            />
+          </div>
+        )}
       </div>
       <button
         onClick={handleBack}

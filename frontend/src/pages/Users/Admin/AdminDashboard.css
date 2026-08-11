@@ -55,8 +55,9 @@
   
   .admin-summary-card {
     min-width: 150px !important;
-    height: 80px !important;
-    padding: 0 15px !important;
+    min-height: 80px !important;
+    height: auto !important;
+    padding: 10px 15px !important;
   }
 }
 
@@ -68,11 +69,11 @@
   align-items: center;
   background-color: #fff;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.151);
-  height: 90px;
+  min-height: 90px;
   border-left: 5px solid #2C2D86;
   border-radius: 8px;
   min-width: 200px;
-  padding: 0 20px;
+  padding: 10px 20px;
   transition: all 0.3s ease;
 }
 
@@ -93,6 +94,8 @@
   font-size: 0.95rem;
   color: #666;
   margin-bottom: 0.35rem;
+  text-align: center;
+  line-height: 1.2;
 }
 
 .admin-summary-card .summary-value {

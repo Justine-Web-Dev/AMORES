@@ -14,8 +14,8 @@ function Logout({ setShowLogout }) {
   };
   
   return (
-    <div className='fixed top-0 left-0 right-0 bottom-0 bg-black/40 h-screen w-full flex justify-center items-center z-[9999]'>
-      <div className='flex justify-center flex-col items-center px-10 py-5 rounded-[8px] bg-white'>
+    <div className='logout-overlay fixed top-0 left-0 right-0 bottom-0 bg-black/40 h-screen w-full flex justify-center items-center z-[9999]'>
+      <div className='flex justify-center flex-col items-center px-10 py-5 rounded-[8px] bg-white text-gray-900'>
         <CiLogout size={50}/>
         <h3 className='text-center text-[22px] font-semibold w-[300px]'>Do you want to logout?</h3>
         <p className='text-center text-gray-600 text-[14px] w-[300px]'>You won't be able to revert this</p>

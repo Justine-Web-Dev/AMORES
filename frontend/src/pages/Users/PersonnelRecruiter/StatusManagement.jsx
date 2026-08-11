@@ -4,6 +4,27 @@ import { api } from "../../../../api/api";
 import MessageModal from "../../../Modals/MessageModal";
 import { HiOutlineCheckCircle, HiOutlineXCircle } from "react-icons/hi";
 
+const formatRejectionReason = (reason) => {
+  if (!reason) return "";
+  if (reason.startsWith("Automated Screening Failed:") && reason.includes(";")) {
+    const prefix = "Automated Screening Failed:\n";
+    let rest = reason.substring(27).trim();
+    if (rest.startsWith("Automated Screening Failed:")) {
+       rest = reason;
+    }
+    const list = rest.split(";").map(item => {
+      let cleanItem = item.trim();
+      // Make document names cleaner (e.g. PROS__CLEARANCE -> PROS CLEARANCE)
+      cleanItem = cleanItem.replace(/__/g, " ");
+      // Remove repetitive 'AI verification failed:' text
+      cleanItem = cleanItem.replace(/AI verification failed:\s*/g, "");
+      return "• " + cleanItem;
+    }).join("\n");
+    return prefix + list;
+  }
+  return reason;
+};
+
 function StatusManagement({
   applicantId,
   applicantData,
@@ -13,7 +34,7 @@ function StatusManagement({
 }) {
   const [selectedStatus, setSelectedStatus] = useState(currentStatus);
   const [rejectionReason, setRejectionReason] = useState(
-    currentRejectionReason || "",
+    formatRejectionReason(currentRejectionReason) || "",
   );
   const isInterviewer = sessionStorage.getItem("role") === "Interviewer";
   const [isUpdating, setIsUpdating] = useState(false);
@@ -78,14 +99,14 @@ function StatusManagement({
         rejReason.includes("failed")
       ) {
         setSelectedStatus("Failed");
-        setRejectionReason(rejReason || remarks);
+        setRejectionReason(formatRejectionReason(rejReason || remarks));
       } else {
         setSelectedStatus("Qualified");
-        setRejectionReason(currentRejectionReason || "");
+        setRejectionReason(formatRejectionReason(currentRejectionReason || ""));
       }
     } else {
       setSelectedStatus(currentStatus);
-      setRejectionReason(currentRejectionReason || "");
+      setRejectionReason(formatRejectionReason(currentRejectionReason || ""));
     }
 
     // Sync evaluation states if data refreshes
@@ -723,7 +744,7 @@ function StatusManagement({
             Reason for Rejection
           </label>
           <textarea
-            className="w-full p-2 border border-gray-300 rounded mt-1 text-sm min-h-[80px] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
+            className="w-full p-2 border border-gray-300 rounded mt-1 text-sm min-h-[200px] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
             placeholder="Enter specific reason for rejection..."
             value={rejectionReason}
             onChange={(e) => setRejectionReason(e.target.value)}
