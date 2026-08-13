@@ -52,13 +52,13 @@ class User(AbstractUser):
     class Roles(models.TextChoices):
         SUPER_ADMIN = 'SUPER_ADMIN', 'Super Admin'
         ADMINISTRATOR = 'Administrator', 'Administrator'
-        RECRUITER = 'Recruiter', 'Recruiter'
-        INTERVIEWER = 'Interviewer', 'Interviewer'
+        RECRUITER = 'Recruitment Personnel', 'Recruitment Personnel'
+        INTERVIEWER = 'Recruitment Screening Committee (RSC)', 'Recruitment Screening Committee (RSC)'
     
     name = models.CharField(max_length=100, default="Unknown", verbose_name="Full Name")
     email = models.EmailField(max_length=100, unique=True, verbose_name="Email Address")
     role = models.CharField(
-        max_length=20, 
+        max_length=50, 
         choices=Roles.choices, 
         default=Roles.RECRUITER, 
         verbose_name="Role"

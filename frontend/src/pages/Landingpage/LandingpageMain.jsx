@@ -79,7 +79,7 @@ function LandingpageMain() {
   const token = sessionStorage.getItem("token");
   const role = sessionStorage.getItem("role");
 
-  if (token && (role === "Administrator" || role === "Recruiter")) {
+  if (token && (role === "Administrator" || role === "Recruitment Personnel")) {
     return (
       <Navigate
         to={role === "Administrator" ? "/Dashboard" : "/PersonnelDashboard"}

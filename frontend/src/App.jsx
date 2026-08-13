@@ -27,7 +27,7 @@ function App() {
         <Route 
           path='/PersonnelDashboard/*' 
           element={
-            <ProtectedRoute allowedRole={["Recruiter"]}>
+            <ProtectedRoute allowedRole={["Recruitment Personnel"]}>
               <PersonnelDashboard />
             </ProtectedRoute>
           } 
@@ -37,7 +37,7 @@ function App() {
         <Route 
           path='/InterviewDashboard/*' 
           element={
-            <ProtectedRoute allowedRole={["Interviewer"]}>
+            <ProtectedRoute allowedRole={["Recruitment Screening Committee (RSC)"]}>
               <InterviewMain />
             </ProtectedRoute>
           } 

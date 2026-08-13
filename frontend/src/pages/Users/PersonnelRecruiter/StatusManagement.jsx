@@ -36,7 +36,7 @@ function StatusManagement({
   const [rejectionReason, setRejectionReason] = useState(
     formatRejectionReason(currentRejectionReason) || "",
   );
-  const isInterviewer = sessionStorage.getItem("role") === "Interviewer";
+  const isInterviewer = sessionStorage.getItem("role") === "Recruitment Screening Committee (RSC)";
   const [isUpdating, setIsUpdating] = useState(false);
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,

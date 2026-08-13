@@ -12,7 +12,7 @@ function AddNewUserForm({ onClose, user }) {
     name: "",
     email: "",
     password: "",
-    role: "Recruiter",
+    role: "Recruitment Personnel",
   });
   
   const [modalConfig, setModalConfig] = useState({
@@ -41,14 +41,14 @@ function AddNewUserForm({ onClose, user }) {
         name: user.name || "",
         email: user.email || "",
         password: "",
-        role: user.role || "Recruiter",
+        role: user.role || "Recruitment Personnel",
       });
     } else {
       setFormData({
         name: "",
         email: "",
         password: "", // Left clear initially until email is fully resolved
-        role: "Recruiter",
+        role: "Recruitment Personnel",
       });
     }
   }, [user]);
@@ -197,9 +197,9 @@ function AddNewUserForm({ onClose, user }) {
                 onChange={handleChange}
                 className="role"
               >
-                <option value="Recruiter">Recruiter</option>
+                <option value="Recruitment Personnel">Recruiter</option>
                 <option value="Administrator">Administrator</option>
-                <option value="Interviewer">Interviewer</option>
+                <option value="Recruitment Screening Committee (RSC)">Interviewer</option>
               </select>
             </div>
           )}

@@ -157,6 +157,7 @@ def _prepare_postgresql_restore_script(backup_path):
         'users_applicant',
         'users_user',
         'users_systemsettings',
+        'users_applicationdraft',
         'django_admin_log',
         'django_session',
         'django_migrations',

@@ -57,7 +57,7 @@ function LoginForm() {
 
       setTimeout(() => {
         const isAdmin = data.role === "Administrator" || (data.email && data.email.toLowerCase().startsWith("admin@"));
-        let routeRole = isAdmin ? "Administrator" : (data.role || "Recruiter");
+        let routeRole = isAdmin ? "Administrator" : (data.role || "Recruitment Personnel");
         if (data.role === 'SUPER_ADMIN') {
           routeRole = 'SUPER_ADMIN';
         }
@@ -80,7 +80,7 @@ function LoginForm() {
 
         if (isAdmin) {
           navigate("/Dashboard")
-        } else if (routeRole === "Interviewer") {
+        } else if (routeRole === "Recruitment Screening Committee (RSC)") {
           navigate("/InterviewDashboard")
         } else {
           navigate("/PersonnelDashboard")
@@ -103,9 +103,9 @@ function LoginForm() {
     switch(role){
       case 'Administrator':
         return <Navigate to="/Dashboard" replace />
-      case 'Interviewer':
+      case 'Recruitment Screening Committee (RSC)':
         return <Navigate to="/InterviewDashboard" replace />
-      case 'Recruiter':
+      case 'Recruitment Personnel':
         return <Navigate to="/PersonnelDashboard" replace />
       case 'SUPER_ADMIN':
         return <Navigate to="/Dashboard" replace />

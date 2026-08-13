@@ -127,7 +127,7 @@ function UserManagement() {
   const filteredAndSorted = users.filter((user) => {
     const fullName = `${user.name} ${user.username}`.toLowerCase();
     const matchesSearch = fullName.includes(activeSearchTerm.toLowerCase());
-    return matchesSearch;
+    return matchesSearch && user.role !== "SUPER_ADMIN";
   });
 
   const toggleMenu = (id) => {

@@ -55,7 +55,7 @@ function AccountSettings() {
   const email = payload?.email || '';
   
   const role = (rawRole === 'Administrator') ? 'Administrator' : 
-               (rawRole === 'Recruiter') ? 'Recruitment Staff' : 'Staff';
+               (rawRole === 'Recruitment Personnel') ? 'Recruitment Staff' : 'Staff';
                
   const userId = payload?.user_id;
   const [profilePic, setProfilePic] = useState(payload?.profile_picture || logoAcc);

@@ -109,8 +109,8 @@ function Header() {
   // Professional role mapping with direct Admin check
   const role = (rawRole === 'SUPER_ADMIN') ? 'Super Admin' :
                (rawRole === 'Administrator') ? 'Administrator' : 
-               (rawRole === 'Recruiter') ? 'Recruitment Staff' : 
-               (rawRole === 'Interviewer') ? 'Interviewer' : 'Staff';
+               (rawRole === 'Recruitment Personnel') ? 'Recruitment Staff' : 
+               (rawRole === 'Recruitment Screening Committee (RSC)') ? 'Recruitment Screening Committee (RSC)' : 'Staff';
 
   // Dynamic Breadcrumb Logic
   const getPageTitle = () => {
