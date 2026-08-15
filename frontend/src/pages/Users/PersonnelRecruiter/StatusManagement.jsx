@@ -36,7 +36,7 @@ function StatusManagement({
   const [rejectionReason, setRejectionReason] = useState(
     formatRejectionReason(currentRejectionReason) || "",
   );
-  const isInterviewer = sessionStorage.getItem("role") === "Recruitment Screening Committee (RSC)";
+  const isInterviewer = sessionStorage.getItem("role") === "Recruitment Screening Committee (Interviewer)";
   const [isUpdating, setIsUpdating] = useState(false);
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
@@ -65,12 +65,10 @@ function StatusManagement({
   );
   
   // Final Interview detailed fields
-  const [fiVoice, setFiVoice] = useState(applicantData?.fi_voice_quality || "");
-  const [fiComprehension, setFiComprehension] = useState(applicantData?.fi_comprehension || "");
-  const [fiGesture, setFiGesture] = useState(applicantData?.fi_gesture || "");
-  const [fiBearing, setFiBearing] = useState(applicantData?.fi_bearing || "");
-  const [fiGeneralKnowledge, setFiGeneralKnowledge] = useState(applicantData?.fi_general_knowledge || "");
-  const [fiEloquence, setFiEloquence] = useState(applicantData?.fi_eloquence || "");
+  const [fiPatriotism, setFiPatriotism] = useState(applicantData?.fi_patriotism || "");
+  const [fiIntegrity, setFiIntegrity] = useState(applicantData?.fi_integrity || "");
+  const [fiAwareness, setFiAwareness] = useState(applicantData?.fi_awareness || "");
+  const [fiCommunication, setFiCommunication] = useState(applicantData?.fi_communication || "");
   
   // No longer a raw state, it will be computed from the fields, but fallback to applicantData if fields are empty
   const [finalInterviewScore, setFinalInterviewScore] = useState(
@@ -113,7 +111,9 @@ function StatusManagement({
     if (applicantData) {
       setSchDate(applicantData.scheduled_date || "");
       setSchTime(applicantData.scheduled_time || "");
+      
       setDrugResult(applicantData.drug_test_result || "");
+
       setBmiHeight(applicantData.bmi_height || "");
       setBmiWeight(applicantData.bmi_weight || "");
       setPatPushups(applicantData.pat_pushups || "");
@@ -122,15 +122,16 @@ function StatusManagement({
       setPatSitupsPassed(applicantData.pat_situps != null ? !!applicantData.pat_situps_passed : null);
       setPatRun(applicantData.pat_run || "");
       setPatRunPassed(applicantData.pat_run != null ? !!applicantData.pat_run_passed : null);
+
       setPsychologicalResult(applicantData.psychological_result || "");
+
       setMedicalResult(applicantData.medical_result || "");
+
       setFinalInterviewScore(applicantData.final_interview_score || "");
-      setFiVoice(applicantData.fi_voice_quality ?? "");
-      setFiComprehension(applicantData.fi_comprehension ?? "");
-      setFiGesture(applicantData.fi_gesture ?? "");
-      setFiBearing(applicantData.fi_bearing ?? "");
-      setFiGeneralKnowledge(applicantData.fi_general_knowledge ?? "");
-      setFiEloquence(applicantData.fi_eloquence ?? "");
+      setFiPatriotism(applicantData.fi_patriotism ?? "");
+      setFiIntegrity(applicantData.fi_integrity ?? "");
+      setFiAwareness(applicantData.fi_awareness ?? "");
+      setFiCommunication(applicantData.fi_communication ?? "");
     }
   }, [currentStatus, currentRejectionReason, applicantData]);
 
@@ -200,14 +201,12 @@ function StatusManagement({
   };
 
   const getFiComputedScore = () => {
-    if (fiVoice === "" && fiComprehension === "" && fiGesture === "" && fiBearing === "" && fiGeneralKnowledge === "" && fiEloquence === "") return finalInterviewScore;
+    if (fiPatriotism === "" && fiIntegrity === "" && fiAwareness === "" && fiCommunication === "") return finalInterviewScore;
     return (
-      (parseFloat(fiVoice) || 0) +
-      (parseFloat(fiComprehension) || 0) +
-      (parseFloat(fiGesture) || 0) +
-      (parseFloat(fiBearing) || 0) +
-      (parseFloat(fiGeneralKnowledge) || 0) +
-      (parseFloat(fiEloquence) || 0)
+      (parseFloat(fiPatriotism) || 0) +
+      (parseFloat(fiIntegrity) || 0) +
+      (parseFloat(fiAwareness) || 0) +
+      (parseFloat(fiCommunication) || 0)
     );
   };
 
@@ -242,7 +241,8 @@ function StatusManagement({
           const bmiVal = getBmiValue();
           if (bmiVal !== null) {
             if (bmiVal >= 18.5 && bmiVal <= 25.0) {
-              statusToSave = "Physical Agility Test";
+              // Stay in Body Mass Index tab so they can be scheduled for PAT
+              statusToSave = "Body Mass Index";
               finalRejectionReason = "";
             } else {
               statusToSave = "Failed";
@@ -259,7 +259,8 @@ function StatusManagement({
             if (patRunPassed === false) failedEvents.push("Run");
             finalRejectionReason = `Failed Physical Agility Test requirements in: ${failedEvents.join(", ")}.`;
           } else {
-            statusToSave = "Neuro Examination";
+            // Stay in Physical Agility Test tab so they can be scheduled for Panel Interview
+            statusToSave = "Physical Agility Test";
           }
         } else if (currentStatus === "Drug Test") {
           if (drugResult === "Negative") {
@@ -304,12 +305,10 @@ function StatusManagement({
         pat_run_passed: patRunPassed,
         psychological_result: psychologicalResult || null,
         medical_result: medicalResult || null,
-        fi_voice_quality: fiVoice === "" ? null : parseFloat(fiVoice),
-        fi_comprehension: fiComprehension === "" ? null : parseFloat(fiComprehension),
-        fi_gesture: fiGesture === "" ? null : parseFloat(fiGesture),
-        fi_bearing: fiBearing === "" ? null : parseFloat(fiBearing),
-        fi_general_knowledge: fiGeneralKnowledge === "" ? null : parseFloat(fiGeneralKnowledge),
-        fi_eloquence: fiEloquence === "" ? null : parseFloat(fiEloquence),
+        fi_patriotism: fiPatriotism === "" ? null : parseFloat(fiPatriotism),
+        fi_integrity: fiIntegrity === "" ? null : parseFloat(fiIntegrity),
+        fi_awareness: fiAwareness === "" ? null : parseFloat(fiAwareness),
+        fi_communication: fiCommunication === "" ? null : parseFloat(fiCommunication),
         final_interview_score:
           getFiComputedScore() === "" ? null : getFiComputedScore(),
         // Schedule
@@ -673,38 +672,22 @@ function StatusManagement({
               </div>
             )}
             <div className="border border-gray-200 rounded-lg p-5 text-sm bg-white shadow-sm">
-              {/* Communication Skills */}
-              <div className="mb-6">
-                <h4 className="text-sm font-bold text-[#2C2D86] mb-3 border-b border-gray-100 pb-2">I. COMMUNICATION SKILLS (30%)</h4>
-                <div className="grid grid-cols-3 gap-6">
-                  <div>
-                    <label className="text-xs text-gray-600 font-semibold uppercase">a. Voice Quality (10%)</label>
-                    <input type="number" min="0" max="10" step="0.1" value={fiVoice} onChange={(e) => setFiVoice(e.target.value)} disabled={!isInterviewer} className={`w-full p-2.5 border border-gray-300 rounded-md mt-1.5 text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50 ${!isInterviewer ? "cursor-not-allowed opacity-70" : ""}`} placeholder="Score /10" />
-                  </div>
-                  <div>
-                    <label className="text-xs text-gray-600 font-semibold uppercase">b. Comprehension (10%)</label>
-                    <input type="number" min="0" max="10" step="0.1" value={fiComprehension} onChange={(e) => setFiComprehension(e.target.value)} disabled={!isInterviewer} className={`w-full p-2.5 border border-gray-300 rounded-md mt-1.5 text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50 ${!isInterviewer ? "cursor-not-allowed opacity-70" : ""}`} placeholder="Score /10" />
-                  </div>
-                  <div>
-                    <label className="text-xs text-gray-600 font-semibold uppercase">c. Gesture (10%)</label>
-                    <input type="number" min="0" max="10" step="0.1" value={fiGesture} onChange={(e) => setFiGesture(e.target.value)} disabled={!isInterviewer} className={`w-full p-2.5 border border-gray-300 rounded-md mt-1.5 text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50 ${!isInterviewer ? "cursor-not-allowed opacity-70" : ""}`} placeholder="Score /10" />
-                  </div>
+              <div className="grid grid-cols-2 gap-6 items-stretch">
+                <div className="flex flex-col h-full">
+                  <h4 className="flex-grow text-sm font-bold text-[#2C2D86] mb-3 border-b border-gray-100 pb-2">I. PATRIOTISM AND SERVICE ORIENTATION (25 pts)</h4>
+                  <input type="number" min="0" max="25" step="0.1" value={fiPatriotism} onChange={(e) => setFiPatriotism(e.target.value)} disabled={!isInterviewer} className={`w-full p-2.5 border border-gray-300 rounded-md text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50 ${!isInterviewer ? "cursor-not-allowed opacity-70" : ""}`} placeholder="Score /25" />
                 </div>
-              </div>
-
-              {/* Other Categories */}
-              <div className="grid grid-cols-3 gap-6">
-                <div>
-                  <h4 className="text-sm font-bold text-[#2C2D86] mb-3 border-b border-gray-100 pb-2">II. BEARING (20%)</h4>
-                  <input type="number" min="0" max="20" step="0.1" value={fiBearing} onChange={(e) => setFiBearing(e.target.value)} disabled={!isInterviewer} className={`w-full p-2.5 border border-gray-300 rounded-md text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50 ${!isInterviewer ? "cursor-not-allowed opacity-70" : ""}`} placeholder="Score /20" />
+                <div className="flex flex-col h-full">
+                  <h4 className="flex-grow text-sm font-bold text-[#2C2D86] mb-3 border-b border-gray-100 pb-2">II. INTEGRITY/VALUES (25 pts)</h4>
+                  <input type="number" min="0" max="25" step="0.1" value={fiIntegrity} onChange={(e) => setFiIntegrity(e.target.value)} disabled={!isInterviewer} className={`w-full p-2.5 border border-gray-300 rounded-md text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50 ${!isInterviewer ? "cursor-not-allowed opacity-70" : ""}`} placeholder="Score /25" />
                 </div>
-                <div>
-                  <h4 className="text-sm font-bold text-[#2C2D86] mb-3 border-b border-gray-100 pb-2">III. KNOWLEDGE (25%)</h4>
-                  <input type="number" min="0" max="25" step="0.1" value={fiGeneralKnowledge} onChange={(e) => setFiGeneralKnowledge(e.target.value)} disabled={!isInterviewer} className={`w-full p-2.5 border border-gray-300 rounded-md text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50 ${!isInterviewer ? "cursor-not-allowed opacity-70" : ""}`} placeholder="Score /25" />
+                <div className="flex flex-col h-full">
+                  <h4 className="flex-grow text-sm font-bold text-[#2C2D86] mb-3 border-b border-gray-100 pb-2">III. AWARENESS OF ISSUES (25 pts)</h4>
+                  <input type="number" min="0" max="25" step="0.1" value={fiAwareness} onChange={(e) => setFiAwareness(e.target.value)} disabled={!isInterviewer} className={`w-full p-2.5 border border-gray-300 rounded-md text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50 ${!isInterviewer ? "cursor-not-allowed opacity-70" : ""}`} placeholder="Score /25" />
                 </div>
-                <div>
-                  <h4 className="text-sm font-bold text-[#2C2D86] mb-3 border-b border-gray-100 pb-2">IV. ELOQUENCE (25%)</h4>
-                  <input type="number" min="0" max="25" step="0.1" value={fiEloquence} onChange={(e) => setFiEloquence(e.target.value)} disabled={!isInterviewer} className={`w-full p-2.5 border border-gray-300 rounded-md text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50 ${!isInterviewer ? "cursor-not-allowed opacity-70" : ""}`} placeholder="Score /25" />
+                <div className="flex flex-col h-full">
+                  <h4 className="flex-grow text-sm font-bold text-[#2C2D86] mb-3 border-b border-gray-100 pb-2">IV. COMMUNICATION SKILLS (25 pts)</h4>
+                  <input type="number" min="0" max="25" step="0.1" value={fiCommunication} onChange={(e) => setFiCommunication(e.target.value)} disabled={!isInterviewer} className={`w-full p-2.5 border border-gray-300 rounded-md text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50 ${!isInterviewer ? "cursor-not-allowed opacity-70" : ""}`} placeholder="Score /25" />
                 </div>
               </div>
 
@@ -751,27 +734,40 @@ function StatusManagement({
           />
         </div>
       )}
-      <button
-        onClick={handleUpdate}
-        disabled={
-          isUpdating || 
-          currentStatus === "Failed" ||
-          (selectedStatus === "Body Mass Index" && (!bmiHeight || !bmiWeight)) ||
-          (selectedStatus === "Physical Agility Test" && (patPushups === "" || patSitups === "" || patRun === "")) ||
-          (selectedStatus === "Final Interview" && (fiVoice === "" || fiComprehension === "" || fiGesture === "" || fiBearing === "" || fiGeneralKnowledge === "" || fiEloquence === ""))
-        }
-        className={`rounded-[4px] text-white font-semibold save-changes-btn mt-6 h-11 transition-all ${
-          isUpdating || 
-          currentStatus === "Failed" ||
-          (selectedStatus === "Body Mass Index" && (!bmiHeight || !bmiWeight)) ||
-          (selectedStatus === "Physical Agility Test" && (patPushups === "" || patSitups === "" || patRun === "")) ||
-          (selectedStatus === "Final Interview" && (fiVoice === "" || fiComprehension === "" || fiGesture === "" || fiBearing === "" || fiGeneralKnowledge === "" || fiEloquence === ""))
-            ? "bg-gray-400 cursor-not-allowed"
-            : "cursor-pointer bg-[#2C2D86] hover:bg-[#1e1f5e] shadow-md hover:shadow-lg active:scale-[0.98]"
-        }`}
-      >
-        {isUpdating ? "Proceeding..." : "Proceed to Next Level"}
-      </button>
+      {(() => { 
+        const isEvaluated = (() => {
+          if (currentStatus === "Final Interview") return applicantData?.final_interview_score != null;
+          if (currentStatus === "Body Mass Index") return applicantData?.bmi_weight != null;
+          if (currentStatus === "Physical Agility Test") return applicantData?.pat_pushups != null;
+          return false;
+        })();
+
+        return (
+          <button
+            onClick={handleUpdate}
+            disabled={
+              isUpdating || 
+              currentStatus === "Failed" ||
+              (selectedStatus === "Body Mass Index" && (!bmiHeight || !bmiWeight)) ||
+              (selectedStatus === "Physical Agility Test" && (patPushups === "" || patSitups === "" || patRun === "")) ||
+              (selectedStatus === "Final Interview" && (fiPatriotism === "" || fiIntegrity === "" || fiAwareness === "" || fiCommunication === "")) ||
+              isEvaluated
+            }
+            className={`rounded-[4px] text-white font-semibold save-changes-btn mt-6 h-11 transition-all w-full ${
+              isUpdating || 
+              currentStatus === "Failed" ||
+              (selectedStatus === "Body Mass Index" && (!bmiHeight || !bmiWeight)) ||
+              (selectedStatus === "Physical Agility Test" && (patPushups === "" || patSitups === "" || patRun === "")) ||
+              (selectedStatus === "Final Interview" && (fiPatriotism === "" || fiIntegrity === "" || fiAwareness === "" || fiCommunication === "")) ||
+              isEvaluated
+                ? "bg-gray-400 cursor-not-allowed"
+                : "cursor-pointer bg-[#2C2D86] hover:bg-[#1e1f5e] shadow-md hover:shadow-lg active:scale-[0.98]"
+            }`}
+          >
+            {isEvaluated ? "Evaluated" : isUpdating ? "Evaluating..." : "Evaluate"}
+          </button>
+        );
+      })()}
 
       <MessageModal
         isOpen={modalConfig.isOpen}

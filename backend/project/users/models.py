@@ -53,7 +53,7 @@ class User(AbstractUser):
         SUPER_ADMIN = 'SUPER_ADMIN', 'Super Admin'
         ADMINISTRATOR = 'Administrator', 'Administrator'
         RECRUITER = 'Recruitment Personnel', 'Recruitment Personnel'
-        INTERVIEWER = 'Recruitment Screening Committee (RSC)', 'Recruitment Screening Committee (RSC)'
+        INTERVIEWER = 'Recruitment Screening Committee (Interviewer)', 'Recruitment Screening Committee (Interviewer)'
     
     name = models.CharField(max_length=100, default="Unknown", verbose_name="Full Name")
     email = models.EmailField(max_length=100, unique=True, verbose_name="Email Address")
@@ -191,12 +191,10 @@ class Evaluation(models.Model):
     drug_test_result = models.CharField(max_length=50, null=True, blank=True, verbose_name="Drug Test Result")
     
     # Final Interview Detailed Rubric
-    fi_voice_quality = models.FloatField(null=True, blank=True, verbose_name="Voice Quality Score")
-    fi_comprehension = models.FloatField(null=True, blank=True, verbose_name="Comprehension Score")
-    fi_gesture = models.FloatField(null=True, blank=True, verbose_name="Gesture Score")
-    fi_bearing = models.FloatField(null=True, blank=True, verbose_name="Bearing/Personality Score")
-    fi_general_knowledge = models.FloatField(null=True, blank=True, verbose_name="General Knowledge Score")
-    fi_eloquence = models.FloatField(null=True, blank=True, verbose_name="Eloquence/Adaptability Score")
+    fi_patriotism = models.FloatField(null=True, blank=True, verbose_name="Patriotism and Service Orientation Score")
+    fi_integrity = models.FloatField(null=True, blank=True, verbose_name="Integrity/Values Score")
+    fi_awareness = models.FloatField(null=True, blank=True, verbose_name="Awareness of Issues Score")
+    fi_communication = models.FloatField(null=True, blank=True, verbose_name="Communication Skills Score")
     final_interview_score = models.FloatField(null=True, blank=True, verbose_name="Final Interview Score")
 
     def __str__(self):

@@ -164,6 +164,11 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
     is_reapplied = serializers.SerializerMethodField()
     created_at = serializers.SerializerMethodField()
     
+    fi_patriotism = serializers.SerializerMethodField()
+    fi_integrity = serializers.SerializerMethodField()
+    fi_awareness = serializers.SerializerMethodField()
+    fi_communication = serializers.SerializerMethodField()
+    
     class Meta:
         model = Applicant
         fields = [
@@ -177,7 +182,7 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
             'scheduled_time', 'evaluation_remarks', 'oath_taking_date', 'batch',
             'bmi_height', 'bmi_weight', 'bmi_result', 'pat_score', 
             'psychological_result', 'medical_result', 'drug_test_result', 
-            'final_interview_score',
+            'final_interview_score', 'fi_patriotism', 'fi_integrity', 'fi_awareness', 'fi_communication',
             'pat_pushups', 'pat_pushups_passed', 'pat_situps', 
             'pat_situps_passed', 'pat_run', 'pat_run_passed',
             'is_reapplied'
@@ -302,6 +307,22 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
     def get_final_interview_score(self, obj):
         eval_obj = self._get_eval(obj)
         return eval_obj.final_interview_score if eval_obj else None
+
+    def get_fi_patriotism(self, obj):
+        eval_obj = self._get_eval(obj)
+        return eval_obj.fi_patriotism if eval_obj else None
+
+    def get_fi_integrity(self, obj):
+        eval_obj = self._get_eval(obj)
+        return eval_obj.fi_integrity if eval_obj else None
+
+    def get_fi_awareness(self, obj):
+        eval_obj = self._get_eval(obj)
+        return eval_obj.fi_awareness if eval_obj else None
+
+    def get_fi_communication(self, obj):
+        eval_obj = self._get_eval(obj)
+        return eval_obj.fi_communication if eval_obj else None
 
 class ApplicantDocumentSerializer(serializers.ModelSerializer):
     applicant = serializers.PrimaryKeyRelatedField(queryset=Applicant.objects.all())

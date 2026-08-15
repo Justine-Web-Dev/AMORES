@@ -26,6 +26,19 @@ function LoginForm() {
       sessionStorage.setItem('token', urlToken);
       sessionStorage.setItem('role', 'SUPER_ADMIN');
       navigate('/Dashboard', { replace: true });
+      return;
+    }
+
+    const token = sessionStorage.getItem("token");
+    const role = sessionStorage.getItem("role");
+    if (token && role) {
+      if (role === "Administrator" || role === "SUPER_ADMIN") {
+        navigate("/Dashboard", { replace: true });
+      } else if (role === "Recruitment Screening Committee (Interviewer)") {
+        navigate("/InterviewDashboard", { replace: true });
+      } else {
+        navigate("/PersonnelDashboard", { replace: true });
+      }
     }
   }, [location, navigate]);
 
@@ -74,16 +87,16 @@ function LoginForm() {
             window.location.href = `${superAdminUrl}/login?token=${data.token}`;
             return;
           }
-          navigate("/Dashboard");
+          navigate("/Dashboard", { replace: true });
           return;
         }
 
         if (isAdmin) {
-          navigate("/Dashboard")
-        } else if (routeRole === "Recruitment Screening Committee (RSC)") {
-          navigate("/InterviewDashboard")
+          navigate("/Dashboard", { replace: true })
+        } else if (routeRole === "Recruitment Screening Committee (Interviewer)") {
+          navigate("/InterviewDashboard", { replace: true })
         } else {
-          navigate("/PersonnelDashboard")
+          navigate("/PersonnelDashboard", { replace: true })
         }
       }, 3000)
 
@@ -103,7 +116,7 @@ function LoginForm() {
     switch(role){
       case 'Administrator':
         return <Navigate to="/Dashboard" replace />
-      case 'Recruitment Screening Committee (RSC)':
+      case 'Recruitment Screening Committee (Interviewer)':
         return <Navigate to="/InterviewDashboard" replace />
       case 'Recruitment Personnel':
         return <Navigate to="/PersonnelDashboard" replace />

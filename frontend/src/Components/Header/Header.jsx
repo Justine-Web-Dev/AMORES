@@ -110,7 +110,7 @@ function Header() {
   const role = (rawRole === 'SUPER_ADMIN') ? 'Super Admin' :
                (rawRole === 'Administrator') ? 'Administrator' : 
                (rawRole === 'Recruitment Personnel') ? 'Recruitment Staff' : 
-               (rawRole === 'Recruitment Screening Committee (RSC)') ? 'Recruitment Screening Committee (RSC)' : 'Staff';
+               (rawRole === 'Recruitment Screening Committee (Interviewer)') ? 'Interviewer' : 'Staff';
 
   // Dynamic Breadcrumb Logic
   const getPageTitle = () => {

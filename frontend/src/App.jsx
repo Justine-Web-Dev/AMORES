@@ -37,7 +37,7 @@ function App() {
         <Route 
           path='/InterviewDashboard/*' 
           element={
-            <ProtectedRoute allowedRole={["Recruitment Screening Committee (RSC)"]}>
+            <ProtectedRoute allowedRole={["Recruitment Screening Committee (Interviewer)"]}>
               <InterviewMain />
             </ProtectedRoute>
           } 

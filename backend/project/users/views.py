@@ -704,8 +704,8 @@ def update_applicant_status(request, pk):
             'pat_pushups', 'pat_pushups_passed', 'pat_situps', 
             'pat_situps_passed', 'pat_run', 'pat_run_passed',
             'psychological_result', 'medical_result', 'drug_test_result', 
-            'final_interview_score', 'fi_voice_quality', 'fi_comprehension',
-            'fi_gesture', 'fi_bearing', 'fi_general_knowledge', 'fi_eloquence'
+            'final_interview_score', 'fi_patriotism', 'fi_integrity',
+            'fi_awareness', 'fi_communication'
         ]
         for field in eval_fields:
             if field in request.data:

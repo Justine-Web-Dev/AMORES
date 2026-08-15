@@ -26,6 +26,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
     location.state?.tab ? location.state.tab : (isInterviewer ? "Final Interview" : "All"),
   );
   const [sortBy, setSortBy] = useState("default");
+  const [selectionLimit, setSelectionLimit] = useState("300");
   const [evaluatingApplicant, setEvaluatingApplicant] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -271,6 +272,8 @@ function ApplicantEvaluation({ isInterviewer = false }) {
 
     let nextStatus = null;
     if (statusFilter === "Qualified") nextStatus = "Body Mass Index";
+    else if (statusFilter === "Body Mass Index") nextStatus = "Physical Agility Test";
+    else if (statusFilter === "Physical Agility Test") nextStatus = "Panel Interview";
 
     setIsSavingSchedule(true);
     try {
@@ -313,7 +316,11 @@ function ApplicantEvaluation({ isInterviewer = false }) {
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelectedIds(filteredAndSorted.map((app) => app.id));
+      let limit = filteredAndSorted.length;
+      if (selectionLimit !== "All") {
+        limit = parseInt(selectionLimit, 10);
+      }
+      setSelectedIds(filteredAndSorted.slice(0, limit).map((app) => app.id));
     } else {
       setSelectedIds([]);
     }
@@ -356,11 +363,24 @@ function ApplicantEvaluation({ isInterviewer = false }) {
     setOpen(open === id ? null : id);
   };
 
+  const isEvaluated = (applicant) => {
+    if (statusFilter === "Final Interview") return applicant.final_interview_score != null;
+    if (statusFilter === "Body Mass Index") return applicant.bmi_weight != null;
+    if (statusFilter === "Physical Agility Test") return applicant.pat_pushups != null;
+    return false;
+  };
+
   const filteredAndSorted = useMemo(() => {
     return applicantInfo
       .filter((applicant) => {
         if (applicant.status === "Failed" && statusFilter !== "Failed")
           return false;
+        
+        if (sortBy === "batch1" && applicant.batch !== 1 && applicant.batch !== "B1")
+          return false;
+        if (sortBy === "batch2" && applicant.batch !== 2 && applicant.batch !== "B2")
+          return false;
+
         const fullName =
           `${applicant.firstname} ${applicant.lastname} ${applicant.middle_initial || ""}`.toLowerCase();
         const matchesSearch = fullName.includes(searchTerm.toLowerCase());
@@ -369,14 +389,26 @@ function ApplicantEvaluation({ isInterviewer = false }) {
         return matchesSearch && matchesStatus;
       })
       .sort((a, b) => {
+        const evalA = isEvaluated(a);
+        const evalB = isEvaluated(b);
+        
+        if (evalA && !evalB) return 1;
+        if (!evalA && evalB) return -1;
+
         if (sortBy === "name") {
           const nameA = `${a.firstname} ${a.lastname}`.toLowerCase();
           const nameB = `${b.firstname} ${b.lastname}`.toLowerCase();
           return nameA.localeCompare(nameB);
         } else if (sortBy === "default") {
-          const dateA = new Date(a.created_at);
-          const dateB = new Date(b.created_at);
-          return dateB - dateA;
+          if (statusFilter === "Failed") {
+            const dateA = a.status_updated_at ? new Date(a.status_updated_at) : new Date(a.created_at);
+            const dateB = b.status_updated_at ? new Date(b.status_updated_at) : new Date(b.created_at);
+            return dateB - dateA; // LIFO (most recently updated first)
+          } else {
+            const dateA = new Date(a.created_at);
+            const dateB = new Date(b.created_at);
+            return dateB - dateA;
+          }
         } else if (sortBy === "date") {
           const dateA = new Date(a.created_at);
           const dateB = new Date(b.created_at);
@@ -400,53 +432,72 @@ function ApplicantEvaluation({ isInterviewer = false }) {
       return matchesSearch && matchesStatus;
     });
 
-    const exportData = dataForExport.map((applicant) => ({
-      "Tracking Code": applicant.tracking_code,
-      "First Name": applicant.firstname,
-      "Last Name": applicant.lastname,
-      "Middle Name": applicant.middle_name || "N/A",
-      Birthdate: applicant.birthdate || "N/A",
-      Age: applicant.age,
-      Gender: applicant.gender || "N/A",
-      Email: applicant.email,
-      "Contact #": applicant.cp_number,
-      "Permanent Address": applicant.address || "N/A",
-      Height: applicant.height,
-      Tribe: applicant.tribe || "N/A",
-      "Pag-IBIG No.": applicant.pag_ibig_number,
-      "PhilHealth ID": applicant.phil_health_id_num,
-      "School Name": applicant.name_of_school,
-      "Program/Course": applicant.program,
-      "Date Graduated": applicant.date_graduated,
-      "Latin Honor": applicant.latin_honor || "N/A",
-      "Current Status": applicant.status,
-      Batch: applicant.batch || 1,
-      "Rejection Reason": applicant.rejection_reason || "N/A",
-      "Next Scheduled Date": applicant.scheduled_date || "N/A",
-      "Next Scheduled Time": applicant.scheduled_time || "N/A",
-      "Oath Taking Date": applicant.oath_taking_date || "N/A",
-      "Evaluation Remarks": applicant.evaluation_remarks || "N/A",
-      "BMI Height (cm)": applicant.bmi_height || "N/A",
-      "BMI Weight (kg)": applicant.bmi_weight || "N/A",
-      "BMI Result": applicant.bmi_result || "N/A",
-      "PAT Score (%)": applicant.pat_score || "N/A",
-      "1-Min Push UPS":
-        applicant.pat_pushups !== null
-          ? `${applicant.pat_pushups} (${applicant.pat_pushups_passed ? "PASSED" : "FAILED"})`
+    const exportData = dataForExport.map((applicant) => {
+      if (statusFilter === "Final Interview") {
+        return {
+          "First Name": applicant.firstname,
+          "Last Name": applicant.lastname,
+          "Middle Name": applicant.middle_name || "N/A",
+          "Barangay": applicant.barangay || "N/A",
+          //eligibility
+          //marital status
+          //place of application (attrition)
+          "Municipality": applicant.city_municipality || "N/A",
+          "Patriotism": applicant.fi_patriotism,
+          "Integrity": applicant.fi_integrity,
+          "Awareness": applicant.fi_awareness,
+          "Communication": applicant.fi_communication,
+        };
+      }
+
+      return {
+        "Tracking Code": applicant.tracking_code,
+        "First Name": applicant.firstname,
+        "Last Name": applicant.lastname,
+        "Middle Name": applicant.middle_name || "N/A",
+        Birthdate: applicant.birthdate || "N/A",
+        Age: applicant.age,
+        Gender: applicant.gender || "N/A",
+        Email: applicant.email,
+        "Contact #": applicant.cp_number,
+        "Permanent Address": applicant.address || "N/A",
+        Height: applicant.height,
+        Tribe: applicant.tribe || "N/A",
+        "Pag-IBIG No.": applicant.pag_ibig_number,
+        "PhilHealth ID": applicant.phil_health_id_num,
+        "School Name": applicant.name_of_school,
+        "Program/Course": applicant.program,
+        "Date Graduated": applicant.date_graduated,
+        "Latin Honor": applicant.latin_honor || "N/A",
+        "Current Status": applicant.status,
+        Batch: applicant.batch || 1,
+        "Rejection Reason": applicant.rejection_reason || "N/A",
+        "Next Scheduled Date": applicant.scheduled_date || "N/A",
+        "Next Scheduled Time": applicant.scheduled_time || "N/A",
+        "Oath Taking Date": applicant.oath_taking_date || "N/A",
+        "Evaluation Remarks": applicant.evaluation_remarks || "N/A",
+        "BMI Height (cm)": applicant.bmi_height || "N/A",
+        "BMI Weight (kg)": applicant.bmi_weight || "N/A",
+        "BMI Result": applicant.bmi_result || "N/A",
+        "PAT Score (%)": applicant.pat_score || "N/A",
+        "1-Min Push UPS":
+          applicant.pat_pushups !== null
+            ? `${applicant.pat_pushups} (${applicant.pat_pushups_passed ? "PASSED" : "FAILED"})`
+            : "N/A",
+        "1-Min Sit-On":
+          applicant.pat_situps !== null
+            ? `${applicant.pat_situps} (${applicant.pat_situps_passed ? "PASSED" : "FAILED"})`
+            : "N/A",
+        "3K Run": applicant.pat_run
+          ? `${applicant.pat_run} (${applicant.pat_run_passed ? "PASSED" : "FAILED"})`
           : "N/A",
-      "1-Min Sit-On":
-        applicant.pat_situps !== null
-          ? `${applicant.pat_situps} (${applicant.pat_situps_passed ? "PASSED" : "FAILED"})`
-          : "N/A",
-      "3K Run": applicant.pat_run
-        ? `${applicant.pat_run} (${applicant.pat_run_passed ? "PASSED" : "FAILED"})`
-        : "N/A",
-      "Neuro/Psych Results": applicant.psychological_result || "N/A",
-      "Medical Findings": applicant.medical_result || "N/A",
-      "Drug Test Result": applicant.drug_test_result || "N/A",
-      "Final Interview Score (%)": applicant.final_interview_score || "N/A",
-      "Registration Date": applicant.created_at,
-    }));
+        "Neuro/Psych Results": applicant.psychological_result || "N/A",
+        "Medical Findings": applicant.medical_result || "N/A",
+        "Drug Test Result": applicant.drug_test_result || "N/A",
+        "Final Interview Score (%)": applicant.final_interview_score || "N/A",
+        "Registration Date": applicant.created_at,
+      };
+    });
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook = XLSX.utils.book_new();
@@ -585,12 +636,31 @@ function ApplicantEvaluation({ isInterviewer = false }) {
             <option value="batch2">Sort by Batch 2</option>
           </select>
 
-          {(["Body Mass Index", "Physical Agility Test"].includes(statusFilter) ||
+          <select
+            value={selectionLimit}
+            onChange={(e) => setSelectionLimit(e.target.value)}
+            className="sort-select"
+          >
+            <option value="All">Applicant Limit: All</option>
+            <option value="100">Applicant Limit: 100</option>
+            <option value="200">Applicant Limit: 200</option>
+            <option value="300">Applicant Limit: 300</option>
+            <option value="400">Applicant Limit: 400</option>
+            <option value="500">Applicant Limit: 500</option>
+          </select>
+
+          {(["Qualified", "Body Mass Index", "Physical Agility Test"].includes(statusFilter) ||
             (isInterviewer && statusFilter === "Final Interview")) && (
             <div className="flex items-center gap-2 border-l border-gray-300 pl-4 h-[38px] next-step-schedule-container">
               <div className="flex items-center gap-1.5">
                 <label className="text-[10px] font-bold text-gray-500 uppercase whitespace-nowrap">
-                  {statusFilter === "Final Interview" ? "Final Interview Date:" : "Next Step Date:"}
+                  {statusFilter === "Final Interview" 
+                    ? "Final Interview Date:" 
+                    : statusFilter === "Qualified" 
+                      ? "BMI Date:" 
+                      : statusFilter === "Body Mass Index" 
+                        ? "PAT Date:" 
+                        : "Next Step Date:"}
                 </label>
                 <input
                   type="date"
@@ -674,15 +744,17 @@ function ApplicantEvaluation({ isInterviewer = false }) {
               <tr>
                 {isSelectionMode && (
                   <th scope="col" className="th text-center w-12">
-                    <input
-                      type="checkbox"
-                      checked={
-                        filteredAndSorted.length > 0 &&
-                        selectedIds.length === filteredAndSorted.length
-                      }
-                      onChange={handleSelectAll}
-                      className="w-4 h-4 accent-[#2C2D86] cursor-pointer align-middle"
-                    />
+                      <input
+                        type="checkbox"
+                        checked={
+                          filteredAndSorted.length > 0 &&
+                          selectedIds.length > 0 &&
+                          (selectedIds.length === filteredAndSorted.length || 
+                           (selectionLimit !== "All" && selectedIds.length === parseInt(selectionLimit, 10)))
+                        }
+                        onChange={handleSelectAll}
+                        className="w-4 h-4 accent-[#2C2D86] cursor-pointer align-middle"
+                      />
                   </th>
                 )}
                 <th scope="col" className="th">
@@ -767,8 +839,17 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                       </td>
                     )}
                     <td>
-                      {applicant.firstname} {applicant.lastname}{" "}
-                      {applicant.middle_initial}
+                      <div className="flex items-center justify-center gap-2">
+                        <span>
+                          {applicant.firstname} {applicant.lastname}{" "}
+                          {applicant.middle_initial}
+                        </span>
+                        {isEvaluated(applicant) && (
+                          <span className="text-green-600 bg-green-100 rounded-full px-2 py-0.5 flex items-center justify-center gap-1 text-[10px] font-bold" title="Evaluated">
+                            <HiOutlineBadgeCheck size={14} /> Evaluated
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td>
                       <span

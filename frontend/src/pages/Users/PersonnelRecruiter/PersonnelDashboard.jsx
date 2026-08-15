@@ -18,8 +18,11 @@ function PersonnelDashboard() {
 
   return (
     <div className="PersonnelDashboard">
-      <SidebarRecruiter isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-      <div className={`main-content ${isCollapsed ? 'collapsed' : ''}`}>
+      <SidebarRecruiter
+        isCollapsed={isCollapsed}
+        setIsCollapsed={setIsCollapsed}
+      />
+      <div className={`main-content ${isCollapsed ? "collapsed" : ""}`}>
         <Header />
         <Routes>
           <Route index element={<PersonnelOverview />} />

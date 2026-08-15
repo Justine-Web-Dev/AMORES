@@ -197,9 +197,9 @@ function AddNewUserForm({ onClose, user }) {
                 onChange={handleChange}
                 className="role"
               >
-                <option value="Recruitment Personnel">Recruiter</option>
+                <option value="Recruitment Personnel">Recruitment Personnel</option>
+                <option value="Recruitment Screening Committee (Interviewer)">Recruitment Screening Committee (Interviewer)</option>
                 <option value="Administrator">Administrator</option>
-                <option value="Recruitment Screening Committee (RSC)">Interviewer</option>
               </select>
             </div>
           )}

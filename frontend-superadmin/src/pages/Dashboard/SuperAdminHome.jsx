@@ -376,7 +376,7 @@ function SuperAdminHome() {
               { role: 'Super Admin', count: users.filter(u => u.role === 'SUPER_ADMIN').length, color: '#7c3aed', bg: 'bg-purple-100' },
               { role: 'Administrator', count: users.filter(u => u.role === 'Administrator').length, color: '#2563eb', bg: 'bg-blue-100' },
               { role: 'Recruitment Personnel', count: users.filter(u => u.role === 'Recruitment Personnel').length, color: '#0891b2', bg: 'bg-cyan-100' },
-              { role: 'Recruitment Screening Committee (RSC)', count: users.filter(u => u.role === 'Recruitment Screening Committee (RSC)').length, color: '#16a34a', bg: 'bg-green-100' },
+              { role: 'Recruitment Screening Committee (Interviewer)', count: users.filter(u => u.role === 'Recruitment Screening Committee (Interviewer)').length, color: '#16a34a', bg: 'bg-green-100' },
             ].map(item => {
               const pct = totalUsers > 0 ? Math.round((item.count / totalUsers) * 100) : 0;
               return (

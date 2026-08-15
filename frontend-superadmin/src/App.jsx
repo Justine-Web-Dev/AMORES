@@ -1,6 +1,6 @@
 import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import LoginForm from '../../frontend/src/pages/auth/LoginForm'
 import SuperAdminDashboard from './pages/Dashboard/Dashboard'
 
@@ -16,6 +16,23 @@ function ProtectedSuperAdminRoute({ children }) {
   const [showForcePasswordModal, setShowForcePasswordModal] = useState(
     sessionStorage.getItem('must_change_password') === 'true'
   );
+
+  React.useEffect(() => {
+    // Push 15 identical states on load. This creates a massive history buffer.
+    // If the user clicks back multiple times rapidly, they will just land on another
+    // dashboard state instead of escaping to Google.
+    for (let i = 0; i < 15; i++) {
+      window.history.pushState(null, "", window.location.pathname);
+    }
+    
+    const handlePopState = () => {
+      // Push another state whenever they hit back, redirecting them instantly to the dashboard
+      window.history.pushState(null, "", window.location.pathname);
+    };
+    
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   if (!token || (role !== 'SUPER_ADMIN' && role !== 'Administrator')) {
     return <Navigate to="/login" replace />;
@@ -66,7 +83,7 @@ function App() {
       <Route 
         path="/InterviewDashboard/*" 
         element={
-          <ProtectedRoute allowedRole={["Recruitment Screening Committee (RSC)"]}>
+          <ProtectedRoute allowedRole={["Recruitment Screening Committee (Interviewer)"]}>
             <InterviewMain />
           </ProtectedRoute>
         } 
