@@ -1,36 +1,36 @@
-import React from 'react'
+import React from "react";
 const CRITERIA_FIELD = [
   {
-    key: 'fiPatriotism',
-    title: "I. PATRIOTISM AND SERVICE ORIENTATION (25 pts)",
-    max: 25
+    key: "fiPatriotism",
+    title: "I. PATRIOTISM AND SERVICE ORIENTATION",
+    max: 25,
   },
   {
-    key: 'fiIntegrity',
-    title: "II. INTEGRITY/VALUES (25 pts)",
-    max: 25
+    key: "fiIntegrity",
+    title: "II. INTEGRITY/VALUES",
+    max: 25,
   },
   {
-    key: 'fiAwareness',
-    title: "III. AWARENESS OF ISSUES (25 pts)",
-    max: 25
+    key: "fiAwareness",
+    title: "III. AWARENESS OF ISSUES",
+    max: 25,
   },
   {
-    key: 'fiCommunication',
-    title: "IV. COMMUNICATION SKILLS (25 pts)",
-    max: 25
-  }
-]
+    key: "fiCommunication",
+    title: "IV. COMMUNICATION SKILLS",
+    max: 25,
+  },
+];
 
-function CritriaField({label, max, value, onChange, disabled}){
-  const handleChange = (e) =>{
-    let val = e.target.value
-    if (val !== '' && parseFloat(val) > max) val = String(max);
-    if (val !== '' && parseFloat(val) < 0) val = '0';
+function CritriaField({ label, max, value, onChange, disabled }) {
+  const handleChange = (e) => {
+    let val = e.target.value;
+    if (val !== "" && parseFloat(val) > max) val = String(max);
+    if (val !== "" && parseFloat(val) < 0) val = "0";
     onChange(val);
-  }
-return(
-  <div className="flex flex-col h-full">
+  };
+  return (
+    <div className="flex flex-col h-full">
       <h4 className="flex-grow text-sm font-bold text-[#2C2D86] mb-3 border-b border-gray-100 pb-2">
         {label} ({max} pts)
       </h4>
@@ -44,28 +44,27 @@ return(
         disabled={disabled}
         placeholder={`Score /${max}`}
         className={`w-full p-2.5 border border-gray-300 rounded-md text-sm outline-none focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86] transition-all bg-gray-50 ${
-          disabled ? 'cursor-not-allowed opacity-70' : ''
+          disabled ? "cursor-not-allowed opacity-70" : ""
         }`}
       />
     </div>
-)
-  
+  );
 }
 
-function CriteriaForm({values, onChange, isInterviewer, totalScore}) {
+function CriteriaForm({ values, onChange, isInterviewer, totalScore, disabled }) {
   return (
     <>
       <div className="grid grid-cols-2 gap-6 items-stretch">
-      {CRITERIA_FIELD.map((field)=>(
-        <CritriaField
-          key={field.key}
-          label={field.title}
-          max={field.max}
-          value={values[field.key]}
-          onChange={(val)=>onChange(field.key, val)}
-          disabled={!isInterviewer}
-        />
-      ))}
+        {CRITERIA_FIELD.map((field) => (
+          <CritriaField
+            key={field.key}
+            label={field.title}
+            max={field.max}
+            value={values[field.key]}
+            onChange={(val) => onChange(field.key, val)}
+            disabled={!isInterviewer || disabled}
+          />
+        ))}
       </div>
 
       {/* Total Score */}
@@ -83,7 +82,7 @@ function CriteriaForm({values, onChange, isInterviewer, totalScore}) {
         </span>
       </div>
     </>
-  )
+  );
 }
 
-export default CriteriaForm
+export default CriteriaForm;

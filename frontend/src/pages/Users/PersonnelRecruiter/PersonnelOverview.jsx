@@ -23,6 +23,7 @@ import {
   FiCheckCircle,
   FiFileText,
   FiUsers,
+  FiRefreshCw,
 } from "react-icons/fi";
 
 function PersonnelOverview() {
@@ -65,36 +66,38 @@ function PersonnelOverview() {
     return uniqueBatches.slice(0, 2);
   }, [applicants, selectedYear]);
 
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    try {
+      const applicantsRes = await api.get("users/dashboard-applicants/");
+      const applicantsData = applicantsRes.data;
+      setApplicants(applicantsData);
+
+      const uniqueYears = [
+        ...new Set(
+          applicantsData
+            .map((a) =>
+              a.created_at ? new Date(a.created_at).getFullYear() : null,
+            )
+            .filter(Boolean),
+        ),
+      ].sort((a, b) => b - a);
+
+      setYears(uniqueYears);
+      processMetrics(applicantsData, selectedYear, selectedBatch);
+    } catch (err) {
+      console.error("Error fetching dashboard overview data:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const applicantsRes = await api.get("users/dashboard-applicants/");
-        const applicantsData = applicantsRes.data;
-        setApplicants(applicantsData);
-
-        const uniqueYears = [
-          ...new Set(
-            applicantsData
-              .map((a) =>
-                a.created_at ? new Date(a.created_at).getFullYear() : null,
-              )
-              .filter(Boolean),
-          ),
-        ].sort((a, b) => b - a);
-
-        setYears(uniqueYears);
-        processMetrics(applicantsData, "All", "All");
-      } catch (err) {
-        console.error("Error fetching dashboard overview data:", err);
-      } finally {
-        loading && setLoading(false);
-      }
-    };
-
     fetchDashboardData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const processMetrics = (allData, yearFilter, batchFilter) => {
+  function processMetrics(allData, yearFilter, batchFilter) {
     let data = allData;
     if (yearFilter !== "All") {
       data = data.filter((a) => {
@@ -300,19 +303,7 @@ function PersonnelOverview() {
     "#EC4899",
   ];
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[450px] p-8 bg-white rounded-2xl shadow-sm border border-gray-100">
-        <div className="relative flex items-center justify-center w-16 h-16 mb-4">
-          <div className="absolute inset-0 border-4 border-[#2C2D86]/10 rounded-full"></div>
-          <div className="absolute inset-0 border-4 border-t-[#2C2D86] border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
-        </div>
-        <p className="text-[#2C2D86] font-medium tracking-wide">
-          Loading Dashboard Overview...
-        </p>
-      </div>
-    );
-  }
+
 
   const handleYearChange = (e) => {
     const val = e.target.value;
@@ -352,7 +343,7 @@ function PersonnelOverview() {
   };
 
   return (
-    <div className="module-content">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       <div className="flex justify-between items-center mb-6 lg:mb-8">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">
@@ -399,9 +390,26 @@ function PersonnelOverview() {
               ))}
             </select>
           </div>
+
+          <button
+            onClick={fetchDashboardData}
+            disabled={loading}
+            className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-[#2C2D86] bg-white border border-gray-200 rounded hover:bg-gray-50 transition-colors disabled:opacity-50"
+            title="Refresh Data"
+          >
+            <FiRefreshCw className={loading ? "animate-spin" : ""} />
+            <span className="hidden sm:inline">Refresh</span>
+          </button>
         </div>
       </div>
 
+      {loading ? (
+        <div className="flex flex-col justify-center items-center py-28 bg-white rounded-xl border border-gray-200 shadow-sm mt-6">
+          <div className="animate-spin rounded-full h-10 w-10 border-4 border-gray-200 border-t-[#2C2D86]"></div>
+          <p className="text-gray-500 mt-4 text-sm font-medium">Loading dashboard data...</p>
+        </div>
+      ) : (
+        <>
       <div className="System-overview-container">
         <h3 className="text-lg font-semibold mb-4 text-[#2C2D86]">
           System Summary
@@ -940,6 +948,8 @@ function PersonnelOverview() {
           </ResponsiveContainer>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }

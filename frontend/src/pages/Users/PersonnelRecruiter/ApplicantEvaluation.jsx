@@ -629,25 +629,27 @@ function ApplicantEvaluation({ isInterviewer = false }) {
             onChange={(e) => setSortBy(e.target.value)}
             className="sort-select"
           >
-            <option value="default">Sort By</option>
+            <option value="default">Select Sorting</option>
             <option value="date">Sort by Date</option>
             <option value="name">Sort by Name</option>
             <option value="batch1">Sort by Batch 1</option>
             <option value="batch2">Sort by Batch 2</option>
           </select>
 
-          <select
-            value={selectionLimit}
-            onChange={(e) => setSelectionLimit(e.target.value)}
-            className="sort-select"
-          >
-            <option value="All">Applicant Limit: All</option>
-            <option value="100">Applicant Limit: 100</option>
-            <option value="200">Applicant Limit: 200</option>
-            <option value="300">Applicant Limit: 300</option>
-            <option value="400">Applicant Limit: 400</option>
-            <option value="500">Applicant Limit: 500</option>
-          </select>
+          {["Qualified", "Body Mass Index", "Physical Agility Test"].includes(statusFilter) && (
+            <select
+              value={selectionLimit}
+              onChange={(e) => setSelectionLimit(e.target.value)}
+              className="sort-select"
+            >
+              <option value="All">Applicant Limit: All</option>
+              <option value="100">Applicant Limit: 100</option>
+              <option value="200">Applicant Limit: 200</option>
+              <option value="300">Applicant Limit: 300</option>
+              <option value="400">Applicant Limit: 400</option>
+              <option value="500">Applicant Limit: 500</option>
+            </select>
+          )}
 
           {(["Qualified", "Body Mass Index", "Physical Agility Test"].includes(statusFilter) ||
             (isInterviewer && statusFilter === "Final Interview")) && (

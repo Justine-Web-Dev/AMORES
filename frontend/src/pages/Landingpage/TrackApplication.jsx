@@ -328,6 +328,33 @@ function TrackApplication() {
                 </p>
               </div>
 
+              {POST_ACCEPTANCE_STAGES.includes(application?.status) && (
+                <div className="flex flex-col gap-1 col-span-1 md:col-span-2 mt-4 pt-4 border-t border-gray-200">
+                  <span className="text-[10px] uppercase font-bold text-purple-600">
+                    Scheduled Date & Time for {application.status}
+                  </span>
+                  <p className="font-bold text-gray-800 text-lg">
+                    {application?.scheduled_date
+                      ? new Date(application.scheduled_date).toLocaleDateString(
+                          undefined,
+                          { dateStyle: "long" },
+                        )
+                      : "TBA"}
+                    {application?.scheduled_date && application?.scheduled_time
+                      ? " at " +
+                        (() => {
+                          const [hourString, minute] =
+                            application.scheduled_time.split(":");
+                          const hour = parseInt(hourString, 10);
+                          const ampm = hour >= 12 ? "PM" : "AM";
+                          const formattedHour = hour % 12 || 12;
+                          return `${formattedHour}:${minute} ${ampm}`;
+                        })()
+                      : ""}
+                  </p>
+                </div>
+              )}
+
               {application?.bmi_height && (
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase font-bold text-gray-400">
@@ -497,12 +524,11 @@ function TrackApplication() {
                     <p className="font-bold text-gray-800">
                       {application.final_interview_score}
                     </p>
-                    {hasPassedStage("Final Interview") && (
+                    {parseFloat(application.final_interview_score) >= 75 ? (
                       <div className="inline-block px-2 py-0.5 border border-green-600 text-green-600 font-bold text-[10px] uppercase tracking-wider rounded w-max bg-green-50">
                         PASSED
                       </div>
-                    )}
-                    {hasFailedStage("Final Interview") && (
+                    ) : (
                       <div className="inline-block px-2 py-0.5 border border-red-600 text-red-600 font-bold text-[10px] uppercase tracking-wider rounded w-max bg-red-50">
                         FAILED
                       </div>
@@ -558,32 +584,7 @@ function TrackApplication() {
                   </div>
                 )}
 
-              {POST_ACCEPTANCE_STAGES.includes(application?.status) && (
-                <div className="flex flex-col gap-1 col-span-1 md:col-span-2">
-                  <span className="text-[10px] uppercase font-bold text-gray-400">
-                    Scheduled Date & Time for {application.status}
-                  </span>
-                  <p className="font-bold text-blue-800">
-                    {application?.scheduled_date
-                      ? new Date(application.scheduled_date).toLocaleDateString(
-                          undefined,
-                          { dateStyle: "long" },
-                        )
-                      : "TBA"}
-                    {application?.scheduled_date && application?.scheduled_time
-                      ? " at " +
-                        (() => {
-                          const [hourString, minute] =
-                            application.scheduled_time.split(":");
-                          const hour = parseInt(hourString, 10);
-                          const ampm = hour >= 12 ? "PM" : "AM";
-                          const formattedHour = hour % 12 || 12;
-                          return `${formattedHour}:${minute} ${ampm}`;
-                        })()
-                      : ""}
-                  </p>
-                </div>
-              )}
+
             </div>
           </div>
         )}
