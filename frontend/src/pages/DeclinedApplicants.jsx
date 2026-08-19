@@ -39,6 +39,16 @@ function DeclinedApplicants() {
     return () => clearInterval(interval)
   }, [])
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.action-dropdown-container')) {
+        setOpen(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const toggleMenu = (id) => {
     setOpen(open === id ? null : id)
   }
@@ -128,19 +138,18 @@ function DeclinedApplicants() {
                     </td>
                     <td>{applicant.rejection_reason || "N/A"}</td>
                     <td>{applicant.created_at}</td>
-                    <td className="px-4 py-4 text-center relative">
-                      <div className="flex justify-center items-center">
+                    <td className="px-4 py-4 text-center">
+                      <div className="relative inline-block text-left action-dropdown-container">
                         <button 
                           onClick={() => toggleMenu(applicant.id)}
-                          className="flex items-center justify-center w-9 h-9 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all duration-200 active:scale-95"
+                          className="flex items-center justify-center w-9 h-9 mx-auto text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all duration-200 active:scale-95"
                           title="More Options"
                         >
                           <span className="text-xl font-bold tracking-widest leading-none pb-2">...</span>
                         </button>
-                      </div>
 
                       {open === applicant.id && (
-                        <div className="absolute right-10 z-10 w-40 bg-white shadow-lg border border-gray-100 rounded-md actions">
+                        <div className="absolute top-full right-0 mt-2 z-[9999] w-40 bg-white shadow-lg border border-gray-100 rounded-md actions">
                           <ul className="flex flex-col text-[14px] gap-[5px]">
                             <h1 className='font-bold text-black border-b pb-1 border-gray-200 action-title'>Actions</h1>
                             <button 
@@ -156,6 +165,7 @@ function DeclinedApplicants() {
                           </ul>
                         </div>
                       )}
+                      </div>
                     </td>
                   </tr>
                 ))

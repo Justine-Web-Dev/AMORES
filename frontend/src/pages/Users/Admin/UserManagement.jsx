@@ -52,6 +52,17 @@ function UserManagement() {
     fetchUsers();
   }, [activeTab]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.action-dropdown-container')) {
+        setOpen(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+
   const handleEdit = (user) => {
     setSelectedUser(user);
     setToggleModal(true);
@@ -222,7 +233,7 @@ function UserManagement() {
               <tr>
                 <td colSpan="10" className="px-4 py-10">
                   <div className="flex justify-center items-center w-full">
-                    <div className='border-[4px] border-gray-100 border-t-[#2C2D86] h-[30px] w-[30px] rounded-full animate-spin'></div>
+                    <div className="border-[4px] border-gray-100 border-t-[#2C2D86] h-[30px] w-[30px] rounded-full animate-spin"></div>
                   </div>
                 </td>
               </tr>
@@ -232,26 +243,35 @@ function UserManagement() {
                   <td>{user.name}</td>
                   <td>{user.email}</td>
                   <td>{user.role}</td>
-                  <td><span className={user.is_archived ? "bg-red-100 text-red-800 font-semibold px-4 py-1 rounded-md" : "bg-emerald-100 text-emerald-800 font-semibold px-4 py-1 rounded-md"}>{user.is_archived ? "Inactive" : "Active"}</span></td>
-                  <td className="px-4 py-4 text-center relative">
-                    <div className="flex justify-center items-center">
+                  <td>
+                    <span
+                      className={
+                        user.is_archived
+                          ? "bg-red-100 text-red-800 font-semibold px-4 py-1 rounded-md"
+                          : "bg-emerald-100 text-emerald-800 font-semibold px-4 py-1 rounded-md"
+                      }
+                    >
+                      {user.is_archived ? "Inactive" : "Active"}
+                    </span>
+                  </td>
+                  <td className="px-4 py-4 text-center">
+                    <div className="relative inline-block text-left action-dropdown-container">
                       <button
                         onClick={() => toggleMenu(user.id)}
-                        className="flex items-center justify-center w-9 h-9 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all duration-200 active:scale-95"
+                        className="flex items-center justify-center w-9 h-9 mx-auto text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all duration-200 active:scale-95"
                         title="More Options"
                       >
                         <span className="text-xl font-bold tracking-widest leading-none pb-2">
                           ...
                         </span>
                       </button>
-                    </div>
 
-                    {open === user.id && (
-                      <div className="absolute right-10 z-10 w-40 bg-white shadow-lg border border-gray-100 rounded-md actions">
-                        <ul className="flex flex-col text-[14px] gap-[5px]">
-                          <h1 className="font-bold text-black border-b pb-1 border-gray-200 action-title">
-                            Actions
-                          </h1>
+                      {open === user.id && (
+                        <div className="absolute top-full right-0 mt-2 z-[9999] w-40 bg-white shadow-lg border border-gray-100 rounded-md actions">
+                          <ul className="flex flex-col text-[14px] gap-[5px]">
+                            <h1 className="font-bold text-black border-b pb-1 border-gray-200 action-title">
+                              Actions
+                            </h1>
                           <button
                             onClick={() => handleEdit(user)}
                             className="text-left px-2 py-1 cursor-pointer view-details-btn-action"
@@ -276,13 +296,15 @@ function UserManagement() {
                         </ul>
                       </div>
                     )}
+                    </div>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
                 <td colSpan="4" className="py-10 text-gray-500 italic col-8">
-                  No {activeTab === "active" ? "active" : "inactive"} users found
+                  No {activeTab === "active" ? "active" : "inactive"} users
+                  found
                 </td>
               </tr>
             )}
