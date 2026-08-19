@@ -352,79 +352,6 @@
     font-size: 2rem;
   }
 }
-.about-right {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-
-/* Main Box */
-.about-visual-box {
-  position: relative;
-  width: 100%;
-  max-width: 420px;
-  aspect-ratio: 1 / 1; /* 🔥 makes it responsive square */
-  border: 1px solid rgba(44, 45, 136, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-/* Glow Background */
-.shield-glow {
-  position: absolute;
-  width: 60%;
-  height: 60%;
-  background: radial-gradient(
-    circle,
-    rgba(44, 45, 136, 0.25) 0%,
-    rgba(44, 45, 136, 0.1) 40%,
-    transparent 70%
-  );
-  border-radius: 50%;
-  z-index: 1;
-  animation: pulse 3s infinite ease-in-out;
-}
-
-/* Shield Icon */
-.shield-icon {
-  position: relative;
-  z-index: 2;
-  font-size: 3rem; /* mobile default */
-  color: #2C2D88;
-  opacity: 0.3;
-}
-
-/* Bottom Text */
-.visual-text {
-  position: absolute;
-  bottom: 12px;
-  font-weight: bold;
-  color: #EB612A;
-  z-index: 2;
-  letter-spacing: 1px;
-  font-size: 0.8rem;
-  text-align: center;
-  padding: 0 10px;
-}
-
-
-@media (min-width: 1024px) {
-  .about-visual-box {
-    max-width: 450px;
-  }
-
-  .shield-icon {
-    font-size: 5rem;
-  }
-
-  .visual-text {
-    font-size: 1rem;
-    bottom: 20px;
-  }
-}
 
 @keyframes pulse {
   0%{
@@ -439,4 +366,59 @@
     transform: scale(1);
     opacity: 0.3;
   }
+}
+
+.about-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.about-visual-box {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  aspect-ratio: 1 / 1;
+  border: 1px solid rgba(44, 45, 136, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.shield-glow {
+  position: absolute;
+  width: 60%;
+  height: 60%;
+  background: radial-gradient(circle, rgba(44, 45, 136, 0.25) 0%, rgba(44, 45, 136, 0.1) 40%, transparent 70%);
+  border-radius: 50%;
+  z-index: 1;
+  animation: pulse 3s infinite ease-in-out;
+}
+
+.shield-icon {
+  position: relative;
+  z-index: 2;
+  font-size: 3rem;
+  color: #2C2D88;
+  opacity: 0.3;
+}
+
+.visual-text {
+  position: absolute;
+  bottom: 12px;
+  font-weight: bold;
+  color: #EB612A;
+  z-index: 2;
+  letter-spacing: 1px;
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 0 10px;
+}
+
+@media (min-width: 1024px) {
+  .about-visual-box { max-width: 450px; }
+  .shield-icon { font-size: 5rem; }
+  .visual-text { font-size: 1rem; bottom: 20px; }
 }

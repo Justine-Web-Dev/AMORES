@@ -23,6 +23,18 @@ from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.contrib.auth.hashers import check_password, make_password
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from django.utils import timezone
+
+def is_application_allowed():
+    settings = SystemSettings.objects.first()
+    if not settings:
+        return True
+    
+    if settings.application_start_date and settings.application_end_date:
+        today = timezone.localdate()
+        return settings.application_start_date <= today <= settings.application_end_date
+    return settings.is_application_open
+
 from .permissions import IsSuperAdmin, IsAdministrator, IsRecruiter, IsInterviewer, IsRecruiterOrInterviewer
 from rest_framework.decorators import permission_classes
 
@@ -509,6 +521,9 @@ def validate_applicant_form(request):
 
 @api_view(['POST'])
 def register_applicant_form(request):
+    if not is_application_allowed():
+        return Response({"error": "Application period is currently closed."}, status=status.HTTP_403_FORBIDDEN)
+
     # Mapping old field names to new ones for validation and creation
     email = request.data.get('email', '').strip().lower()
     contact_number = request.data.get('cp_number', '').strip() or request.data.get('contact_number', '').strip()
@@ -845,6 +860,9 @@ def track_application_status(request):
 @api_view(['POST'])
 @parser_classes([MultiPartParser, FormParser])
 def upload_document(request):
+    if not is_application_allowed():
+        return Response({"error": "Application period is currently closed."}, status=status.HTTP_403_FORBIDDEN)
+
     serializer = ApplicantDocumentSerializer(data=request.data, context={'request': request})
     if serializer.is_valid():
         document = serializer.save()
@@ -1233,6 +1251,9 @@ class SubmitApplicationView(APIView):
 
 @api_view(['PATCH'])
 def reapply_update_view(request, tracking_code):
+    if not is_application_allowed():
+        return Response({"error": "Application period is currently closed."}, status=status.HTTP_403_FORBIDDEN)
+
     try:
         application = Application.objects.get(tracking_code=tracking_code)
         applicant = application.applicant

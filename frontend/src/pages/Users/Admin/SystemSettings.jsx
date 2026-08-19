@@ -76,7 +76,7 @@ function SystemSettings() {
       setSaving(false);
     }
   };
-  
+
   return (
     <div className='module-content max-w-7xl mx-auto p-6'>
 

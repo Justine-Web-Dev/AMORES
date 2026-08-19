@@ -102,211 +102,202 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
       )}
 
       <section className="relative min-h-[90vh] lg:min-h-screen flex items-center pt-28 pb-16 overflow-hidden bg-slate-100">
-      {backgroundImages.map((bgImage, index) => (
-        <div
-          key={index}
-          className="absolute inset-0 bg-cover bg-center md:bg-center transition-opacity duration-1000 ease-in-out"
-          style={{
-            backgroundImage: `url(${bgImage})`,
-            opacity: index === currentBgIndex ? 0.75 : 0,
-            zIndex: index === currentBgIndex ? 1 : 0,
-          }}
-        />
-      ))}
+        {backgroundImages.map((bgImage, index) => (
+          <div
+            key={index}
+            className="absolute inset-0 bg-cover bg-center md:bg-center transition-opacity duration-1000 ease-in-out"
+            style={{
+              backgroundImage: `url(${bgImage})`,
+              opacity: index === currentBgIndex ? 0.75 : 0,
+              zIndex: index === currentBgIndex ? 1 : 0,
+            }}
+          />
+        ))}
 
-      <div className="absolute inset-0 bg-gradient-to-r from-slate-50/95 via-slate-50/50 to-transparent/5 z-10 hidden lg:block" />
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-50/70 via-slate-50/45 to-transparent/10 z-10 lg:hidden" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-50/95 via-slate-50/50 to-transparent/5 z-10 hidden lg:block" />
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-50/70 via-slate-50/45 to-transparent/10 z-10 lg:hidden" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-20">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-8">
-          
-          <div className="flex flex-col items-center lg:items-start text-center lg:text-left w-full lg:w-1/2 space-y-6">
-            <div className="inline-flex items-center gap-3 px-3 py-1 bg-[#2C2D88]/10 backdrop-blur-sm rounded-full border border-[#2C2D88]/20 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-[#EB612A] animate-ping" />
-              <span className="uppercase tracking-widest text-[11px] md:text-xs font-bold text-[#2C2D88]">
-                PNP Recruitment 2026
-              </span>
-            </div>
-
-            <div className="space-y-4">
-              <h1 className="text-4xl sm:text-6xl md:text-7xl font-black tracking-tight text-[#2C2D88] italic uppercase leading-none drop-shadow-xs select-none">
-                <span>Serve.</span>
-                <br />
-                <span className="text-[#EB612A]">Honor.</span>
-                <br />
-                <span>Justice.</span>
-              </h1>
-
-              <p className="text-gray-900 font-semibold text-sm md:text-lg max-w-lg leading-relaxed bg-white/75 backdrop-blur-md p-4 rounded-xl border border-white/50 shadow-xs">
-                Join the Philippine National Police force today. We are
-                looking for honorable, dedicated, and disciplined citizens
-                committed to protecting public safety and upholding justice
-                across our nation.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto pt-2">
-              {isApplicationOpen && endDateObject ? (
-                <button
-                  onClick={handleStartApp}
-                  className="w-full sm:w-auto px-8 py-4 bg-[#EB612A] hover:bg-[#d55320] text-white font-bold text-sm tracking-wider uppercase rounded-lg shadow-md hover:shadow-xl transition-all duration-200 active:scale-95 focus:outline-none focus:ring-4 focus:ring-orange-300"
-                >
-                  Start Application
-                </button>
-              ) : (
-                <div className="flex flex-col items-center sm:items-start gap-1 w-full sm:w-auto">
-                  <button
-                    disabled
-                    className="w-full sm:w-auto px-8 py-4 bg-gray-300 shadow-md font-bold text-sm tracking-wider uppercase rounded-lg cursor-not-allowed opacity-75"
-                  >
-                    {endDateObject ? "Applications Closed" : "Applications TBA"}
-                  </button>
-                  <span className="text-[10px] text-rose-700 font-extrabold tracking-wider uppercase mt-1 drop-shadow-sm">
-                    {endDateObject
-                      ? "Registration portal is currently inactive"
-                      : "Application dates are to be announced"}
-                  </span>
-                </div>
-              )}
-
-              <button
-                onClick={scrollToRequirements}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/80 hover:bg-white border border-gray-300 text-[#2C2D88] font-bold text-sm tracking-wider uppercase rounded-lg transition-all duration-200 active:scale-95 shadow-sm backdrop-blur-xs"
-              >
-                View Requirements
-                <HiArrowDown className="w-4 h-4 animate-bounce" />
-              </button>
-            </div>
-          </div>
-
-          <div className="w-full lg:w-[45%] bg-gradient-to-br from-[#2C2D88]/75 to-[#1e1f5c]/80 backdrop-blur-md border-t-8 border-[#EB612A] text-white shadow-2xl rounded-2xl p-5 md:p-8 space-y-5 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
-              <HiOutlineShieldCheck className="w-40 h-40" />
-            </div>
-
-            <div>
-              <h3 className="text-[#EB612A] uppercase tracking-widest text-xs font-bold mb-1">
-                Recruitment Timeline & Target
-              </h3>
-              <p className="text-xs text-gray-300">
-                National standard qualifications review panel indicators
-              </p>
-            </div>
-
-            <div className="space-y-3 md:space-y-4">
-              <div className="flex items-start gap-4 p-2 md:p-3 rounded-lg hover:bg-white/5 transition-colors">
-                <HiOutlineClipboardList className="w-6 h-6 text-[#EB612A] shrink-0 mt-1" />
-                <div>
-                  <h4 className="text-2xl md:text-3xl font-black tracking-tight text-[#EB612A]">
-                    2,400+
-                  </h4>
-                  <p className="text-xs text-gray-200 font-medium">
-                    Available regular quotas allocated for qualified
-                    candidates nationwide.
-                  </p>
-                </div>
-              </div>
-
-              <div className="h-[1px] bg-white/15 w-full"></div>
-
-              <div className="flex items-start gap-4 p-2 md:p-3 rounded-lg hover:bg-white/5 transition-colors">
-                <HiOutlineShieldCheck className="w-6 h-6 text-[#EB612A] shrink-0 mt-1" />
-                <div>
-                  <h4 className="text-2xl md:text-3xl font-black tracking-tight text-[#EB612A]">
-                    16 Regional
-                  </h4>
-                  <p className="text-xs text-gray-200 font-medium">
-                    Police Offices actively evaluating documentation channels
-                    simultaneously.
-                  </p>
-                </div>
-              </div>
-
-              <div className="h-[1px] bg-white/15 w-full"></div>
-
-              <div className="flex items-start gap-4 p-2 md:p-3 rounded-lg hover:bg-white/5 transition-colors">
-                <HiOutlineCalendar className="w-6 h-6 text-[#EB612A] shrink-0 mt-1" />
-                <div>
-                  <h4 className="text-2xl md:text-3xl font-black tracking-tight text-[#EB612A] uppercase">
-                    {startDateObject
-                      ? startDateObject.toLocaleString("en-US", {
-                          month: "long",
-                          day: "numeric",
-                        })
-                      : "TBA"}
-                  </h4>
-                  <p className="text-xs text-gray-200 font-medium">
-                    Start of the recruitment and application period.
-                  </p>
-                </div>
-              </div>
-
-              <div className="h-[1px] bg-white/15 w-full"></div>
-
-              <div className="flex items-start gap-4 p-2 md:p-3 rounded-lg hover:bg-white/5 transition-colors">
-                <HiOutlineCalendar className="w-6 h-6 text-[#EB612A] shrink-0 mt-1" />
-                <div>
-                  <h4 className="text-2xl md:text-3xl font-black tracking-tight text-[#EB612A] uppercase">
-                    {endDateObject
-                      ? endDateObject.toLocaleString("en-US", {
-                          month: "long",
-                          day: "numeric",
-                        })
-                      : "TBA"}
-                  </h4>
-                  <p className="text-xs text-gray-200 font-medium">
-                    Strict statutory deadline for completing original
-                    documentation uploads.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/5 border-l-4 border-[#EB612A] p-4 rounded-r-lg">
-              <p className="text-xs md:text-sm italic text-slate-200 leading-relaxed">
-                <span className="font-bold text-white block not-italic mb-0.5">
-                  "Serbisyo sa Bayan"
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full z-20">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-8">
+            <div className="flex flex-col items-center lg:items-start text-center lg:text-left w-full lg:w-1/2 space-y-6">
+              <div className="inline-flex items-center gap-3 px-3 py-1 bg-[#2C2D88]/10 backdrop-blur-sm rounded-full border border-[#2C2D88]/20 shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-[#EB612A] animate-ping" />
+                <span className="uppercase tracking-widest text-[11px] md:text-xs font-bold text-[#2C2D88]">
+                  PNP Recruitment 2026
                 </span>
-                Our enduring sacred vow to defend, secure, and serve our
-                communities with utmost discipline.
-              </p>
+              </div>
+
+              <div className="space-y-4">
+                <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-black tracking-tight text-[#2C2D88] italic uppercase leading-[0.95] drop-shadow-xs select-none">
+                  <span>Serve.</span>
+                  <br />
+                  <span className="text-[#EB612A]">Honor.</span>
+                  <br />
+                  <span>Justice.</span>
+                </h1>
+
+                <p className="text-gray-900 font-semibold text-sm md:text-lg lg:text-sm xl:text-base 2xl:text-lg max-w-lg leading-relaxed bg-white/75 backdrop-blur-md p-4 lg:p-3 xl:p-4 rounded-xl border border-white/50 shadow-xs">
+                  Join the Philippine National Police force today. We are
+                  looking for honorable, dedicated, and disciplined citizens
+                  committed to protecting public safety and upholding justice
+                  across our nation.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto pt-2">
+                {isApplicationOpen && endDateObject ? (
+                  <button
+                    onClick={handleStartApp}
+                    className="w-full sm:w-auto px-8 py-4 bg-[#EB612A] hover:bg-[#d55320] text-white font-bold text-sm tracking-wider uppercase rounded-lg shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-200 active:scale-95 focus:outline-none focus:ring-4 focus:ring-orange-300"
+                  >
+                    Start Application
+                  </button>
+                ) : (
+                  <div className="flex flex-col items-center sm:items-start gap-1 w-full sm:w-auto">
+                    <button
+                      disabled
+                      className="w-full sm:w-auto px-8 py-4 bg-gray-300 shadow-md font-bold text-sm tracking-wider uppercase rounded-lg cursor-not-allowed opacity-75"
+                    >
+                      {endDateObject
+                        ? "Applications Closed"
+                        : "Applications TBA"}
+                    </button>
+                    <span className="text-[10px] text-rose-700 font-extrabold tracking-wider uppercase mt-1 drop-shadow-sm">
+                      {endDateObject
+                        ? "Registration portal is currently inactive"
+                        : "Application dates are to be announced"}
+                    </span>
+                  </div>
+                )}
+
+                <button
+                  onClick={scrollToRequirements}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/80 hover:bg-white border border-gray-300 text-[#2C2D88] font-bold text-sm tracking-wider uppercase rounded-lg transition-all duration-200 hover:-translate-y-1 hover:shadow-lg active:scale-95 shadow-sm backdrop-blur-xs"
+                >
+                  View Requirements
+                  <HiArrowDown className="w-4 h-4 animate-bounce" />
+                </button>
+              </div>
+            </div>
+
+            <div className="w-full lg:w-[45%] bg-[#211F54] text-white shadow-2xl rounded-2xl p-5 md:p-8 lg:p-5 xl:p-6 2xl:p-8 space-y-5 lg:space-y-3 xl:space-y-4 2xl:space-y-5 relative overflow-hidden border-t-4 border-[#EB612A]">
+              <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+                <HiOutlineShieldCheck className="w-40 h-40" />
+              </div>
+
+              <div className="relative z-10">
+                <h3 className="text-[#EB612A] uppercase tracking-widest text-xs font-bold mb-1">
+                  Recruitment Timeline & Target
+                </h3>
+                <p className="text-xs text-gray-300">
+                  National standard qualifications review panel indicators
+                </p>
+              </div>
+
+              <div className="space-y-4 relative z-10">
+                <div className="flex items-start gap-4">
+                  <div className="mt-1">
+                    <HiOutlineClipboardList className="w-6 h-6 text-[#EB612A]" />
+                  </div>
+                  <div>
+                    <h4 className="text-2xl md:text-3xl lg:text-xl xl:text-2xl 2xl:text-3xl font-black tracking-tight text-[#EB612A]">
+                      2,400+
+                    </h4>
+                    <p className="text-xs text-gray-200 font-medium mt-1">
+                      Available regular quotas allocated for qualified
+                      candidates nationwide.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="h-[1px] bg-white/10 w-full ml-10"></div>
+
+                <div className="flex items-start gap-4">
+                  <div className="mt-1">
+                    <HiOutlineShieldCheck className="w-6 h-6 text-[#EB612A]" />
+                  </div>
+                  <div>
+                    <h4 className="text-2xl md:text-3xl lg:text-xl xl:text-2xl 2xl:text-3xl font-black tracking-tight text-[#EB612A]">
+                      16 Regional
+                    </h4>
+                    <p className="text-xs text-gray-200 font-medium mt-1">
+                      Police Offices actively evaluating documentation channels
+                      simultaneously.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="h-[1px] bg-white/10 w-full ml-10"></div>
+
+                <div className="flex items-start gap-4">
+                  <div className="mt-1">
+                    <HiOutlineCalendar className="w-6 h-6 text-[#EB612A]" />
+                  </div>
+                  <div>
+                    <h4 className="text-2xl md:text-3xl lg:text-xl xl:text-2xl 2xl:text-3xl font-black tracking-tight text-white uppercase">
+                      {startDateObject && endDateObject
+                        ? `${startDateObject.toLocaleString("en-US", { month: "long", day: "numeric" })} - ${endDateObject.toLocaleString("en-US", { month: "long", day: "numeric" })}`
+                        : "TBA"}
+                    </h4>
+                    <p className="text-xs text-gray-200 font-medium mt-1">
+                      Application window and documentation uploads deadline.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white/10 p-5 rounded-xl relative z-10 flex items-start gap-3 mt-6 shadow-sm">
+                <span className="text-[#EB612A] text-2xl leading-none font-bold">
+                  "
+                </span>
+                <p className="text-xs md:text-sm italic text-slate-200 leading-relaxed">
+                  <span className="font-bold text-white block not-italic mb-1">
+                    Serbisyo sa Bayan
+                  </span>
+                  Our enduring sacred vow to defend, secure, and serve our
+                  communities with utmost discipline.
+                </p>
+              </div>
             </div>
           </div>
-
         </div>
-      </div>
-    </section>
+      </section>
 
-      <div className="bg-white border-y border-gray-200 py-3 overflow-hidden shadow-sm select-none ticker">
+      {/* SCROLLING TICKER */}
+      <div className="bg-white border-t border-[#2C2D88] border-b-[3px] border-[#EB612A] py-3 overflow-hidden shadow-sm select-none ticker relative z-20">
         <div className="flex whitespace-nowrap animate-ticker inline-block ticker-track">
-          {[...Array(4)].map((_, idx) => (
+          {[...Array(5)].map((_, idx) => (
             <div
               key={idx}
-              className="flex items-center space-x-12 mx-6 text-sm font-semibold tracking-wide uppercase text-gray-600"
+              className="flex items-center space-x-12 mx-6 text-[11px] md:text-sm font-bold tracking-[0.15em] uppercase"
             >
-              <span className="inline-flex items-center gap-1.5 font-bold">
+              <span className="inline-flex items-center gap-2">
                 {isApplicationOpen && endDateObject ? (
-                  <span className="text-emerald-600">
-                    {" "}
-                    🟢 Applications Active Now
+                  <span className="flex items-center gap-2 text-emerald-600">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                    Applications Active Now
                   </span>
                 ) : !endDateObject ? (
-                  <span className="text-amber-500"> 🟡 Applications TBA</span>
+                  <span className="flex items-center gap-2 text-amber-500">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+                    Applications TBA
+                  </span>
                 ) : (
-                  <span className="text-rose-600">
-                    {" "}
-                    🔴 Applications Offline
+                  <span className="flex items-center gap-2 text-rose-600">
+                    <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]" />
+                    Applications Offline
                   </span>
                 )}
               </span>
-              <span>·</span>
+              <span className="text-gray-300">-</span>
               <span className="text-[#2C2D88]">
                 Philippine National Police Recruitment Cycle 2026
               </span>
-              <span>·</span>
-              <span>Serve Your Fellow Citizens</span>
-              <span>·</span>
+              <span className="text-gray-300">-</span>
+              <span className="text-slate-500">Serve Your Fellow Citizens</span>
+              <span className="text-gray-300">-</span>
               <span className="text-[#EB612A]">Protect With Honor</span>
+              <span className="text-gray-300">-</span>
             </div>
           ))}
         </div>

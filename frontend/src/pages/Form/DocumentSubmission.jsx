@@ -1,72 +1,175 @@
-import React, { useState, useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { HiArrowNarrowLeft, HiOutlineCloudUpload, HiX } from "react-icons/hi";
-import { api } from '../../../api/api'
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { HiArrowNarrowLeft, HiOutlineCloudUpload, HiX } from 'react-icons/hi';
+import { api } from '../../../api/api';
 
-// Native IndexedDB helper to avoid external dependencies in monorepo
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open("DocumentStore", 1);
-    request.onupgradeneeded = (e) => e.target.result.createObjectStore("files");
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-async function getDocs() {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const req = db.transaction("files", "readonly").objectStore("files").get("docs");
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-async function setDocs(val) {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const req = db.transaction("files", "readwrite").objectStore("files").put(val, "docs");
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
-  });
-}
-async function delDocs() {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const req = db.transaction("files", "readwrite").objectStore("files").delete("docs");
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
-  });
-}
+// --- CONFIGURATION SCHEMA ---
+const DOC_SECTIONS = [
+  {
+    title: 'Identity Documents',
+    gridCols: 'md:grid-cols-3',
+    items: [
+      { key: 'birthCert', label: 'Birth Certificate', backendType: 'BIRTH_CERT', required: true }
+    ]
+  },
+  {
+    title: 'Scholastic Records',
+    gridCols: 'md:grid-cols-2',
+    items: [
+      { key: 'otr', label: 'Official Transcript of Records (OTR)', backendType: 'OTR', required: true },
+      { key: 'diploma', label: 'Diploma', backendType: 'DIPLOMA', required: true }
+    ]
+  },
+  {
+    title: 'Government Clearances',
+    gridCols: 'md:grid-cols-2',
+    items: [
+      { key: 'barangayClearance', label: 'Barangay Clearance', backendType: 'BRGY_CLEARANCE', required: true },
+      { key: 'policeClearance', label: 'National Police Clearance', backendType: 'POLICE_CLEARANCE', required: true },
+      { key: 'prosecutorClearance', label: "Prosecutor's Clearance", backendType: 'PROS_CLEARANCE', required: true },
+      { key: 'nbiClearance', label: 'NBI Clearance', backendType: 'NBI_CLEARANCE', required: true }
+    ]
+  },
+  {
+    title: 'Career & Civil Service Eligibilities',
+    subtitle: 'Upload at least one item below that matches your qualifications:',
+    gridCols: 'md:grid-cols-2',
+    items: [
+      { key: 'prc', label: 'PRC License', backendType: 'PRC', required: false, group: 'eligibility' },
+      { key: 'napolcom', label: 'Napolcom Entrance Rating', backendType: 'NAPOLCOM', required: false, group: 'eligibility' },
+      { key: 'pd907', label: 'PD907 (Honor Graduate)', backendType: 'PD907', required: false, group: 'eligibility' },
+      { key: 'csProf', label: 'CS Professional Eligibility', backendType: 'CS_PROF', required: false, group: 'eligibility' }
+    ]
+  }
+];
 
-let cachedDocuments = null;
+const ALL_DOC_CONFIGS = DOC_SECTIONS.flatMap(s => s.items);
 
-function DocumentSubmission() {
-  const location = useLocation()
-  const navigate = useNavigate()
+// --- INDEXEDDB STORAGE HELPERS ---
+const dbStorage = {
+  async getDB() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open('DocumentStore', 1);
+      request.onupgradeneeded = (e) => e.target.result.createObjectStore('files');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  },
+  async get(key) {
+    const db = await this.getDB();
+    return new Promise((resolve, reject) => {
+      const req = db.transaction('files', 'readonly').objectStore('files').get(key);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  },
+  async set(key, val) {
+    const db = await this.getDB();
+    return new Promise((resolve, reject) => {
+      const req = db.transaction('files', 'readwrite').objectStore('files').put(val, key);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  },
+  async del(key) {
+    const db = await this.getDB();
+    return new Promise((resolve, reject) => {
+      const req = db.transaction('files', 'readwrite').objectStore('files').delete(key);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  }
+};
 
-  const [formData] = useState(
-    location.state?.formData || JSON.parse(localStorage.getItem('applicationFormData')) || {}
-  )
+// --- SUB-COMPONENT: OUTSIDE TO PREVENT RE-RENDER LOOPS ---
+const SingleUploadBox = React.memo(({ label, docKey, file, isOptional, disabled, onUpload, onRemove }) => {
+  const [previewUrl, setPreviewUrl] = useState(null);
 
-  const initialDocs = () => {
-    if (cachedDocuments) return cachedDocuments;
-    const defaults = {
-      birthCert: null, otr: null, diploma: null, barangayClearance: null,
-      policeClearance: null, prosecutorClearance: null, nbiClearance: null,
-      prc: null, napolcom: null, pd907: null, csProf: null
-    };
+  useEffect(() => {
+    if (!file) {
+      setPreviewUrl(null);
+      return;
+    }
+    if (file.isExisting) {
+      setPreviewUrl(file.file_url);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [file]);
+
+  return (
+    <div className="bg-white border border-gray-300 rounded-lg p-4 transition duration-200 hover:border-gray-400 flex flex-col justify-between min-h-[100px]">
+      <div className="flex justify-between items-start gap-2 mb-2">
+        <div className="flex flex-col">
+          <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
+            {label} {!isOptional && <span className="text-red-500 ml-0.5">*</span>}
+          </span>
+          <span className="text-[11px] text-gray-400 mt-0.5">PDF format required</span>
+        </div>
+      </div>
+
+      <div className="mt-auto">
+        {!file ? (
+          <label className="flex items-center justify-center gap-2 w-full py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold cursor-pointer transition border border-gray-200 focus-within:ring-2 focus-within:ring-[#2C2D86]">
+            <HiOutlineCloudUpload size={16} className="text-gray-500" />
+            <span>Upload Document</span>
+            <input
+              type="file"
+              accept="application/pdf"
+              disabled={disabled}
+              onChange={(e) => onUpload(e.target.files?.[0], docKey)}
+              className="hidden"
+            />
+          </label>
+        ) : (
+          <div className="flex flex-col gap-3 w-full">
+            <div className="flex items-center justify-between bg-green-50 border border-green-200 px-3 py-2 rounded-lg w-full">
+              <span className="text-xs font-medium text-green-700 truncate max-w-[150px]">✓ {file.name}</span>
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={() => onRemove(docKey)}
+                className="text-gray-400 hover:text-red-500 transition-colors p-0.5 rounded"
+              >
+                <HiX size={14} />
+              </button>
+            </div>
+            {previewUrl && (
+              <iframe
+                src={`${previewUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+                title={`${label} Preview`}
+                className="w-full h-48 border border-gray-200 rounded-lg pointer-events-none"
+              />
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+});
+
+// --- MAIN CONTAINER ---
+export default function DocumentSubmission({ isApplicationOpen }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const formData = useMemo(() => (
+    location.state?.formData || JSON.parse(localStorage.getItem('applicationFormData') || '{}')
+  ), [location.state]);
+
+  const [documents, setDocuments] = useState(() => {
+    const defaults = {};
+    ALL_DOC_CONFIGS.forEach(item => { defaults[item.key] = null; });
 
     if (formData.documents) {
-      const typeMap = {
-        'BIRTH_CERT': 'birthCert', 'OTR': 'otr', 'DIPLOMA': 'diploma',
-        'BRGY_CLEARANCE': 'barangayClearance', 'POLICE_CLEARANCE': 'policeClearance',
-        'PROS_CLEARANCE': 'prosecutorClearance', 'NBI_CLEARANCE': 'nbiClearance',
-        'PRC': 'prc', 'NAPOLCOM': 'napolcom', 'PD907': 'pd907', 'CS_PROF': 'csProf'
-      };
-      
+      const typeMap = Object.fromEntries(ALL_DOC_CONFIGS.map(c => [c.backendType, c.key]));
       formData.documents.forEach(doc => {
         const key = typeMap[doc.document_type];
         if (key && doc.file_url) {
-          // Construct a mock file object to represent the existing document
           defaults[key] = {
             name: doc.file ? doc.file.split('/').pop() : 'Previous Document.pdf',
             file_url: doc.file_url,
@@ -77,210 +180,137 @@ function DocumentSubmission() {
       });
     }
     return defaults;
-  };
+  });
 
-  const [documents, setDocuments] = useState(initialDocs())
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
+  // Restore cache if state is empty
   useEffect(() => {
-    // Load from IndexedDB on initial mount if memory cache is empty
-    if (!cachedDocuments) {
-      getDocs().then(val => {
-        if (val) {
-          setDocuments(val);
-          cachedDocuments = val;
-        }
+    const hasFiles = Object.values(documents).some(Boolean);
+    if (!hasFiles) {
+      dbStorage.get('docs').then(cached => {
+        if (cached) setDocuments(cached);
       }).catch(console.error);
     }
   }, []);
 
+  // Persist documents locally
   useEffect(() => {
-    cachedDocuments = documents;
-    
-    // Save to IndexedDB (asynchronously so it doesn't block rendering)
-    const hasFiles = Object.values(documents).some(file => file !== null);
+    const hasFiles = Object.values(documents).some(Boolean);
     if (hasFiles) {
-      setDocs(documents).catch(console.error);
+      dbStorage.set('docs', documents).catch(console.error);
     }
   }, [documents]);
 
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const handleFileChange = (event, documentKey) => {
-    const file = event.target.files[0]
-    if (file) {
-      setDocuments(prev => ({
-        ...prev,
-        [documentKey]: file
-      }))
-    }
-  }
+  const handleFileChange = useCallback((file, documentKey) => {
+    if (!file) return;
+    setDocuments(prev => ({ ...prev, [documentKey]: file }));
+  }, []);
 
-  const removeFile = (documentKey) => {
-    setDocuments(prev => ({
-      ...prev,
-      [documentKey]: null
-    }))
-  }
+  const handleRemoveFile = useCallback((documentKey) => {
+    setDocuments(prev => ({ ...prev, [documentKey]: null }));
+  }, []);
 
-  const isFormValid = 
-    documents.birthCert &&
-    documents.otr &&
-    documents.diploma &&
-    documents.barangayClearance &&
-    documents.policeClearance &&
-    documents.prosecutorClearance &&
-    documents.nbiClearance &&
-    (documents.prc || documents.napolcom || documents.pd907 || documents.csProf)
+  const isFormValid = useMemo(() => {
+    const requiredSatisfied = ALL_DOC_CONFIGS
+      .filter(c => c.required)
+      .every(c => Boolean(documents[c.key]));
+
+    const eligibilitySatisfied = ALL_DOC_CONFIGS
+      .filter(c => c.group === 'eligibility')
+      .some(c => Boolean(documents[c.key]));
+
+    return requiredSatisfied && eligibilitySatisfied;
+  }, [documents]);
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+    e.preventDefault();
+    setError('');
+    setLoading(true);
 
     try {
       const payload = {
         ...formData,
-        date_graduated: formData.date_graduated ? new Date(formData.date_graduated).toISOString().split('T')[0] : null,
-      }
+        date_graduated: formData.date_graduated
+          ? new Date(formData.date_graduated).toISOString().split('T')[0]
+          : null,
+      };
 
-      // 1. Register base applicant text info
-      let response;
-      if (formData.tracking_code) {
-        response = await api.patch(`users/applications/${formData.tracking_code}/reapply/`, payload)
-      } else {
-        response = await api.post("users/register_applicant_info/", payload)
-      }
-      const applicantId = response.data.id;
-      const code = response.data.tracking_code;
+      const { data } = formData.tracking_code
+        ? await api.patch(`users/applications/${formData.tracking_code}/reapply/`, payload)
+        : await api.post('users/register_applicant_info/', payload);
 
-      // 2. Map local document states to specific document type codes
-      const uploadQueue = [
-        { file: documents.birthCert, label: 'BIRTH_CERT' },
-        { file: documents.otr, label: 'OTR' },
-        { file: documents.diploma, label: 'DIPLOMA' },
-        { file: documents.barangayClearance, label: 'BRGY_CLEARANCE' },
-        { file: documents.policeClearance, label: 'POLICE_CLEARANCE' },
-        { file: documents.prosecutorClearance, label: 'PROS_CLEARANCE' },
-        { file: documents.nbiClearance, label: 'NBI_CLEARANCE' },
-        { file: documents.prc, label: 'PRC' },
-        { file: documents.napolcom, label: 'NAPOLCOM' },
-        { file: documents.pd907, label: 'PD907' },
-        { file: documents.csProf, label: 'CS_PROF' },
-      ]
+      const applicantId = data.id;
+      const code = data.tracking_code;
 
-      const uploadPromises = []
+      const uploadQueue = ALL_DOC_CONFIGS
+        .filter(cfg => documents[cfg.key] && !documents[cfg.key]?.isExisting)
+        .map(cfg => {
+          const body = new FormData();
+          body.append('applicant', applicantId);
+          body.append('document_type', cfg.backendType);
+          body.append('file', documents[cfg.key]);
 
-      uploadQueue.forEach(item => {
-        // Only upload if it's a real File object (not an existing document loaded from backend)
-        if (item.file && !item.file.isExisting) {
-          const docFormData = new FormData()
-          docFormData.append('applicant', applicantId)
-          docFormData.append('document_type', item.label)
-          docFormData.append('file', item.file)
-
-          uploadPromises.push(api.post("users/upload-document/", docFormData, {
+          return api.post('users/upload-document/', body, {
             headers: { 'Content-Type': 'multipart/form-data' }
-          }))
-        }
-      })
+          });
+        });
 
-      if (uploadPromises.length > 0) {
-        await Promise.all(uploadPromises)
+      if (uploadQueue.length > 0) {
+        await Promise.all(uploadQueue);
       }
 
-      localStorage.removeItem('applicationFormData')
-      cachedDocuments = null; // Clear cached files on success
-      delDocs().catch(console.error); // Clear IndexedDB cache
-      
-      const isReapply = !!formData.tracking_code;
-      navigate('../success-submit', { state: { trackingCode: code, isReapply: isReapply }, relative: 'path' })
+      localStorage.removeItem('applicationFormData');
+      await dbStorage.del('docs').catch(console.error);
+
+      navigate('../success-submit', {
+        state: { trackingCode: code, isReapply: !!formData.tracking_code },
+        relative: 'path'
+      });
     } catch (err) {
-      console.error("Submission error data:", err?.response?.data);
-      let errorMessage = "Submission failed.";
-      if (err?.response?.data) {
-        if (typeof err.response.data === 'object') {
-           errorMessage = JSON.stringify(err.response.data);
-        } else {
-           errorMessage = err.response.data;
-        }
-      }
-      setError(errorMessage)
+      const errData = err?.response?.data;
+      setError(typeof errData === 'object' ? JSON.stringify(errData) : errData || 'Submission failed.');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const SingleUploadBox = ({ label, docKey, file, isOptional = false }) => (
-    <div className="bg-white border border-gray-300 rounded-lg p-4 transition duration-200 hover:border-gray-400 flex flex-col justify-between min-h-[100px]">
-      <div className="flex justify-between items-start gap-2 mb-2">
-        <div className="flex flex-col">
-          <span className="text-xs font-semibold text-gray-700 uppercase tracking-wider">
-            {label}
-            {!isOptional && <span className="text-red-500 ml-1">*</span>}
-          </span>
-          <span className="text-[11px] text-gray-400 mt-0.5">PDF format required</span>
+  if (isApplicationOpen === false) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-xl shadow-md max-w-md w-full text-center space-y-4 border border-gray-200">
+          <div className="w-16 h-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900">Application Locked</h2>
+          <p className="text-gray-600">Document submission is currently closed.</p>
+          <button onClick={() => navigate('/')} className="mt-4 px-6 py-2 bg-[#2C2D88] text-white rounded-lg hover:bg-opacity-90 font-medium">
+            Return to Home
+          </button>
         </div>
       </div>
-      
-      <div className="mt-auto">
-        {!file ? (
-          <label className="flex items-center justify-center gap-2 w-full py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-lg text-xs font-semibold cursor-pointer transition border border-gray-200 focus-within:ring-2 focus-within:ring-[#2C2D86]">
-            <HiOutlineCloudUpload size={16} className="text-gray-500" />
-            <span>Upload Document</span>
-            <input
-              type="file"
-              accept="application/pdf"
-              disabled={loading}
-              onChange={(e) => handleFileChange(e, docKey)}
-              className="hidden"
-            />
-          </label>
-        ) : (
-          <div className="flex flex-col gap-3 w-full">
-            <div className="flex items-center justify-between bg-green-50 border border-green-200 px-3 py-2 rounded-lg w-full">
-              <span className="text-xs font-medium text-green-700 truncate max-w-[150px]">✓ {file.name}</span>
-              <button
-                type="button"
-                disabled={loading}
-                onClick={() => removeFile(docKey)}
-                className="text-gray-400 hover:text-red-500 transition-colors p-0.5 rounded"
-              >
-                <HiX size={14} />
-              </button>
-            </div>
-            <iframe
-              src={file.isExisting ? `${file.file_url}#toolbar=0&navpanes=0&scrollbar=0` : `${URL.createObjectURL(file)}#toolbar=0&navpanes=0&scrollbar=0`}
-              title="PDF Preview"
-              className="w-full h-48 border border-gray-200 rounded-lg pointer-events-none"
-            />
-          </div>
-        )}
-      </div>
-    </div>
-  )
+    );
+  }
 
   return (
-    <div className="form-application-container min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 flex flex-col pt-12 pb-24 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow-md space-y-8">
-        
-        {/* Header Block */}
         <div className="border-b border-gray-200 pb-4 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 cursor-pointer mb-3 text-sm font-semibold text-[#2C2D86] hover:text-[#1f2063] transition-colors"
+              className="flex items-center gap-2 cursor-pointer mb-3 text-sm font-semibold text-[#2C2D86] hover:text-[#1f2063]"
             >
               <HiArrowNarrowLeft size={18} />
               <span>Back to Form</span>
             </button>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 title-application-form">
-              Document Submission
-            </h1>
-            <p className="mt-1 text-sm text-gray-500">
-              Please upload each specified requirement below to complete your track records profiles.
-            </p>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Document Submission</h1>
+            <p className="mt-1 text-sm text-gray-500">Please upload each specified requirement below.</p>
           </div>
-          <div className="text-xs font-semibold text-red-500 bg-red-50 border border-red-200 px-3 py-1 rounded-md self-start md:self-auto">
+          <div className="text-xs font-semibold text-red-500 bg-red-50 border border-red-200 px-3 py-1 rounded-md">
             * Indicates required document
           </div>
         </div>
@@ -292,66 +322,40 @@ function DocumentSubmission() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          
-          {/* SECTION 1: Identity Documents */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-800 border-l-4 border-[#2C2D86] pl-2">
-              Identity Documents
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <SingleUploadBox label="Birth Certificate" docKey="birthCert" file={documents.birthCert} />
-            </div>
-          </div>
+          {DOC_SECTIONS.map((section, idx) => (
+            <div key={idx} className="space-y-4">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-800 border-l-4 border-[#2C2D86] pl-2">
+                  {section.title}
+                </h2>
+                {section.subtitle && <p className="text-xs text-gray-400 mt-1 pl-3.5">{section.subtitle}</p>}
+              </div>
 
-          {/* SECTION 2: Scholastic Records */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-800 border-l-4 border-[#2C2D86] pl-2">
-              Scholastic Records
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SingleUploadBox label="Official Transcript of Records (OTR)" docKey="otr" file={documents.otr} />
-              <SingleUploadBox label="Diploma" docKey="diploma" file={documents.diploma} />
+              <div className={`grid grid-cols-1 ${section.gridCols} gap-4`}>
+                {section.items.map(item => (
+                  <SingleUploadBox
+                    key={item.key}
+                    label={item.label}
+                    docKey={item.key}
+                    file={documents[item.key]}
+                    isOptional={!item.required}
+                    disabled={loading}
+                    onUpload={handleFileChange}
+                    onRemove={handleRemoveFile}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
+          ))}
 
-          {/* SECTION 3: Government Clearances */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-800 border-l-4 border-[#2C2D86] pl-2">
-              Government Clearances
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SingleUploadBox label="Barangay Clearance" docKey="barangayClearance" file={documents.barangayClearance} />
-              <SingleUploadBox label="National Police Clearance" docKey="policeClearance" file={documents.policeClearance} />
-              <SingleUploadBox label="Prosecutor's Clearance" docKey="prosecutorClearance" file={documents.prosecutorClearance} />
-              <SingleUploadBox label="NBI Clearance" docKey="nbiClearance" file={documents.nbiClearance} />
-            </div>
-          </div>
-
-          {/* SECTION 4: Career & Civil Service Eligibilities */}
-          <div className="space-y-4">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-800 border-l-4 border-[#2C2D86] pl-2">
-                Career & Civil Service Eligibilities
-              </h2>
-              <p className="text-xs text-gray-400 mt-1 pl-3.5">Upload at least one item below that matches your qualifications:</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SingleUploadBox label="PRC License" docKey="prc" file={documents.prc} isOptional={true} />
-              <SingleUploadBox label="Napolcom Entrance Rating" docKey="napolcom" file={documents.napolcom} isOptional={true} />
-              <SingleUploadBox label="PD907 (Honor Graduate)" docKey="pd907" file={documents.pd907} isOptional={true} />
-              <SingleUploadBox label="CS Professional Eligibility" docKey="csProf" file={documents.csProf} isOptional={true} />
-            </div>
-          </div>
-
-          {/* Form Submission Actions */}
           <div className="pt-6 border-t border-gray-200 flex justify-center md:justify-end">
             <button
               type="submit"
               disabled={loading || !isFormValid}
               className={`w-full md:w-[240px] h-11 rounded-lg bg-[#2C2D86] text-white font-bold text-sm tracking-wide shadow-md transition-all duration-200 ${
                 loading || !isFormValid
-                  ? "opacity-50 cursor-not-allowed bg-gray-400"
-                  : "hover:bg-[#1f2063] active:scale-95 cursor-pointer"
+                  ? 'opacity-50 cursor-not-allowed bg-gray-400'
+                  : 'hover:bg-[#1f2063] active:scale-95 cursor-pointer'
               }`}
             >
               {loading ? 'Uploading Application Files...' : 'Submit Application'}
@@ -360,7 +364,5 @@ function DocumentSubmission() {
         </form>
       </div>
     </div>
-  )
+  );
 }
-
-export default DocumentSubmission;

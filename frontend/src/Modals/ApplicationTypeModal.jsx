@@ -56,19 +56,6 @@ function ApplicationTypeModal({ onClose, onRetrieve }) {
   return (
     <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4 animate-fade-in">
       <div className="bg-white max-w-4xl w-full max-h-[95vh] overflow-y-auto rounded-2xl shadow-2xl p-5 sm:p-8 border border-gray-100 relative animate-slide-up">
-        
-        {/* Close Button */}
-        {onClose && (
-          <button 
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        )}
-
         <header className="text-center mb-6 sm:mb-10 mt-2 sm:mt-0">
           <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-3 tracking-tight">Application Pathway</h3>
           <p className="text-gray-500 text-sm sm:text-lg">Select how you would like to proceed with your submission.</p>
