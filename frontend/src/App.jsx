@@ -10,6 +10,8 @@ import Disclaimer from './Disclaimer'
 import NotFound from './NotFound'
 import ApplicationTypeModal from './Modals/ApplicationTypeModal'
 import InstructionReApply from './Modals/InstructionReApply'
+import ForgotPassword from './pages/auth/ForgotPassword'
+import ResetPassword from './pages/auth/ResetPassword'
 
 function App() {
   return (
@@ -45,6 +47,9 @@ function App() {
 
         <Route path='/success-submit' element={<SubmitApplicationModal />} />
         <Route path='/disclaimer' element={<Disclaimer />} />
+        
+        <Route path='/forgot-password' element={<ForgotPassword />} />
+        <Route path='/reset-password' element={<ResetPassword />} />
         
         <Route path='/*' element={<LandingpageMain />} />
         <Route path='/application-type' element={<ApplicationTypeModal/>}/>

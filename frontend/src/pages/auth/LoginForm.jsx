@@ -184,8 +184,11 @@ function LoginForm() {
                 </button>
               </div>
               
-              {/* Removed Forgot Password Link */}
+              {/* Forgot Password Link */}
               <div className='flex justify-end mt-1'>
+                <a href="/forgot-password" onClick={(e) => { e.preventDefault(); navigate('/forgot-password'); }} className="text-sm text-[#2C2D86] hover:underline cursor-pointer">
+                  Forgot Password?
+                </a>
               </div>
             </div>
 

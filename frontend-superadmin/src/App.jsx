@@ -2,6 +2,8 @@ import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import LoginForm from '../../frontend/src/pages/auth/LoginForm'
+import ForgotPassword from '../../frontend/src/pages/auth/ForgotPassword'
+import ResetPassword from '../../frontend/src/pages/auth/ResetPassword'
 import SuperAdminDashboard from './pages/Dashboard/Dashboard'
 
 import PersonnelDashboard from '../../frontend/src/pages/Users/PersonnelRecruiter/PersonnelDashboard'
@@ -58,6 +60,8 @@ function App() {
     <Routes>
       <Route path="/" element={<Navigate to="/login" replace />} /> 
       <Route path="/login" element={<LoginForm />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       
       {/* Super Admin & Admin Dashboard */}
       <Route 

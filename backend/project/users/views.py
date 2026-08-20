@@ -24,6 +24,11 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.contrib.auth.hashers import check_password, make_password
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.utils import timezone
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.cache import cache
+import random
 
 def is_application_allowed():
     settings = SystemSettings.objects.first()
@@ -315,6 +320,93 @@ def change_password(request):
     send_password_changed_email(user.name, user.email, new_password)
     
     return Response({'message': 'Password has been changed successfully.'}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def forgot_password(request):
+    email = request.data.get('email')
+    if not email:
+        return Response({'error': 'Email is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    try:
+        user = User.objects.get(email=email, is_archived=False)
+    except User.DoesNotExist:
+        return Response({'error': 'No active account found with this email.'}, status=status.HTTP_404_NOT_FOUND)
+        
+    otp = str(random.randint(100000, 999999))
+    cache.set(f"password_reset_otp_{email}", otp, timeout=300)
+    
+    subject = "Password Reset Verification Code – AMORES"
+    message = (
+        f"Hi {user.name},\n\n"
+        f"You recently requested to reset your password for the PNP-AMORES portal.\n"
+        f"Here is your 6-digit verification code:\n\n"
+        f"Code: {otp}\n\n"
+        f"This code will expire in 5 minutes.\n"
+        f"If you did not request a password reset, please ignore this email or reply to let us know.\n\n"
+        f"Best regards,\n"
+        f"PNP-AMORES System"
+    )
+    
+    send_mail_async(
+        subject=subject,
+        message=message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[email],
+        fail_silently=False,
+    )
+    
+    create_audit_log(user, 'PASSWORD_RESET_REQUEST', f"User '{user.email}' requested a password reset.", performer_name=user.email)
+    
+    return Response({'message': 'A password reset link has been sent to your email.'}, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_otp(request):
+    email = request.data.get('email')
+    otp = request.data.get('otp')
+    
+    if not email or not otp:
+        return Response({'error': 'Missing required fields.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    cached_otp = cache.get(f"password_reset_otp_{email}")
+    if cached_otp and str(cached_otp) == str(otp):
+        from django.utils.crypto import get_random_string
+        reset_token = get_random_string(length=32)
+        cache.set(f"password_reset_token_{email}", reset_token, timeout=300)
+        cache.delete(f"password_reset_otp_{email}")
+        return Response({'message': 'OTP verified successfully.', 'reset_token': reset_token}, status=status.HTTP_200_OK)
+    else:
+        return Response({'error': 'The verification code is invalid or has expired.'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def reset_password(request):
+    email = request.data.get('email')
+    reset_token = request.data.get('reset_token')
+    new_password = request.data.get('new_password')
+    
+    if not email or not reset_token or not new_password:
+        return Response({'error': 'Missing required fields.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    try:
+        user = User.objects.get(email=email, is_archived=False)
+    except User.DoesNotExist:
+        return Response({'error': 'Invalid request.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+    cached_token = cache.get(f"password_reset_token_{email}")
+    if cached_token and str(cached_token) == str(reset_token):
+        user.password = make_password(new_password)
+        user.must_change_password = False
+        user.save()
+        
+        cache.delete(f"password_reset_token_{email}")
+        send_password_changed_email(user.name, user.email, new_password)
+        create_audit_log(user, 'PASSWORD_RESET_SUCCESS', f"User '{user.email}' successfully reset their password.", performer_name=user.email)
+        
+        return Response({'message': 'Password has been reset successfully.'}, status=status.HTTP_200_OK)
+    else:
+        return Response({'error': 'Your session has expired. Please request a new verification code.'}, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([IsAdministrator])

@@ -11,7 +11,7 @@ function ErrorLoginModal({ isOpen, onClose, message }) {
         <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center text-red-600 mb-2">
             <IoIosCloseCircle size={55} />
         </div>
-        <h1 className='text-lg uppercase font-bold text-slate-800'>{message || 'LOGIN FAILED'}</h1>
+        <h1 className='text-center text-lg uppercase font-bold text-slate-800'>{message || 'LOGIN FAILED'}</h1>
         <button 
           onClick={onClose}
           className='mt-4 px-8 py-2 bg-[#2C2D86] text-white rounded-md font-bold hover:bg-[#1e1f5c] transition-all active:scale-95 shadow-md'
