@@ -117,7 +117,7 @@ function MinimumRequirement() {
         <div className="mt-6">
           <div className="mb-6">
             <h2 className="text-[#2C2D86] text-3xl md:text-4xl font-black tracking-tight mb-2">
-              GENERAL QUALIFICATIONS
+              GENERAL REQUIREMENTS
             </h2>
             <div className="w-40 h-1 bg-[#EB612A]"></div>
           </div>

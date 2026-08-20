@@ -141,6 +141,41 @@ function TrackApplication() {
     return getFailedStage() === stageName;
   };
 
+  const getDisplaySchedule = () => {
+    if (!application) return null;
+    let stage = application.status;
+    let date = application.scheduled_date;
+    let time = application.scheduled_time;
+    let isPassed = false;
+
+    if (application.status === "Failed" || application.status === "Rejected") return null;
+
+    if (application.status === "Body Mass Index" && application.bmi_height != null) {
+      isPassed = true;
+    } else if (application.status === "Physical Agility Test" && (application.pat_run_passed || application.pat_pushups_passed || application.pat_situps_passed)) {
+      isPassed = true;
+    } else if (application.status === "Neuro Examination" && application.psychological_result && application.psychological_result.toLowerCase().includes("pass")) {
+      isPassed = true;
+    } else if (application.status === "Medical" && application.medical_result && application.medical_result.toLowerCase().includes("pass")) {
+      isPassed = true;
+    } else if (application.status === "Drug Test" && application.drug_test_result && application.drug_test_result !== "Positive") {
+      isPassed = true;
+    } else if (application.status === "Final Interview" && application.final_interview_score && parseFloat(application.final_interview_score) >= 75) {
+      isPassed = true;
+    }
+
+    if (isPassed) {
+      const currentIndex = STAGES.indexOf(application.status);
+      if (currentIndex >= 0 && currentIndex < STAGES.length - 1) {
+        stage = STAGES[currentIndex + 1];
+        date = null;
+        time = null;
+      }
+    }
+
+    return { stage, date, time };
+  };
+
   return (
     <div className="min-h-screen p-4 flex justify-center items-start track-application-container">
       <div className="flex flex-col w-full max-w-6xl items-center rounded-[8px] gap-8 p-6 md:p-10 bg-white shadow-sm track-container">
@@ -328,32 +363,7 @@ function TrackApplication() {
                 </p>
               </div>
 
-              {POST_ACCEPTANCE_STAGES.includes(application?.status) && (
-                <div className="flex flex-col gap-1 col-span-1 md:col-span-2 mt-4 pt-4 border-t border-gray-200">
-                  <span className="text-[10px] uppercase font-bold text-purple-600">
-                    Scheduled Date & Time for {application.status}
-                  </span>
-                  <p className="font-bold text-gray-800 text-lg">
-                    {application?.scheduled_date
-                      ? new Date(application.scheduled_date).toLocaleDateString(
-                          undefined,
-                          { dateStyle: "long" },
-                        )
-                      : "TBA"}
-                    {application?.scheduled_date && application?.scheduled_time
-                      ? " at " +
-                        (() => {
-                          const [hourString, minute] =
-                            application.scheduled_time.split(":");
-                          const hour = parseInt(hourString, 10);
-                          const ampm = hour >= 12 ? "PM" : "AM";
-                          const formattedHour = hour % 12 || 12;
-                          return `${formattedHour}:${minute} ${ampm}`;
-                        })()
-                      : ""}
-                  </p>
-                </div>
-              )}
+
 
               {application?.bmi_height && (
                 <div className="flex flex-col gap-1">
@@ -364,7 +374,7 @@ function TrackApplication() {
                     <p className="font-bold text-gray-800">
                       {application.bmi_height} cm / {application.bmi_weight} kg
                     </p>
-                    {hasPassedStage("Body Mass Index") && (
+                    {(hasPassedStage("Body Mass Index") || (application.bmi_height && !hasFailedStage("Body Mass Index"))) && (
                       <div className="inline-block px-2 py-0.5 border border-green-600 text-green-600 font-bold text-[10px] uppercase tracking-wider rounded w-max bg-green-50">
                         PASSED
                       </div>
@@ -583,6 +593,39 @@ function TrackApplication() {
                     </p>
                   </div>
                 )}
+
+              {(() => {
+                if (!POST_ACCEPTANCE_STAGES.includes(application?.status)) return null;
+                const schedule = getDisplaySchedule();
+                if (!schedule) return null;
+                
+                return (
+                  <div className="flex flex-col gap-1 col-span-1 md:col-span-2 mt-4 pt-4 border-t border-gray-200">
+                    <span className="text-[10px] uppercase font-bold text-purple-600">
+                      Scheduled Date & Time for {schedule.stage}
+                    </span>
+                    <p className="font-bold text-gray-800 text-lg">
+                      {schedule.date
+                        ? new Date(schedule.date).toLocaleDateString(
+                            undefined,
+                            { dateStyle: "long" },
+                          )
+                        : "TBA"}
+                      {schedule.date && schedule.time
+                        ? " at " +
+                          (() => {
+                            const [hourString, minute] =
+                              schedule.time.split(":");
+                            const hour = parseInt(hourString, 10);
+                            const ampm = hour >= 12 ? "PM" : "AM";
+                            const formattedHour = hour % 12 || 12;
+                            return `${formattedHour}:${minute} ${ampm}`;
+                          })()
+                        : ""}
+                    </p>
+                  </div>
+                );
+              })()}
 
 
             </div>
