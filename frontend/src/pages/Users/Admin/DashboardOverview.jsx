@@ -757,21 +757,22 @@ function DashboardOverview() {
           <h3 className="mb-4 text-[#2C2D86] font-semibold">
             Applicant Status Distribution
           </h3>
-          <ResponsiveContainer debounce={200} width="100%" height={300}>
+          <ResponsiveContainer debounce={200} width="99%" height={250}>
             <PieChart>
               <Pie
                 data={statusData}
                 cx="50%"
                 cy="50%"
-                innerRadius={60}
-                outerRadius={100}
+                innerRadius={50}
+                outerRadius={75}
                 paddingAngle={5}
                 dataKey="value"
                 label={({ name, value, percent }) =>
                   percent > 0
-                    ? `${name}: ${value} (${(percent * 100).toFixed(0)}%)`
+                    ? `${name}: ${value}`
                     : ""
                 }
+                style={{ fontSize: "11px" }}
               >
                 {statusData.map((entry, index) => {
                   const colors = {
@@ -808,7 +809,7 @@ function DashboardOverview() {
           <h3 className="mb-4 text-[#2C2D86] font-semibold">
             Monthly Applicant Registration
           </h3>
-          <ResponsiveContainer debounce={200} width="100%" height={300}>
+          <ResponsiveContainer debounce={200} width="99%" height={250}>
             <BarChart data={monthlyData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="month" />
@@ -828,15 +829,16 @@ function DashboardOverview() {
           <h3 className="mb-4 text-[#2C2D86] font-semibold">
             Gender Distribution
           </h3>
-          <ResponsiveContainer debounce={200} width="100%" height={300}>
+          <ResponsiveContainer debounce={200} width="99%" height={250}>
             <PieChart>
               <Pie
                 data={metrics.genderData}
                 cx="50%"
                 cy="50%"
-                outerRadius={100}
+                outerRadius={75}
                 dataKey="value"
                 label={({ name, value }) => `${name}: ${value}`}
+                style={{ fontSize: "11px" }}
               >
                 {metrics.genderData.map((entry, index) => (
                   <Cell
@@ -854,7 +856,7 @@ function DashboardOverview() {
           <h3 className="mb-4 text-[#2C2D86] font-semibold">
             Age Distribution
           </h3>
-          <ResponsiveContainer debounce={200} width="100%" height={300}>
+          <ResponsiveContainer debounce={200} width="99%" height={250}>
             <BarChart data={metrics.ageData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="range" />
@@ -872,15 +874,15 @@ function DashboardOverview() {
 
         <div className="chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <h3 className="mb-4 text-[#2C2D86] font-semibold">Top 5 Programs</h3>
-          <ResponsiveContainer debounce={200} width="100%" height={300}>
-            <BarChart data={metrics.programData} layout="vertical">
+          <ResponsiveContainer debounce={200} width="99%" height={250}>
+            <BarChart data={metrics.programData} layout="vertical" margin={{ left: 10, right: 20 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis type="number" />
               <YAxis
                 dataKey="name"
                 type="category"
-                width={100}
-                tick={{ fontSize: 11 }}
+                width={140}
+                tick={{ fontSize: 10 }}
               />
               <Tooltip cursor={{ fill: "#f3f4f6" }} />
               <Bar dataKey="count" fill="#2C2D86" radius={[0, 4, 4, 0]} />
@@ -890,15 +892,15 @@ function DashboardOverview() {
 
         <div className="chart-card bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <h3 className="mb-4 text-[#2C2D86] font-semibold">Top 5 Schools</h3>
-          <ResponsiveContainer debounce={200} width="100%" height={300}>
-            <BarChart data={metrics.schoolData} layout="vertical">
+          <ResponsiveContainer debounce={200} width="99%" height={250}>
+            <BarChart data={metrics.schoolData} layout="vertical" margin={{ left: 10, right: 20 }}>
               <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis type="number" />
               <YAxis
                 dataKey="name"
                 type="category"
-                width={100}
-                tick={{ fontSize: 11 }}
+                width={140}
+                tick={{ fontSize: 10 }}
               />
               <Tooltip cursor={{ fill: "#f3f4f6" }} />
               <Bar dataKey="count" fill="#6366F1" radius={[0, 4, 4, 0]} />
