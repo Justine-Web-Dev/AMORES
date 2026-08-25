@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import '../../pages/auth/LoginForm.css'
 import { useNavigate, Navigate, useLocation } from 'react-router-dom'
 import { api } from '../../../api/api'
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaEnvelope, FaLock } from "react-icons/fa";
 
 import logo from '../../assets/RRSU1 logo.png'
 import LoginSuccessModal from '../../Modals/LoginSuccessModal'
@@ -150,22 +150,32 @@ function LoginForm() {
 
           <div className='credentials'>
             {/* Email Field Container */}
-            <div className='username-container'>
+            <div className='username-container relative flex flex-col'>
               <label htmlFor="emailInput">Email</label>
-              <input 
-                id="emailInput"
-                type="email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder='Enter your Email'
-                required
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <FaEnvelope size={18} />
+                </span>
+                <input 
+                  id="emailInput"
+                  type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder='Enter your Email'
+                  required
+                  className="w-full"
+                  style={{ paddingLeft: '2.5rem' }}
+                />
+              </div>
             </div>
 
             {/* Password Field Container */}
             <div className='password-container relative flex flex-col'>
               <label htmlFor="passwordInput">Password</label>
               <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <FaLock size={18} />
+                </span>
                 <input 
                   id="passwordInput"
                   type={showPassword ? "text" : "password"}
@@ -174,6 +184,7 @@ function LoginForm() {
                   placeholder='Password'
                   required
                   className="w-full pr-10"
+                  style={{ paddingLeft: '2.5rem' }}
                 />
                 <button
                   type="button"
@@ -185,7 +196,7 @@ function LoginForm() {
               </div>
               
               {/* Forgot Password Link */}
-              <div className='flex justify-end mt-1'>
+              <div className='flex justify-start mt-1'>
                 <a href="/forgot-password" onClick={(e) => { e.preventDefault(); navigate('/forgot-password'); }} className="text-sm text-[#2C2D86] hover:underline cursor-pointer">
                   Forgot Password?
                 </a>
