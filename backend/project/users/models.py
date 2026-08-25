@@ -133,7 +133,6 @@ class Applicant(models.Model):
 class Application(models.Model):
     STATUS_CHOICES = [
         ('New Applicant', 'New Applicant'),
-        ('Technical Interview', 'Technical Interview'),
         ('Qualified', 'Qualified'),
         ('Accepted', 'Accepted'),
         ('Failed', 'Failed'),
@@ -249,6 +248,10 @@ class SystemSettings(models.Model):
     application_start_date = models.DateField(null=True, blank=True, verbose_name="Start Date")
     application_end_date = models.DateField(null=True, blank=True, verbose_name="End Date")
     current_batch = models.IntegerField(default=1, verbose_name="Current Batch")
+    
+    QUOTA_TYPES = [('Attrition', 'Attrition (Regional)'), ('Regular', 'Regular (National)')]
+    quota_type = models.CharField(max_length=50, choices=QUOTA_TYPES, default='Attrition', verbose_name="Type of Quota")
+    
     last_updated = models.DateTimeField(auto_now=True)
 
     class Meta:
