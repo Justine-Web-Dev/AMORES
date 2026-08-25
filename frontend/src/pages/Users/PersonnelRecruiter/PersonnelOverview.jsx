@@ -137,7 +137,7 @@ function PersonnelOverview() {
         statuses["Medical"] = (statuses["Medical"] || 0) + 1;
       else if (a.status === "Drug Test")
         statuses["Drug Test"] = (statuses["Drug Test"] || 0) + 1;
-      else if (a.status === "Final Interview")
+      else if (a.status === "Final Interview" && (a.final_interview_score === null || a.final_interview_score === undefined))
         statuses["Final Interview"] = (statuses["Final Interview"] || 0) + 1;
     });
 

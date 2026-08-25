@@ -180,21 +180,7 @@ function SystemSettings() {
               )}
 
               {/* Form Input Grid */}
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-4">
-                <div>
-                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-[#61718f]">Quota Allocation Type</label>
-                  <select 
-                    value={quotaType}
-                    onChange={(e) => setQuotaType(e.target.value)}
-                    className="h-10 w-full rounded-md border border-[#dce3ef] bg-white px-3 text-sm font-medium text-[#37435a] outline-none transition-all focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86]"
-                  >
-                    <option value="">Select Quota Type</option>
-                    <option value="Attrition">Attrition (Regional)</option>
-                    <option value="Regular">Regular (National)</option>
-                  </select>
-                  <p className="!mb-0 mt-2 text-xs leading-snug text-[#7183a2]">Determines how application slots are distributed across departments.</p>
-                </div>
-
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-4">
                 <div>
                   <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-[#61718f]">Application Start Date</label>
                   <input 
@@ -240,46 +226,47 @@ function SystemSettings() {
                 className="h-10 w-full rounded-md border border-[#dce3ef] bg-white px-3 text-sm font-medium text-[#37435a] outline-none transition-all focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86]"
               />
             </div>
-          </div>
-
-          {/* Sticky Actions Bar */}
-          <div className="fixed bottom-0 left-0 right-0 z-30 flex min-h-[64px] flex-col items-center justify-between gap-3 border-t border-[#e6e8ef] bg-white px-6 py-3 shadow-[0_-3px_12px_rgba(42,48,95,0.06)] sm:flex-row sm:px-10 lg:pl-[300px]">
-            <span className="hidden items-center gap-2 text-xs font-medium text-[#7183a2] sm:flex">
-              <span className="h-1.5 w-1.5 rounded-full bg-[#f36b25]" />
-              You have unsaved changes in your system configurations.
-            </span>
-            <div className="flex w-full items-center justify-end gap-2 sm:w-auto">
-              {showModal.show && showModal.type === 'success' && !saving && (
-                <span className="text-emerald-600 flex items-center gap-1.5 text-sm font-bold animate-pulse">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  Saved!
-                </span>
-              )}
-              <button
-                onClick={handleDiscard}
-                disabled={saving}
-                className="rounded-md border border-[#2C2D86] bg-white px-5 py-2 text-sm font-bold text-[#2C2D86] transition-colors hover:bg-[#f1f1ff] disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Discard
-              </button>
-              <button 
-                onClick={handleSave}
-                disabled={saving}
-                className="rounded-md bg-[#f36b25] px-6 py-2 text-sm font-bold text-white shadow-sm transition-all hover:bg-[#dc591c] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {saving ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                    <span>Saving Settings...</span>
-                  </>
-                ) : (
-                  'Save Settings'
+            
+            {/* Actions */}
+            <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-[#edf0f7] pt-5 sm:flex-row">
+              <span className="flex items-center gap-2 text-xs font-medium text-[#7183a2]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#f36b25]" />
+                You have unsaved changes in your system configurations.
+              </span>
+              <div className="flex w-full items-center justify-end gap-3 sm:w-auto">
+                {showModal.show && showModal.type === 'success' && !saving && (
+                  <span className="text-emerald-600 mr-2 flex items-center gap-1.5 text-sm font-bold animate-pulse">
+                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    Saved!
+                  </span>
                 )}
-              </button>
+                <button
+                  onClick={handleDiscard}
+                  disabled={saving}
+                  className="rounded-md border border-[#2C2D86] bg-white px-5 py-2 text-sm font-bold text-[#2C2D86] transition-colors hover:bg-[#f1f1ff] disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Discard
+                </button>
+                <button 
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="flex min-w-[140px] items-center justify-center gap-2 rounded-md bg-[#f36b25] px-6 py-2 text-sm font-bold text-white shadow-sm transition-all hover:bg-[#dc591c] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {saving ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    'Save Settings'
+                  )}
+                </button>
+              </div>
             </div>
           </div>
+
         </div>
       )}
 

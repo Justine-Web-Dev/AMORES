@@ -511,9 +511,15 @@ def get_dashboard_applicants(request):
     applicants = Applicant.objects.annotate(
         app_created_at=Subquery(latest_app_subquery.values('created_at')[:1]),
         app_status=Subquery(latest_app_subquery.values('status')[:1]),
-        app_batch=Subquery(latest_app_subquery.values('batch')[:1])
+        app_batch=Subquery(latest_app_subquery.values('batch')[:1]),
+        app_final_interview_score=Subquery(
+            Application.objects.filter(
+                applicant=OuterRef('pk')
+            ).order_by('-created_at').values('evaluation__final_interview_score')[:1]
+        )
     ).values(
         'id', 'created_at', 'app_created_at', 'app_batch', 'app_status',
+        'app_final_interview_score',
         'gender', 'birthdate', 'program', 'name_of_school', 'province', 'is_reapplied'
     )
 
@@ -541,6 +547,7 @@ def get_dashboard_applicants(request):
             'created_at': created_at_val,
             'batch': a['app_batch'],
             'status': a['app_status'],
+            'final_interview_score': a['app_final_interview_score'],
             'gender': a['gender'],
             'age': age,
             'program': a['program'],
