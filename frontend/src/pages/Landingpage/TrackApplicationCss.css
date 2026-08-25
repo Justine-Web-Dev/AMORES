@@ -106,15 +106,13 @@
     height: 100vh;
     padding: 80px 10px 10px 10px; /* Increased top padding for mobile header */
     overflow: hidden; /* Prevent body scroll, act like an app */
-    align-items: flex-start; /* Start from top on mobile */
+    align-items: center; /* Center the tracking card in the available viewport */
   }
   
   .track-container {
     padding: 15px;
-    height: 100%;
-    max-height: 100%;
-    border-radius: 0; /* Full screen feel */
-    border: none;
+    height: auto;
+    max-height: calc(100vh - 90px);
     overflow-y: auto;
   }
 }

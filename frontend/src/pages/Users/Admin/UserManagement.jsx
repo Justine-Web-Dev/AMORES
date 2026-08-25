@@ -153,7 +153,7 @@ function UserManagement() {
   };
 
   return (
-    <div className="module-content">
+    <div className="user-management-page">
       <div className="flex justify-between items-center add-btn-container">
         <div className="flex flex-col ">
           <h2>User Management</h2>

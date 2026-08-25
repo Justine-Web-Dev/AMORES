@@ -1,5 +1,4 @@
 import React from 'react'
-import profile from '../../../assets/RRSU1 logo.png'
 
 import { useState, useEffect } from 'react'
 
@@ -21,8 +20,7 @@ function UserCard({users, onEdit,search}) {
 
   return (
     <div>
-
-       <table className="w-full text-sm text-center text-gray-500">
+       <table className="text-sm text-center text-gray-500">
             <thead className="text-xs text-gray-700 uppercase bg-gray-100 ">
               <tr>
                 <th scope="col" className="th">Name</th>

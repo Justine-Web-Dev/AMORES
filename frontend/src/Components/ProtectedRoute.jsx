@@ -1,62 +1,94 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import ForceChangePasswordModal from '../Modals/ForceChangePasswordModal';
+import MessageModal from '../Modals/MessageModal';
+
+const getTokenExpiry = (token) => {
+  if (!token) return null;
+
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url
+      .replace(/-/g, '+')
+      .replace(/_/g, '/')
+      .padEnd(Math.ceil(base64Url.length / 4) * 4, '=');
+    const payload = JSON.parse(atob(base64));
+    return payload.exp ? payload.exp * 1000 : null;
+  } catch {
+    return null;
+  }
+};
 
 const ProtectedRoute = ({ children, allowedRole }) => {
   const navigate = useNavigate();
   const token = sessionStorage.getItem('token');
   const userRole = sessionStorage.getItem('role');
   const [showForcePasswordModal, setShowForcePasswordModal] = useState(sessionStorage.getItem('must_change_password') === 'true');
-
-  const checkTokenStatus = () => {
-    if (!token) return { valid: false, timeRemaining: 0 };
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-      }).join(''));
-      const payload = JSON.parse(jsonPayload);
-      
-      if (payload.exp) {
-        const timeRemaining = (payload.exp * 1000) - Date.now();
-        return { valid: timeRemaining > 0, timeRemaining };
-      }
-      return { valid: true, timeRemaining: null };
-    } catch (e) {
-      return { valid: false, timeRemaining: 0 };
-    }
-  };
-
-  const { valid, timeRemaining } = checkTokenStatus();
+  const tokenExpiry = getTokenExpiry(token);
+  const [showSessionExpiredModal, setShowSessionExpiredModal] = useState(false);
 
   const getLoginPath = () => {
     return '/login';
   };
 
   useEffect(() => {
-    if (!valid) {
+    const handleSessionExpired = () => {
       sessionStorage.removeItem('token');
       sessionStorage.removeItem('role');
-      navigate(getLoginPath(), { replace: true });
-    } else if (timeRemaining !== null && timeRemaining > 0) {
-      const timer = setTimeout(() => {
-        sessionStorage.removeItem('token');
-        sessionStorage.removeItem('role');
+      setShowSessionExpiredModal(true);
+    };
+
+    window.addEventListener('auth:session-expired', handleSessionExpired);
+
+    if (!token) {
+      if (!showSessionExpiredModal) {
         navigate(getLoginPath(), { replace: true });
-      }, timeRemaining);
-
-      return () => clearTimeout(timer);
+      }
+      return () => window.removeEventListener('auth:session-expired', handleSessionExpired);
     }
-  }, [valid, timeRemaining, navigate]);
 
-  // 1. Check if token exists and is valid
-  if (!token || !valid) {
-    // Not logged in or token expired - redirect to login
+    if (!tokenExpiry || tokenExpiry <= Date.now()) {
+      handleSessionExpired();
+      return () => window.removeEventListener('auth:session-expired', handleSessionExpired);
+    }
+
+    const timer = setTimeout(() => {
+      handleSessionExpired();
+    }, tokenExpiry - Date.now());
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('auth:session-expired', handleSessionExpired);
+    };
+  }, [navigate, token, tokenExpiry, showSessionExpiredModal]);
+
+  const handleSessionExpiredClose = () => {
+    setShowSessionExpiredModal(false);
+    navigate(getLoginPath(), { replace: true });
+  };
+
+  if (showSessionExpiredModal) {
+    return (
+      <>
+        {children}
+        <MessageModal
+          isOpen
+          onClose={handleSessionExpiredClose}
+          type="error"
+          title="Login Session Expired"
+          message="Your login session has expired. Please log in again to continue."
+          lightBackdrop
+        />
+      </>
+    );
+  }
+
+  // A token without a valid expiry cannot authorize a protected route.
+  if (!token) {
     return <Navigate to={getLoginPath()} replace />;
   }
 
-  // 2. Check if role matches (if a specific role is required)
+  // 1. Check the role before rendering the protected dashboard.
   if (allowedRole) {
     const roles = Array.isArray(allowedRole) ? allowedRole : [allowedRole];
     if (!roles.includes(userRole)) {
@@ -64,7 +96,6 @@ const ProtectedRoute = ({ children, allowedRole }) => {
     }
   }
 
-  // 3. Authorized - render the dashboard
   return (
     <>
       {children}

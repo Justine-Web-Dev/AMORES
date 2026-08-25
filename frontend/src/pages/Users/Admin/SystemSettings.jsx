@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react'
-import { api } from '../../../../api/api'
-import MessageModal from '../../../Modals/MessageModal'
+import React, { useState, useEffect } from 'react';
+import { api } from '../../../../api/api';
+import MessageModal from '../../../Modals/MessageModal';
+import { FiBriefcase, FiInfo, FiSliders } from 'react-icons/fi';
 
 function SystemSettings() {
   const [isApplicationOpen, setIsApplicationOpen] = useState(true);
@@ -8,11 +9,12 @@ function SystemSettings() {
   const [endDate, setEndDate] = useState('');
   const [currentBatch, setCurrentBatch] = useState(1);
   const [quotaType, setQuotaType] = useState('Attrition');
+  const [systemName, setSystemName] = useState('AMORES System');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savedSettings, setSavedSettings] = useState(null);
   const [showModal, setShowModal] = useState({ show: false, type: 'success', title: '', message: '' });
 
-  // Get current date in YYYY-MM-DD format based on local time
   const today = new Date().toLocaleDateString('en-CA');
 
   useEffect(() => {
@@ -27,6 +29,17 @@ function SystemSettings() {
       setEndDate(response.data.application_end_date || '');
       setCurrentBatch(response.data.current_batch || 1);
       setQuotaType(response.data.quota_type || 'Attrition');
+      if (response.data.system_name) {
+        setSystemName(response.data.system_name);
+      }
+      setSavedSettings({
+        isApplicationOpen: response.data.is_application_open,
+        startDate: response.data.application_start_date || '',
+        endDate: response.data.application_end_date || '',
+        currentBatch: response.data.current_batch || 1,
+        quotaType: response.data.quota_type || 'Attrition',
+        systemName: response.data.system_name || 'AMORES System'
+      });
       setLoading(false);
     } catch (error) {
       console.error("Error fetching settings:", error);
@@ -37,14 +50,12 @@ function SystemSettings() {
   const handleStartDateChange = (e) => {
     const newStart = e.target.value;
     setStartDate(newStart);
-    // Automatically adjust end date if it precedes the new start date
     if (endDate && newStart > endDate) {
       setEndDate(newStart);
     }
   };
 
   const handleSave = async () => {
-    // Validate date sequence prior to API request
     if (startDate && endDate && endDate < startDate) {
       setShowModal({
         show: true,
@@ -73,6 +84,7 @@ function SystemSettings() {
         application_start_date: startDate || null,
         application_end_date: endDate || null,
         quota_type: quotaType,
+        system_name: systemName,
         performed_by: currentUser 
       });
       
@@ -82,6 +94,14 @@ function SystemSettings() {
         setEndDate(response.data.application_end_date || '');
         setCurrentBatch(response.data.currentBatch || response.data.current_batch || 1);
         setQuotaType(response.data.quota_type || 'Attrition');
+        setSavedSettings({
+          isApplicationOpen: response.data.is_application_open,
+          startDate: response.data.application_start_date || '',
+          endDate: response.data.application_end_date || '',
+          currentBatch: response.data.currentBatch || response.data.current_batch || 1,
+          quotaType: response.data.quota_type || 'Attrition',
+          systemName: response.data.system_name || systemName
+        });
       }
       
       setShowModal({
@@ -103,130 +123,167 @@ function SystemSettings() {
     }
   };
 
+  const handleDiscard = () => {
+    if (!savedSettings) return;
+    setIsApplicationOpen(savedSettings.isApplicationOpen);
+    setStartDate(savedSettings.startDate);
+    setEndDate(savedSettings.endDate);
+    setCurrentBatch(savedSettings.currentBatch);
+    setQuotaType(savedSettings.quotaType);
+    setSystemName(savedSettings.systemName);
+  };
+
   return (
-    <div className='module-content max-w-7xl mx-auto p-6'>
-      <h2 className="text-2xl font-bold mb-2 text-[#2C2D86]">System Settings</h2>
-      <p className="text-gray-600 mb-6 italic">Configure system-wide settings and preferences for the AMORes platform.</p>
-      
+    <div className="system-settings-page overflow-hidden">
+      {/* Header Section */}
+      <div className="max-w-6xl mx-auto px-5 pt-8 pb-6 sm:px-8">
+        <h2 className="!mb-1 text-[28px] font-extrabold text-[#2C2D86] tracking-tight">System Settings</h2>
+        <p className="!mb-0 text-sm text-[#6b7c9c]">Configure system-wide parameters and recruitment cycles for the platform.</p>
+      </div>
+
       {loading ? (
-        <div className="bg-white p-20 rounded-xl shadow-md border border-gray-100 flex flex-col items-center justify-center min-h-[400px]">
-          <div className="w-12 h-12 border-4 border-[#2C2D86]/10 border-t-[#2C2D86] rounded-full animate-spin mb-4"></div>
-          <p className="text-[#2C2D86] font-medium">Loading system settings...</p>
+        <div className="max-w-6xl mx-auto bg-white p-12 rounded-xl shadow-sm border border-gray-100 flex flex-col items-center justify-center min-h-[350px]">
+          <div className="w-10 h-10 border-4 border-[#2C2D86]/20 border-t-[#2C2D86] rounded-full animate-spin mb-3"></div>
+          <p className="text-[#2C2D86] font-semibold text-base">Loading settings configuration...</p>
         </div>
       ) : (
-        <div className="system-settings-container max-w-5xl relative">
-          
-          <div className="settings-section mb-8 bg-white p-8 rounded-2xl shadow-md shadow-gray-200/50 border border-gray-200 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#2C2D86] to-[#EB612A]"></div>
-            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6 pb-4 border-b border-gray-100">
-              <h3 className="text-xl font-bold flex items-center gap-3 text-[#2C2D86]">
-                Recruitment Management
-              </h3>
-              <div className="bg-gray-100 px-3 py-1.5 rounded-full border border-gray-200 flex items-center gap-2 self-start sm:self-auto">
-                <span className="text-gray-500 text-[10px] font-bold uppercase tracking-wider">Current Batch</span>
-                <span className="bg-white text-gray-700 px-2.5 py-0.5 rounded-full text-sm font-black shadow-sm">
-                  {currentBatch}
-                </span>
+        <div className="max-w-6xl mx-auto px-5 pb-28 sm:px-8">
+          {/* Recruitment Settings Card */}
+          <div className="bg-white rounded-xl shadow-sm border border-[#edf0f7] overflow-hidden">
+            <div className="p-6 sm:p-7">
+              <div className="flex items-start gap-3 mb-5">
+                <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#eeeffc] text-[#2C2D86]"><FiBriefcase size={17} /></div>
+                <div>
+                  <h3 className="!mb-0 text-base font-extrabold tracking-wide text-[#2C2D86]">Recruitment Management</h3>
+                  <p className="!mb-0 mt-0.5 text-sm text-[#7183a2]">Control operational windows and intake batching.</p>
+                </div>
               </div>
-            </div>
-            
-            {!isApplicationOpen && currentBatch === 1 && (
-              <div className="mb-8 p-4 bg-amber-50 border border-amber-100 rounded-xl flex items-start sm:items-center gap-3 text-amber-800 text-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5 sm:mt-0" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
-                <span>Opening the application will automatically start <strong>Batch 2</strong>.</span>
-              </div>
-            )}
-            
-            {!isApplicationOpen && currentBatch === 2 && (
-              <div className="mb-8 p-4 bg-amber-50 border border-amber-100 rounded-xl flex items-start sm:items-center gap-3 text-amber-800 text-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5 sm:mt-0" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
-                <span>The system has reached the maximum of 2 batches. Upon the next closing date, it will reset to <strong>Batch 1</strong> and clear the dates.</span>
-              </div>
-            )}
+              <div className="mb-5 h-0.5 w-10 bg-[#2C2D86]" />
 
-            <div className="mb-8">
-              <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Type of Quota</label>
-              <select 
-                value={quotaType}
-                onChange={(e) => setQuotaType(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#2C2D86] focus:border-transparent outline-none transition-all text-gray-700 font-medium cursor-pointer"
-              >
-                <option value="">Select Quota Type</option>
-                <option value="Attrition">Attrition (Regional)</option>
-                <option value="Regular">Regular (National)</option>
-              </select>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="date-input-group">
-                <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Start of Applying</label>
-                <input 
-                  type="date" 
-                  value={startDate}
-                  min={today}
-                  onChange={handleStartDateChange}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#2C2D86] focus:border-transparent outline-none transition-all text-gray-700 font-medium cursor-pointer"
-                />
+              <div className="mb-4 inline-flex items-center rounded-md bg-[#eeeffc] text-[11px] font-bold uppercase tracking-wide text-[#2C2D86]">
+                <span className="px-3 py-2">Current Batch</span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-md bg-[#2C2D86] text-white">{currentBatch}</span>
               </div>
-              <div className="date-input-group">
-                <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">End of Applying</label>
-                <input 
-                  type="date" 
-                  value={endDate}
-                  min={startDate || today}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[#2C2D86] focus:border-transparent outline-none transition-all text-gray-700 font-medium cursor-pointer"
-                />
+
+              {/* Dynamic Batch Alerts */}
+              {!isApplicationOpen && (
+                <div className="mb-5 flex items-center gap-2 rounded-md border border-[#f1dfd2] bg-[#fff8f3] px-3 py-2.5 text-sm text-[#4d5261]">
+                  <FiInfo className="shrink-0 text-[#f36b25]" size={15} />
+                  <div>
+                    {currentBatch === 1 ? (
+                      <span>Opening applications will automatically transition systems to <strong>Batch 2</strong>.</span>
+                    ) : (
+                      <span>System has reached the maximum intake limit. Re-opening will reset to <strong>Batch 1</strong> and clear active date windows.</span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Form Input Grid */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-4">
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-[#61718f]">Quota Allocation Type</label>
+                  <select 
+                    value={quotaType}
+                    onChange={(e) => setQuotaType(e.target.value)}
+                    className="h-10 w-full rounded-md border border-[#dce3ef] bg-white px-3 text-sm font-medium text-[#37435a] outline-none transition-all focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86]"
+                  >
+                    <option value="">Select Quota Type</option>
+                    <option value="Attrition">Attrition (Regional)</option>
+                    <option value="Regular">Regular (National)</option>
+                  </select>
+                  <p className="!mb-0 mt-2 text-xs leading-snug text-[#7183a2]">Determines how application slots are distributed across departments.</p>
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-[#61718f]">Application Start Date</label>
+                  <input 
+                    type="date" 
+                    value={startDate}
+                    min={today}
+                    onChange={handleStartDateChange}
+                    className="h-10 w-full rounded-md border border-[#dce3ef] bg-white px-3 text-sm font-medium text-[#37435a] outline-none transition-all focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86]"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-[#61718f]">Application End Date</label>
+                  <input 
+                    type="date" 
+                    value={endDate}
+                    min={startDate || today}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="h-10 w-full rounded-md border border-[#dce3ef] bg-white px-3 text-sm font-medium text-[#37435a] outline-none transition-all focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86]"
+                  />
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="settings-section mb-8 bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
-            <h3 className="text-base font-bold mb-4 text-gray-600">
-              General Settings
-            </h3>
-            <div className="setting-item max-w-md">
-              <label className="block mb-2 text-sm font-semibold text-gray-600">System Name</label>
+          {/* General Platform Settings Card */}
+          <div className="mt-6 rounded-xl border border-[#edf0f7] bg-white p-6 shadow-sm sm:p-7">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#eeeffc] text-[#2C2D86]"><FiSliders size={17} /></div>
+              <div>
+                <h3 className="!mb-0 text-base font-extrabold tracking-wide text-[#2C2D86]">General Platform Preferences</h3>
+                <p className="!mb-0 mt-0.5 text-sm text-[#7183a2]">Manage global application metadata.</p>
+              </div>
+            </div>
+            <div className="mb-5 mt-3 h-0.5 w-10 bg-[#2C2D86]" />
+            
+            <div>
+              <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wide text-[#61718f]">System Name</label>
               <input 
                 type="text" 
-                className="w-full p-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#2C2D86] focus:border-transparent outline-none transition-all text-sm font-medium text-gray-700" 
-                defaultValue="AMORES System" 
+                value={systemName}
+                onChange={(e) => setSystemName(e.target.value)}
+                className="h-10 w-full rounded-md border border-[#dce3ef] bg-white px-3 text-sm font-medium text-[#37435a] outline-none transition-all focus:border-[#2C2D86] focus:ring-1 focus:ring-[#2C2D86]"
               />
             </div>
           </div>
 
-          <div className="sticky bottom-6 mt-8 p-4 bg-white/95 backdrop-blur-md rounded-2xl border border-gray-200 shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex flex-col sm:flex-row justify-between items-center gap-4 z-40">
-            <div className="text-sm font-medium text-gray-500 hidden sm:block px-2">
-              Make sure to save your changes before leaving.
-            </div>
-            <div className="flex items-center gap-4 w-full sm:w-auto justify-end">
+          {/* Sticky Actions Bar */}
+          <div className="fixed bottom-0 left-0 right-0 z-30 flex min-h-[64px] flex-col items-center justify-between gap-3 border-t border-[#e6e8ef] bg-white px-6 py-3 shadow-[0_-3px_12px_rgba(42,48,95,0.06)] sm:flex-row sm:px-10 lg:pl-[300px]">
+            <span className="hidden items-center gap-2 text-xs font-medium text-[#7183a2] sm:flex">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#f36b25]" />
+              You have unsaved changes in your system configurations.
+            </span>
+            <div className="flex w-full items-center justify-end gap-2 sm:w-auto">
               {showModal.show && showModal.type === 'success' && !saving && (
-                <span className="text-green-600 flex items-center gap-1.5 text-sm font-bold animate-pulse">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path></svg>
+                <span className="text-emerald-600 flex items-center gap-1.5 text-sm font-bold animate-pulse">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
                   Saved!
                 </span>
               )}
+              <button
+                onClick={handleDiscard}
+                disabled={saving}
+                className="rounded-md border border-[#2C2D86] bg-white px-5 py-2 text-sm font-bold text-[#2C2D86] transition-colors hover:bg-[#f1f1ff] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Discard
+              </button>
               <button 
                 onClick={handleSave}
                 disabled={saving}
-                className="w-full sm:w-auto bg-[#2C2D86] text-white px-8 py-3 rounded-xl font-bold shadow-md hover:bg-[#1a1b5c] hover:-translate-y-0.5 transition-all active:translate-y-0 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="rounded-md bg-[#f36b25] px-6 py-2 text-sm font-bold text-white shadow-sm transition-all hover:bg-[#dc591c] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {saving ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                    Saving...
+                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                    <span>Saving Settings...</span>
                   </>
-                ) : 'Save All Settings'}
+                ) : (
+                  'Save Settings'
+                )}
               </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Confirmation Modal */}
       <MessageModal 
         isOpen={showModal.show}
         onClose={() => setShowModal({ ...showModal, show: false })}
@@ -235,7 +292,7 @@ function SystemSettings() {
         message={showModal.message}
       />
     </div>
-  )
+  );
 }
 
-export default SystemSettings
+export default SystemSettings;

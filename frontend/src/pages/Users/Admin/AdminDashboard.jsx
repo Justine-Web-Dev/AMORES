@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Sidebar from "../../../Components/Sidebar/Sidebar";
 import Header from "../../../Components/Header/Header";
 import DashboardOverview from "./DashboardOverview";
@@ -21,11 +21,25 @@ import AccountSettings from "../../Settings/AccountSettings";
 
 function AdminDashboard() {
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const location = useLocation();
+  const currentPath = location.pathname.replace(/\/+$/, "");
+  const isSystemSettings = currentPath.endsWith("/system-settings");
+  const isUserManagement = currentPath.endsWith("/user-management");
+
+  useEffect(() => {
+    document.body.classList.toggle("settings-page-active", isSystemSettings);
+    document.body.classList.toggle("user-management-page-active", isUserManagement);
+
+    return () => {
+      document.body.classList.remove("settings-page-active");
+      document.body.classList.remove("user-management-page-active");
+    };
+  }, [isSystemSettings, isUserManagement]);
 
   return (
     <div className="AdminDashboard">
       <Sidebar isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
-      <div className={`main-content ${isCollapsed ? "collapsed" : ""}`}>
+      <div className={`main-content ${isCollapsed ? "collapsed" : ""} ${isSystemSettings ? "settings-no-scroll" : ""} ${isUserManagement ? "user-management-no-scroll" : ""}`}>
         <Header />
         <Routes>
           <Route index element={<DashboardOverview />} />

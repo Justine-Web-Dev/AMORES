@@ -27,15 +27,11 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // If backend returns 401 Unauthorized, automatically log out
+    // Notify the protected route so it can explain the logout before redirecting.
     if (error.response && error.response.status === 401) {
       sessionStorage.removeItem("token");
       sessionStorage.removeItem("role");
-      
-      // Redirect to login page if we aren't already there
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
-      }
+      window.dispatchEvent(new CustomEvent("auth:session-expired"));
     }
     return Promise.reject(error);
   }

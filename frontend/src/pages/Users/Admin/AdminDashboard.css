@@ -16,6 +16,59 @@
   margin-left: 90px;
 }
 
+.main-content.settings-no-scroll {
+  height: 100vh;
+  max-height: 100vh;
+  min-height: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.main-content.user-management-no-scroll {
+  height: auto;
+  max-height: none;
+  align-self: flex-start;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+body.settings-page-active {
+  overflow: hidden;
+}
+
+body.user-management-page-active {
+  overflow: hidden;
+}
+
+.system-settings-page {
+  font-family: Karla, sans-serif;
+}
+
+.user-management-page {
+  font-family: Karla, sans-serif;
+  padding: 20px;
+  background: linear-gradient(180deg, #ffffff 0%, #fefeff 100%);
+  border: 1px solid #edf0f7;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(44, 45, 134, 0.06);
+  margin-bottom: 20px;
+  box-sizing: border-box;
+}
+
+.user-management-page h2 {
+  color: #2C2D86;
+  margin-bottom: 15px;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.user-management-page > p,
+.user-management-page h2 + p {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
 @media (max-width: 1366px) {
   .main-content {
     margin-left: 260px;
@@ -64,24 +117,38 @@
 .admin-summary-card,
 .stat-card-container .total-users,
 .stat-card-container .total-applicants {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
   background-color: #fff;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.151);
+  box-shadow: 0 3px 10px rgba(44, 45, 134, 0.08);
+  border: 1px solid transparent;
   min-height: 90px;
   border-left: 5px solid #2C2D86;
   border-radius: 8px;
   min-width: 200px;
   padding: 10px 20px;
-  transition: all 0.3s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
+  will-change: transform;
 }
 
 .admin-summary-card:hover,
 .stat-card-container .total-users:hover,
 .stat-card-container .total-applicants:hover {
-  transform: translateY(-3px);
-  box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  background-color: #ffffff;
+  border-color: rgba(44, 45, 134, 0.2);
+  box-shadow: 0 0 0 1px rgba(44, 45, 134, 0.2);
+}
+
+.admin-summary-card:active,
+.stat-card-container .total-users:active,
+.stat-card-container .total-applicants:active {
+  transform: translateY(-1px);
+  background-color: #ffffff;
+  border-color: rgba(44, 45, 134, 0.28);
+  box-shadow: 0 2px 0 rgba(44, 45, 134, 0.18);
 }
 
 .admin-summary-card .summary-label,

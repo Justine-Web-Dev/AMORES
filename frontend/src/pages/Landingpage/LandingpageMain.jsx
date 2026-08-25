@@ -130,9 +130,7 @@ function LandingpageMain() {
           element={
             <>
               <HeaderLanding isApplicationOpen={isApplicationOpen} appDates={appDates} />
-              <div className="mt-20">
-                <DocumentSubmission isApplicationOpen={isApplicationOpen} />
-              </div>
+              <DocumentSubmission isApplicationOpen={isApplicationOpen} />
             </>
           }
         />
