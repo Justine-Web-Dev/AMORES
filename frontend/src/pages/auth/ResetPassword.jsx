@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { api } from '../../../api/api'
 import logo from '../../assets/RRSU1 logo.png'
@@ -21,8 +21,17 @@ function ResetPassword() {
   const [success, setSuccess] = useState(false)
   const [showErrorModal, setShowErrorModal] = useState(false)
   const [errorMessage, setErrorMessage] = useState("")
+  const [isSuccessModal, setIsSuccessModal] = useState(false)
   const [resetToken, setResetToken] = useState("")
-  const [timer, setTimer] = useState(300)
+  const [timer, setTimer] = useState(() => {
+    const savedTime = sessionStorage.getItem('resetPasswordTimer');
+    if (savedTime) {
+      const remaining = Math.floor((parseInt(savedTime, 10) - Date.now()) / 1000);
+      return remaining > 0 ? remaining : 0;
+    }
+    sessionStorage.setItem('resetPasswordTimer', Date.now() + 120 * 1000);
+    return 120;
+  });
 
   const hasMinLength = newPassword.length >= 8;
   const hasUppercase = /[A-Z]/.test(newPassword);
@@ -32,9 +41,9 @@ function ResetPassword() {
   const doPasswordsMatch = newPassword === confirmPassword;
 
   const formatTime = (seconds) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${s < 10 ? '0' : ''}${s}`;
+    const minutes = Math.floor(seconds / 60);
+    const second = seconds % 60;
+    return `${minutes}:${second < 10 ? '0' : ''}${second}`;
   };
 
   useEffect(() => {
@@ -93,11 +102,14 @@ function ResetPassword() {
     try {
       await api.post("users/forgot-password/", { email });
       setErrorMessage("A new verification code has been sent to your email.");
+      setIsSuccessModal(true);
       setShowErrorModal(true);
-      setTimer(300);
+      setTimer(120);
+      sessionStorage.setItem('resetPasswordTimer', Date.now() + 120 * 1000);
     } catch (error) {
       const msg = error.response?.data?.error || error.message;
       setErrorMessage(msg);
+      setIsSuccessModal(false);
       setShowErrorModal(true);
     } finally {
       setLoading(false);
@@ -117,6 +129,7 @@ function ResetPassword() {
       } catch (error) {
         const msg = error.response?.data?.error || error.message;
         setErrorMessage(msg)
+        setIsSuccessModal(false)
         setShowErrorModal(true)
       } finally {
         setLoading(false)
@@ -126,12 +139,14 @@ function ResetPassword() {
     
     if (!doPasswordsMatch) {
       setErrorMessage("Passwords do not match.");
+      setIsSuccessModal(false);
       setShowErrorModal(true);
       return;
     }
 
     if (!isPasswordValid) {
       setErrorMessage("Please meet all the password requirements.");
+      setIsSuccessModal(false);
       setShowErrorModal(true);
       return;
     }
@@ -152,6 +167,7 @@ function ResetPassword() {
     } catch (error) {
       const msg = error.response?.data?.error || error.message;
       setErrorMessage(msg)
+      setIsSuccessModal(false)
       setShowErrorModal(true)
     } finally {
       setLoading(false)
@@ -320,6 +336,7 @@ function ResetPassword() {
         onClose={() => setShowErrorModal(false)} 
         title="Error" 
         message={errorMessage} 
+        isSuccess={isSuccessModal}
       />
     </div>
   )

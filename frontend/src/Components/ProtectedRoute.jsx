@@ -82,8 +82,6 @@ const ProtectedRoute = ({ children, allowedRole }) => {
       </>
     );
   }
-
-  // A token without a valid expiry cannot authorize a protected route.
   if (!token) {
     return <Navigate to={getLoginPath()} replace />;
   }

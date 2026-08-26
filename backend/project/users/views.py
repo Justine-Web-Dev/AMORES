@@ -339,11 +339,11 @@ def forgot_password(request):
     subject = "Password Reset Verification Code – AMORES"
     message = (
         f"Hi {user.name},\n\n"
-        f"You recently requested to reset your password for the PNP-AMORES portal.\n"
-        f"Here is your 6-digit verification code:\n\n"
+        f"You requested a password reset for your PNP-AMORES account. Use the code below to complete the process:\n"
+        f"Here is your OTP code:\n\n"
         f"Code: {otp}\n\n"
-        f"This code will expire in 5 minutes.\n"
-        f"If you did not request a password reset, please ignore this email or reply to let us know.\n\n"
+        f"This code will expire in 2 minutes.For your security, do not share this code with anyone.\n"
+        f"If you did not request this reset, please ignore this email or contact support to secure your account.\n\n"
         f"Best regards,\n"
         f"PNP-AMORES System"
     )
