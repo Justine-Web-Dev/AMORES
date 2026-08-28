@@ -21,7 +21,7 @@ class PlatformSecurityMiddleware:
                         # but request.user is set by DRF later. 
                         # For simple middleware, we just return a 503 if not hitting an admin route.
                         
-                        if not any(x in request.path for x in ['global-settings', 'system-health', 'api-keys']):
+                        if not any(x in request.path for x in ['global-settings', 'system-health']):
                             return JsonResponse({
                                 'error': 'Platform is currently under maintenance. Please try again later.'
                             }, status=503)

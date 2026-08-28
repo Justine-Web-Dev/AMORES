@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { api } from '../../../api/api'
 import logo from '../../assets/RRSU1 logo.png'
 import ErrorLoginModal from '../../Modals/ErrorLoginModal'
+import { FaEnvelope } from 'react-icons/fa'
 
 function ForgotPassword() {
   const [email, setEmail] = useState("")
@@ -44,15 +45,21 @@ function ForgotPassword() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col">
             <label htmlFor="email" className="text-sm font-medium text-gray-700 mb-1">Email Address</label>
-            <input 
-              id="email"
-              type="email" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your Email"
-              required
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2C2D86] focus:border-transparent"
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                <FaEnvelope size={18} />
+              </span>
+              <input 
+                id="email"
+                type="email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your Email"
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#2C2D86] focus:border-transparent"
+                style={{ paddingLeft: '2.5rem' }}
+              />
+            </div>
           </div>
 
           <button 

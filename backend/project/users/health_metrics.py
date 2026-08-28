@@ -29,8 +29,9 @@ def get_system_health():
         db_latency_ms = round((db_end - db_start) * 1000, 2)
         health_data['metrics']['db_latency_ms'] = db_latency_ms
         
-        # Get Database Storage Size
+        # Get Database Storage Size (Neon Free Tier = 512 MB limit)
         db_size_mb = 0
+        db_limit_mb = 512  # Neon free tier limit
         if connection.vendor == 'postgresql':
             with connection.cursor() as cursor:
                 cursor.execute("SELECT pg_database_size(current_database())")
@@ -40,8 +41,12 @@ def get_system_health():
             db_path = connection.settings_dict.get('NAME')
             if db_path and os.path.exists(db_path):
                 db_size_mb = os.path.getsize(db_path) / (1024 * 1024)
+                db_limit_mb = None  # No practical limit for SQLite
                 
         health_data['metrics']['db_size_mb'] = round(db_size_mb, 2)
+        health_data['metrics']['db_limit_mb'] = db_limit_mb
+        if db_limit_mb:
+            health_data['metrics']['db_usage_percent'] = round((db_size_mb / db_limit_mb) * 100, 1)
 
         if db_latency_ms > 2000:
             health_data['status'] = 'degraded'
@@ -56,7 +61,7 @@ def get_system_health():
         
         process = psutil.Process(os.getpid())
         used_mb = process.memory_info().rss // (1024 * 1024)
-        total_mb = 512 # Hardcoded to Render's 512MB RAM limit for accurate capacity planning
+        total_mb = psutil.virtual_memory().total // (1024 * 1024)
         mem_percent = (used_mb / total_mb) * 100
         
         health_data['metrics']['memory_percent'] = round(mem_percent, 1)

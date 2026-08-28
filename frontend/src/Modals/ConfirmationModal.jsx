@@ -30,7 +30,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
             onClick={onConfirm}
             className="px-6 py-2 bg-[#2C2D86] hover:bg-[#4547a3] text-white font-bold rounded-lg shadow-md hover:shadow-lg transition-all duration-200 active:scale-95"
           >
-            Archive
+            Deactivate
           </button>
         </div>
       </div>

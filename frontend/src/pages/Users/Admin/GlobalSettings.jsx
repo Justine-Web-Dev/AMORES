@@ -218,7 +218,7 @@ function GlobalSettings() {
                               <div className="mt-2">
                                 <label className="relative inline-flex items-center cursor-pointer">
                                   <input 
-                                    type="checkbox" 
+                                    type="checkbox"
                                     className="sr-only peer"
                                     checked={String(setting.value).toLowerCase() === 'true'}
                                     onChange={() => handleToggleBoolean(setting)}
