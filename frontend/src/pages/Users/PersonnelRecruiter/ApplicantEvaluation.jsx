@@ -273,7 +273,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
     let nextStatus = null;
     if (statusFilter === "Qualified") nextStatus = "Body Mass Index";
     else if (statusFilter === "Body Mass Index") nextStatus = "Physical Agility Test";
-    else if (statusFilter === "Physical Agility Test") nextStatus = "Panel Interview";
+    else if (statusFilter === "Physical Agility Test") nextStatus = "Neuro Examination";
 
     setIsSavingSchedule(true);
     try {

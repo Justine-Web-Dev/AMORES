@@ -2,7 +2,7 @@ import jwt
 from django.conf import settings
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
-from .models import User
+from .models import User, GlobalSetting
 
 class JWTAuthentication(BaseAuthentication):
     def authenticate_header(self, request):
@@ -36,6 +36,14 @@ class JWTAuthentication(BaseAuthentication):
                 raise AuthenticationFailed('This account has been permanently banned.')
             if user.is_suspended:
                 raise AuthenticationFailed('This account is currently suspended.')
+                
+            if user.role == User.Roles.ADMINISTRATOR:
+                try:
+                    active_admin_setting = GlobalSetting.objects.get(key='ACTIVE_ADMIN_ID')
+                    if active_admin_setting.value != user.id:
+                        raise AuthenticationFailed('Another administrator has logged in. You have been logged out.')
+                except GlobalSetting.DoesNotExist:
+                    pass
                 
             return (user, token)
         except jwt.ExpiredSignatureError:

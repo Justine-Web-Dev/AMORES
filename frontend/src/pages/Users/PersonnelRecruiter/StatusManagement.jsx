@@ -306,7 +306,7 @@ function StatusManagement({
             if (patRunPassed === false) failedEvents.push("Run");
             finalRejectionReason = `Failed Physical Agility Test requirements in: ${failedEvents.join(", ")}.`;
           } else {
-            // Stay in Physical Agility Test tab so they can be scheduled for Panel Interview
+            // Stay in Physical Agility Test tab so they can be scheduled for Neuro Examination
             statusToSave = "Physical Agility Test";
           }
         } else if (currentStatus === "Drug Test") {

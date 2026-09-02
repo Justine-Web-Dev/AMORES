@@ -4,7 +4,7 @@ from .serializers import (
     UsersSerializers, ApplicantSerializer, ApplicantFullSerializer, ApplicantDocumentSerializer, 
     SystemSettingsSerializer, AuditLogSerializer, ApplicantDashboardSerializer
 )
-from .models import User, Applicant, Application, Evaluation, ApplicantDocument, SystemSettings, AuditLog
+from .models import User, Applicant, Application, Evaluation, ApplicantDocument, SystemSettings, AuditLog, GlobalSetting
 from .utils import (
     create_audit_log,
     get_user_from_request,
@@ -24,9 +24,6 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.contrib.auth.hashers import check_password, make_password
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.utils import timezone
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.utils.encoding import force_bytes, force_str
 from django.core.cache import cache
 import random
 
@@ -143,7 +140,7 @@ def send_password_changed_email(name, email, new_password):
 @permission_classes([IsAdministrator])
 def get_user(request):
   archived_param = request.query_params.get('archived', 'false')
-  base_query = User.objects.only('id', 'name', 'email', 'role', 'is_archived')
+  base_query = User.objects.only('id', 'name', 'email', 'role', 'is_archived').order_by('-id')
   if archived_param == 'all':
       users = base_query.all()
   else:
@@ -262,15 +259,13 @@ def login_user(request):
   
   token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
   create_audit_log(user, 'LOGIN', f"User '{user.email}' logged in successfully.")
-
-  # Automatically deactivate other Administrators when one successfully logs in
+  # Set this admin as the active admin, logging out any other admin
   if user.role == User.Roles.ADMINISTRATOR:
-      other_admins = User.objects.filter(role=User.Roles.ADMINISTRATOR, is_archived=False).exclude(id=user.id)
-      if other_admins.exists():
-          for old_admin in other_admins:
-              old_admin.is_archived = True
-              old_admin.save()
-          create_audit_log(user, 'SYSTEM', f"Administrator '{user.email}' logged in. Older Administrators were deactivated automatically.")
+      setting, created = GlobalSetting.objects.get_or_create(key='ACTIVE_ADMIN_ID', defaults={'value': user.id})
+      if not created:
+          setting.value = user.id
+          setting.save()
+      create_audit_log(user, 'SYSTEM', f"Administrator '{user.email}' logged in. They are now the only active administrator.")
 
   return Response({
     "token": token,
