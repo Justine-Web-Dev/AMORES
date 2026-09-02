@@ -14,12 +14,15 @@ import {
   HiOutlineXCircle,
   HiChevronLeft,
   HiChevronRight,
+  HiArrowDown,
+  HiArrowUp,
 } from "react-icons/hi";
 import "./ApplicantEval.css";
 import MessageModal from "../../../Modals/MessageModal";
 import StatusManagement from "./StatusManagement";
 
 function ApplicantEvaluation({ isInterviewer = false }) {
+  const pageRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState("");
   const location = useLocation();
   const [statusFilter, setStatusFilter] = useState(
@@ -53,12 +56,93 @@ function ApplicantEvaluation({ isInterviewer = false }) {
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
 
+  // Dashboard scroll state
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showScrollBottom, setShowScrollBottom] = useState(true);
+  const scrollAnimationRef = useRef(null);
+
+  const getScrollContainer = () => {
+    const dashboardContainer = pageRef.current?.closest(".main-content");
+    if (
+      dashboardContainer &&
+      dashboardContainer.scrollHeight > dashboardContainer.clientHeight
+    ) {
+      return dashboardContainer;
+    }
+
+    return document.scrollingElement || document.documentElement;
+  };
+
+  useEffect(() => {
+    const scrollContainer = getScrollContainer();
+    const handleScroll = () => {
+      const scrollTop = scrollContainer.scrollTop;
+      const viewportHeight = scrollContainer.clientHeight;
+      const contentHeight = scrollContainer.scrollHeight;
+      const maxScrollTop = Math.max(contentHeight - viewportHeight, 0);
+
+      setShowScrollTop(scrollTop > 200);
+      setShowScrollBottom(
+        maxScrollTop === 0 || scrollTop < maxScrollTop - 2,
+      );
+    };
+
+    scrollContainer.addEventListener("scroll", handleScroll);
+    // Initial check
+    handleScroll();
+
+    return () => scrollContainer.removeEventListener("scroll", handleScroll);
+  }, [applicantInfo, searchTerm, statusFilter]);
+
   const handleScroll = () => {
     if (scrollRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
       setShowLeftArrow(scrollLeft > 0);
       setShowRightArrow(Math.ceil(scrollLeft + clientWidth) < scrollWidth);
     }
+  };
+
+  const animateScrollTo = (scrollContainer, targetTop) => {
+    if (scrollAnimationRef.current) {
+      cancelAnimationFrame(scrollAnimationRef.current);
+    }
+
+    const startTop = scrollContainer.scrollTop;
+    const distance = targetTop - startTop;
+    const duration = Math.min(900, Math.max(450, Math.abs(distance) * 0.6));
+    const startTime = performance.now();
+
+    const animate = (currentTime) => {
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+      const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+      scrollContainer.scrollTop = startTop + distance * easedProgress;
+
+      if (progress < 1) {
+        scrollAnimationRef.current = requestAnimationFrame(animate);
+      } else {
+        scrollAnimationRef.current = null;
+      }
+    };
+
+    scrollAnimationRef.current = requestAnimationFrame(animate);
+  };
+
+  const scrollToBottom = () => {
+    const scrollContainer = getScrollContainer();
+    setShowScrollTop(true);
+    setShowScrollBottom(false);
+    animateScrollTo(
+      scrollContainer,
+      scrollContainer.scrollHeight - scrollContainer.clientHeight,
+    );
+  };
+
+  const scrollToTop = () => {
+    const scrollContainer = getScrollContainer();
+    setShowScrollTop(false);
+    setShowScrollBottom(true);
+    animateScrollTo(scrollContainer, 0);
   };
 
   useEffect(() => {
@@ -270,6 +354,22 @@ function ApplicantEvaluation({ isInterviewer = false }) {
       return;
     }
 
+    const selectableIds = new Set(
+      filteredAndSorted
+        .filter((app) => isEvaluated(app))
+        .map((app) => app.id),
+    );
+    const idsToSchedule = selectedIds.filter((id) => selectableIds.has(id));
+    if (idsToSchedule.length === 0) {
+      setSelectedIds([]);
+      setScheduleMessageConfig({
+        isOpen: true,
+        type: "error",
+        message: "Only evaluated applicants can be scheduled for the next step.",
+      });
+      return;
+    }
+
     let nextStatus = null;
     if (statusFilter === "Qualified") nextStatus = "Body Mass Index";
     else if (statusFilter === "Body Mass Index") nextStatus = "Physical Agility Test";
@@ -287,7 +387,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
       }
 
       await Promise.all(
-        selectedIds.map((id) =>
+        idsToSchedule.map((id) =>
           api.put(`users/update_status/${id}/`, dataToSend),
         ),
       );
@@ -295,7 +395,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
       setScheduleMessageConfig({
         isOpen: true,
         type: "success",
-        message: `Scheduled ${selectedIds.length} applicant(s) for ${scheduleDate} ${scheduleTime ? `@ ${scheduleTime}` : ""} successfully.`,
+        message: `Scheduled ${idsToSchedule.length} applicant(s) for ${scheduleDate} ${scheduleTime ? `@ ${scheduleTime}` : ""} successfully.`,
       });
       setIsSelectionMode(false);
       if (nextStatus) {
@@ -316,17 +416,25 @@ function ApplicantEvaluation({ isInterviewer = false }) {
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      let limit = filteredAndSorted.length;
+      const selectableApplicants = filteredAndSorted.filter(
+        (app) => isEvaluated(app),
+      );
+      let limit = selectableApplicants.length;
       if (selectionLimit !== "All") {
         limit = parseInt(selectionLimit, 10);
       }
-      setSelectedIds(filteredAndSorted.slice(0, limit).map((app) => app.id));
+      setSelectedIds(
+        selectableApplicants.slice(0, limit).map((app) => app.id),
+      );
     } else {
       setSelectedIds([]);
     }
   };
 
   const handleSelectOne = (id) => {
+    const applicant = filteredAndSorted.find((app) => app.id === id);
+    if (!applicant || !isEvaluated(applicant)) return;
+
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
     );
@@ -571,7 +679,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
   };
 
   return (
-    <div>
+    <div ref={pageRef}>
       <div className="module-content">
         <h2>Applicant Evaluation</h2>
         <p>
@@ -705,7 +813,11 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                     }
                     setIsSelectionMode(true);
                     const preselected = filteredAndSorted
-                      .filter((app) => app.scheduled_date === scheduleDate)
+                      .filter(
+                        (app) =>
+                          isEvaluated(app) &&
+                          app.scheduled_date === scheduleDate,
+                      )
                       .map((app) => app.id);
                     setSelectedIds((prev) => {
                       const newSet = new Set([...prev, ...preselected]);
@@ -759,13 +871,19 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                       <input
                         type="checkbox"
                         checked={
-                          filteredAndSorted.length > 0 &&
+                          filteredAndSorted.some((app) => isEvaluated(app)) &&
                           selectedIds.length > 0 &&
-                          (selectedIds.length === filteredAndSorted.length || 
-                           (selectionLimit !== "All" && selectedIds.length === parseInt(selectionLimit, 10)))
+                          selectedIds.length ===
+                            Math.min(
+                              filteredAndSorted.filter((app) => isEvaluated(app)).length,
+                              selectionLimit === "All"
+                                ? Infinity
+                                : parseInt(selectionLimit, 10),
+                            )
                         }
+                        disabled={filteredAndSorted.every((app) => !isEvaluated(app))}
                         onChange={handleSelectAll}
-                        className="w-4 h-4 accent-[#2C2D86] cursor-pointer align-middle"
+                        className="w-4 h-4 accent-[#2C2D86] cursor-pointer align-middle disabled:cursor-not-allowed disabled:opacity-40"
                       />
                   </th>
                 )}
@@ -844,9 +962,18 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                       <td className="w-12 text-center">
                         <input
                           type="checkbox"
-                          checked={selectedIds.includes(applicant.id)}
+                          checked={
+                            isEvaluated(applicant) &&
+                            selectedIds.includes(applicant.id)
+                          }
+                          disabled={!isEvaluated(applicant)}
                           onChange={() => handleSelectOne(applicant.id)}
-                          className="w-4 h-4 accent-[#2C2D86] cursor-pointer"
+                          className="w-4 h-4 accent-[#2C2D86] cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+                          title={
+                            isEvaluated(applicant)
+                              ? "Select for next step"
+                              : "Evaluation required before scheduling"
+                          }
                         />
                       </td>
                     )}
@@ -1057,6 +1184,33 @@ function ApplicantEvaluation({ isInterviewer = false }) {
           </div>
         </div>
       )}
+
+      {/* Floating Scroll Buttons */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-2">
+        <button
+          onClick={scrollToTop}
+          className={`p-3 bg-[#2C2D86] text-white rounded-full shadow-lg hover:bg-blue-800 focus:outline-none transition-all duration-300 ease-in-out transform ${
+            showScrollTop
+              ? "opacity-100 translate-y-0 pointer-events-auto"
+              : "opacity-0 translate-y-4 pointer-events-none"
+          }`}
+          title="Scroll to Top"
+        >
+          <HiArrowUp size={24} />
+        </button>
+
+        <button
+          onClick={scrollToBottom}
+          className={`p-3 bg-[#2C2D86] text-white rounded-full shadow-lg hover:bg-blue-800 focus:outline-none transition-all duration-300 ease-in-out transform ${
+            showScrollBottom
+              ? "opacity-100 translate-y-0 pointer-events-auto"
+              : "opacity-0 translate-y-4 pointer-events-none"
+          }`}
+          title="Scroll to Bottom"
+        >
+          <HiArrowDown size={24} />
+        </button>
+      </div>
 
       <MessageModal
         isOpen={scheduleMessageConfig.isOpen}

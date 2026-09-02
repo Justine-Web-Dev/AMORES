@@ -8,7 +8,9 @@
   margin-left: 280px;
   padding: 25px 30px;
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  scroll-behavior: smooth;
   transition: margin-left 0.3s ease-in-out;
 }
 
