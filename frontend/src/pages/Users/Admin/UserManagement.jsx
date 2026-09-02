@@ -86,6 +86,7 @@ function UserManagement() {
     try {
       await api.put(`users/update_user/${userToRestore.id}/`, {
         ...userToRestore,
+        is_active: true,
         is_archived: false,
       });
       fetchUsers();
@@ -246,12 +247,12 @@ function UserManagement() {
                   <td>
                     <span
                       className={
-                        user.is_archived
+                        !user.is_active || user.is_archived
                           ? "bg-red-100 text-red-800 font-semibold px-4 py-1 rounded-md"
                           : "bg-emerald-100 text-emerald-800 font-semibold px-4 py-1 rounded-md"
                       }
                     >
-                      {user.is_archived ? "Inactive" : "Active"}
+                      {!user.is_active || user.is_archived ? "Inactive" : "Active"}
                     </span>
                   </td>
                   <td className="px-4 py-4 text-center">

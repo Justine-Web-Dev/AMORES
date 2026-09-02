@@ -45,7 +45,7 @@ import datetime
 import os
 from django.conf import settings
 from django.http import HttpResponse
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
 import tempfile
 import secrets
 import string
@@ -140,12 +140,15 @@ def send_password_changed_email(name, email, new_password):
 @permission_classes([IsAdministrator])
 def get_user(request):
   archived_param = request.query_params.get('archived', 'false')
-  base_query = User.objects.only('id', 'name', 'email', 'role', 'is_archived').order_by('-id')
+  base_query = User.objects.only('id', 'name', 'email', 'role', 'is_active', 'is_archived').order_by('-id')
   if archived_param == 'all':
       users = base_query.all()
   else:
-      is_archived = archived_param == 'true'
-      users = base_query.filter(is_archived=is_archived)
+      is_inactive = archived_param == 'true'
+      if is_inactive:
+          users = base_query.filter(Q(is_active=False) | Q(is_archived=True))
+      else:
+          users = base_query.filter(is_active=True, is_archived=False)
   serializers = UsersSerializers(users, many=True)
   return Response(serializers.data)
 
@@ -218,65 +221,71 @@ def register_user(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_user(request):
-  email = request.data.get('email')
-  password = request.data.get('password')
+    email = request.data.get('email')
+    password = request.data.get('password')
 
-  if not email or not password:
-      return Response({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
+    if not email or not password:
+        return Response({'error': 'Email and password are required'}, status=status.HTTP_400_BAD_REQUEST)
 
-  try:
-    user = User.objects.get(email=email)
-  except User.DoesNotExist:
-    return Response({'error': 'Email not found'}, status=status.HTTP_404_NOT_FOUND)
-    
-  if user.is_archived:
-    return Response({'error': 'This email is inactive'}, status=status.HTTP_403_FORBIDDEN)
-  
-  if getattr(user, 'is_banned', False):
-      return Response({'error': 'This account has been permanently banned.'}, status=status.HTTP_403_FORBIDDEN)
-  if getattr(user, 'is_suspended', False):
-      return Response({'error': 'This account is currently suspended.'}, status=status.HTTP_403_FORBIDDEN)
-  
-  is_password_valid = False
-  if user.password == password:
-      is_password_valid = True
-      user.password = make_password(password)
-      user.save()
-  elif check_password(password, user.password):
-      is_password_valid = True
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return Response({'error': 'Email not found'}, status=status.HTTP_404_NOT_FOUND)
 
-  if not is_password_valid:
-    return Response({'error': 'Invalid password'}, status=status.HTTP_400_BAD_REQUEST)
-  
-  payload = {
-    "user_id": user.id,
-    "email": user.email,
-    "name": user.name,
-    "role": user.role,
-    "profile_picture": user.profile_picture.url if user.profile_picture else None,
-    "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
-  }
-  
-  token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
-  create_audit_log(user, 'LOGIN', f"User '{user.email}' logged in successfully.")
-  # Set this admin as the active admin, logging out any other admin
-  if user.role == User.Roles.ADMINISTRATOR:
-      setting, created = GlobalSetting.objects.get_or_create(key='ACTIVE_ADMIN_ID', defaults={'value': user.id})
-      if not created:
-          setting.value = user.id
-          setting.save()
-      create_audit_log(user, 'SYSTEM', f"Administrator '{user.email}' logged in. They are now the only active administrator.")
+    if not user.is_active or user.is_archived:
+        return Response({'error': 'This email is inactive'}, status=status.HTTP_403_FORBIDDEN)
+    if getattr(user, 'is_banned', False):
+        return Response({'error': 'This account has been permanently banned.'}, status=status.HTTP_403_FORBIDDEN)
+    if getattr(user, 'is_suspended', False):
+        return Response({'error': 'This account is currently suspended.'}, status=status.HTTP_403_FORBIDDEN)
 
-  return Response({
-    "token": token,
-    "email": user.email,
-    "role": user.role,
-    "name": user.name,
-    "profile_picture": user.profile_picture.url if user.profile_picture else None,
-    "must_change_password": user.must_change_password,
-  })
+    is_password_valid = False
+    if user.password == password:
+        is_password_valid = True
+        user.password = make_password(password)
+        user.save()
+    elif check_password(password, user.password):
+        is_password_valid = True
 
+    if not is_password_valid:
+        return Response({'error': 'Invalid password'}, status=status.HTTP_400_BAD_REQUEST)
 
+    payload = {
+        "user_id": user.id,
+        "email": user.email,
+        "name": user.name,
+        "role": user.role,
+        "profile_picture": user.profile_picture.url if user.profile_picture else None,
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+    }
+
+    token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+    create_audit_log(user, 'LOGIN', f"User '{user.email}' logged in successfully.")
+    # Only one administrator account may remain active at a time.
+    if user.role == User.Roles.ADMINISTRATOR:
+        with transaction.atomic():
+            setting, created = GlobalSetting.objects.select_for_update().get_or_create(
+                key='ACTIVE_ADMIN_ID', defaults={'value': user.id}
+            )
+            if not created:
+                User.objects.filter(
+                    role=User.Roles.ADMINISTRATOR,
+                ).exclude(pk=user.id).update(
+                    is_active=False,
+                    is_archived=True,
+                )
+                setting.value = user.id
+                setting.save(update_fields=['value', 'updated_at'])
+        create_audit_log(user, 'SYSTEM', f"Administrator '{user.email}' logged in. They are now the only active administrator.")
+
+    return Response({
+        "token": token,
+        "email": user.email,
+        "role": user.role,
+        "name": user.name,
+        "profile_picture": user.profile_picture.url if user.profile_picture else None,
+        "must_change_password": user.must_change_password,
+    })
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

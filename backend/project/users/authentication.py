@@ -32,6 +32,8 @@ class JWTAuthentication(BaseAuthentication):
             
             user = User.objects.get(email=email)
             
+            if not user.is_active or user.is_archived:
+                raise AuthenticationFailed('This account is inactive.')
             if user.is_banned:
                 raise AuthenticationFailed('This account has been permanently banned.')
             if user.is_suspended:

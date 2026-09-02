@@ -6,7 +6,7 @@ from unittest.mock import patch
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
 
-from .models import Applicant, Application
+from .models import Applicant, Application, GlobalSetting, User
 from .serializers import ApplicantFullSerializer
 from .utils import (
     build_database_backup_command,
@@ -158,6 +158,99 @@ class ApplicantRegistrationTests(TestCase):
         self.assertEqual(applicant.contact_number, '09170000001')
         self.assertEqual(applicant.address, '123 Main Street')
         self.assertEqual(applicant.tribe, 'Ilonggo')
+
+
+class AdministratorLoginTests(TestCase):
+    def setUp(self):
+        self.old_admin = User.objects.create_user(
+            email='old-admin@example.com',
+            password='password',
+            name='Old Admin',
+            role=User.Roles.ADMINISTRATOR,
+        )
+        self.new_admin = User.objects.create_user(
+            email='new-admin@example.com',
+            password='password',
+            name='New Admin',
+            role=User.Roles.ADMINISTRATOR,
+        )
+
+    def test_new_admin_login_deactivates_old_admin_and_invalidates_token(self):
+        old_login = self.client.post(
+            reverse('login_user'),
+            {'email': self.old_admin.email, 'password': 'password'},
+            format='json',
+        )
+        self.assertEqual(old_login.status_code, 200, old_login.data)
+
+        new_login = self.client.post(
+            reverse('login_user'),
+            {'email': self.new_admin.email, 'password': 'password'},
+            format='json',
+        )
+        self.assertEqual(new_login.status_code, 200, new_login.data)
+
+        self.old_admin.refresh_from_db()
+        self.new_admin.refresh_from_db()
+        self.assertFalse(self.old_admin.is_active)
+        self.assertTrue(self.old_admin.is_archived)
+        self.assertTrue(self.new_admin.is_active)
+        self.assertEqual(
+            GlobalSetting.objects.get(key='ACTIVE_ADMIN_ID').value,
+            self.new_admin.id,
+        )
+
+        inactive_users = self.client.get(
+            reverse('get_user'),
+            {'archived': 'true'},
+            HTTP_AUTHORIZATION=f"Bearer {new_login.data['token']}",
+        )
+        self.assertEqual(inactive_users.status_code, 200, inactive_users.data)
+        self.assertEqual(inactive_users.data[0]['id'], self.old_admin.id)
+        self.assertFalse(inactive_users.data[0]['is_active'])
+
+        old_response = self.client.get(
+            reverse('get_user'),
+            HTTP_AUTHORIZATION=f"Bearer {old_login.data['token']}",
+        )
+        self.assertEqual(old_response.status_code, 401)
+
+        new_response = self.client.get(
+            reverse('get_user'),
+            HTTP_AUTHORIZATION=f"Bearer {new_login.data['token']}",
+        )
+        self.assertEqual(new_response.status_code, 200)
+
+    def test_inactive_admin_cannot_log_in(self):
+        self.old_admin.is_active = False
+        self.old_admin.save(update_fields=['is_active'])
+
+        response = self.client.post(
+            reverse('login_user'),
+            {'email': self.old_admin.email, 'password': 'password'},
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_authenticated_admin_can_change_password(self):
+        login = self.client.post(
+            reverse('login_user'),
+            {'email': self.new_admin.email, 'password': 'password'},
+            format='json',
+        )
+        self.assertEqual(login.status_code, 200, login.data)
+
+        response = self.client.post(
+            reverse('change_password'),
+            {'current_password': 'password', 'new_password': 'NewPassword1!'},
+            HTTP_X_USER_TOKEN=login.data['token'],
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, 200, response.data)
+        self.new_admin.refresh_from_db()
+        self.assertFalse(self.new_admin.must_change_password)
 
 
 class SqliteImportTests(TestCase):
