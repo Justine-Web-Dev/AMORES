@@ -823,7 +823,7 @@ def update_applicant_status(request, pk):
             'pat_situps_passed', 'pat_run', 'pat_run_passed',
             'psychological_result', 'medical_result', 'drug_test_result', 
             'final_interview_score', 'fi_patriotism', 'fi_integrity',
-            'fi_awareness', 'fi_communication'
+            'fi_awareness', 'fi_communication', 'is_qualified_evaluated'
         ]
         for field in eval_fields:
             if field in request.data:

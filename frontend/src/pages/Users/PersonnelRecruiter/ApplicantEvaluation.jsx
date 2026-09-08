@@ -482,6 +482,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
   };
 
   const isEvaluated = (applicant) => {
+    if (statusFilter === "Qualified") return applicant.is_qualified_evaluated === true;
     if (statusFilter === "Final Interview") return applicant.final_interview_score != null;
     if (statusFilter === "Body Mass Index") return applicant.bmi_weight != null;
     if (statusFilter === "Physical Agility Test") return applicant.pat_pushups != null;

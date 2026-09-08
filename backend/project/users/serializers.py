@@ -168,6 +168,7 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
     fi_integrity = serializers.SerializerMethodField()
     fi_awareness = serializers.SerializerMethodField()
     fi_communication = serializers.SerializerMethodField()
+    is_qualified_evaluated = serializers.SerializerMethodField()
     
     class Meta:
         model = Applicant
@@ -185,8 +186,12 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
             'final_interview_score', 'fi_patriotism', 'fi_integrity', 'fi_awareness', 'fi_communication',
             'pat_pushups', 'pat_pushups_passed', 'pat_situps', 
             'pat_situps_passed', 'pat_run', 'pat_run_passed',
-            'is_reapplied'
+            'is_reapplied', 'is_qualified_evaluated'
         ]
+
+    def get_is_qualified_evaluated(self, obj):
+        eval_obj = self._get_eval(obj)
+        return eval_obj.is_qualified_evaluated if eval_obj else False
 
     def get_is_reapplied(self, obj):
         return getattr(obj, 'is_reapplied', False)

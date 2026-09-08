@@ -280,7 +280,13 @@ function StatusManagement({
       } else {
         const currentIndex = POST_ACCEPTANCE_STATUSES.indexOf(currentStatus);
 
-        if (currentStatus === "Body Mass Index") {
+        if (currentStatus === "Qualified") {
+          if (schDate) {
+            statusToSave = "Body Mass Index";
+          } else {
+            statusToSave = "Qualified";
+          }
+        } else if (currentStatus === "Body Mass Index") {
           const bmiVal = getBmiValue();
           if (bmiVal !== null) {
             if (bmiVal >= 18.5 && bmiVal <= 25.0) {
@@ -378,6 +384,10 @@ function StatusManagement({
             ? schDate || null
             : applicantData?.oath_taking_date || null,
         evaluation_remarks: finalRejectionReason || null,
+        is_qualified_evaluated:
+          currentStatus === "Qualified" || statusToSave === "Qualified"
+            ? true
+            : applicantData?.is_qualified_evaluated || false,
       };
 
       await api.put(`users/update_status/${applicantId}/`, dataToSend);
@@ -461,8 +471,13 @@ function StatusManagement({
           </label>
           <select
             value={selectedStatus}
-            disabled
-            className="status-option mt-1 bg-gray-50 border border-gray-200 text-gray-500 cursor-not-allowed"
+            disabled={currentStatus !== "New Applicant"}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className={`status-option mt-1 ${
+              currentStatus !== "New Applicant"
+                ? "bg-gray-50 border border-gray-200 text-gray-500 cursor-not-allowed"
+                : ""
+            }`}
           >
             {statusOptions.map((status) => (
               <option key={status} value={status}>
@@ -471,6 +486,15 @@ function StatusManagement({
             ))}
           </select>
         </div>
+
+        {/* Qualified Specific Banner */}
+        {selectedStatus === "Qualified" && (
+          <div className="pt-2">
+            <div className="p-3 bg-indigo-50 border border-indigo-100 rounded-md text-xs text-indigo-700 font-medium">
+              This applicant is evaluated for the Qualified stage. Recruitment personnel can set a schedule date and time to advance them to the next step (Body Mass Index).
+            </div>
+          </div>
+        )}
 
         {/* BMI Specific Options */}
         {selectedStatus === "Body Mass Index" && (
@@ -611,6 +635,8 @@ function StatusManagement({
       )}
       {(() => {
         const isEvaluated = (() => {
+          if (currentStatus === "Qualified")
+            return true;
           if (currentStatus === "Final Interview")
             return applicantData?.final_interview_score != null;
           if (currentStatus === "Body Mass Index")

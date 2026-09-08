@@ -196,6 +196,9 @@ class Evaluation(models.Model):
     fi_communication = models.FloatField(null=True, blank=True, verbose_name="Communication Skills Score")
     final_interview_score = models.FloatField(null=True, blank=True, verbose_name="Final Interview Score")
 
+    # Qualified evaluation status
+    is_qualified_evaluated = models.BooleanField(default=False, null=True, blank=True, verbose_name="Is Qualified Evaluated")
+
     def __str__(self):
         return f"Evaluation for {self.application.tracking_code}"
 
