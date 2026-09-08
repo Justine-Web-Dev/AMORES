@@ -373,6 +373,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
     if (statusFilter === "Qualified") nextStatus = "Body Mass Index";
     else if (statusFilter === "Body Mass Index") nextStatus = "Physical Agility Test";
     else if (statusFilter === "Physical Agility Test") nextStatus = "Neuro Examination";
+    else if (statusFilter === "Drug Test") nextStatus = "Final Interview";
 
     setIsSavingSchedule(true);
     try {
@@ -484,6 +485,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
     if (statusFilter === "Final Interview") return applicant.final_interview_score != null;
     if (statusFilter === "Body Mass Index") return applicant.bmi_weight != null;
     if (statusFilter === "Physical Agility Test") return applicant.pat_pushups != null;
+    if (statusFilter === "Drug Test") return applicant.drug_test_result != null;
     return false;
   };
 
@@ -753,7 +755,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
             <option value="batch2">Sort by Batch 2</option>
           </select>
 
-          {["Qualified", "Body Mass Index", "Physical Agility Test"].includes(statusFilter) && (
+          {["Qualified", "Body Mass Index", "Physical Agility Test", "Drug Test"].includes(statusFilter) && (
             <select
               value={selectionLimit}
               onChange={(e) => setSelectionLimit(e.target.value)}
@@ -768,7 +770,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
             </select>
           )}
 
-          {(["Qualified", "Body Mass Index", "Physical Agility Test"].includes(statusFilter) ||
+          {(["Qualified", "Body Mass Index", "Physical Agility Test", "Drug Test"].includes(statusFilter) ||
             (isInterviewer && statusFilter === "Final Interview")) && (
             <div className="flex items-center gap-2 border-l border-gray-300 pl-4 h-[38px] next-step-schedule-container">
               <div className="flex items-center gap-1.5">
@@ -779,7 +781,9 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                       ? "BMI Date:" 
                       : statusFilter === "Body Mass Index" 
                         ? "PAT Date:" 
-                        : "Next Step Date:"}
+                        : statusFilter === "Drug Test"
+                          ? "Final Interview Date:"
+                          : "Next Step Date:"}
                 </label>
                 <input
                   type="date"

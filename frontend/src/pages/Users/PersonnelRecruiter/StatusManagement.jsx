@@ -311,7 +311,8 @@ function StatusManagement({
           }
         } else if (currentStatus === "Drug Test") {
           if (drugResult === "Negative") {
-            statusToSave = "Final Interview";
+            // Stay in Drug Test tab so they can be scheduled for Final Interview
+            statusToSave = "Drug Test";
           } else if (drugResult === "Positive") {
             statusToSave = "Failed";
             finalRejectionReason = "Positive Drug Test result.";
@@ -616,6 +617,8 @@ function StatusManagement({
             return applicantData?.bmi_weight != null;
           if (currentStatus === "Physical Agility Test")
             return applicantData?.pat_pushups != null;
+          if (currentStatus === "Drug Test")
+            return applicantData?.drug_test_result != null;
           return false;
         })();
 
@@ -629,6 +632,7 @@ function StatusManagement({
                 (!bmiHeight || !bmiWeight)) ||
               (selectedStatus === "Physical Agility Test" &&
                 (patPushups === "" || patSitups === "" || patRun === "")) ||
+              (selectedStatus === "Drug Test" && !drugResult) ||
               (selectedStatus === "Final Interview" &&
                 (fiPatriotism === "" ||
                   fiIntegrity === "" ||
@@ -643,6 +647,7 @@ function StatusManagement({
                 (!bmiHeight || !bmiWeight)) ||
               (selectedStatus === "Physical Agility Test" &&
                 (patPushups === "" || patSitups === "" || patRun === "")) ||
+              (selectedStatus === "Drug Test" && !drugResult) ||
               (selectedStatus === "Final Interview" &&
                 (fiPatriotism === "" ||
                   fiIntegrity === "" ||
