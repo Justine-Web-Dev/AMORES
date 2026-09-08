@@ -36,14 +36,13 @@ function ApplicantEvaluation({ isInterviewer = false }) {
 
   const statusColors = {
     "New Applicant": "bg-blue-100 text-blue-600",
-    Qualified: "bg-indigo-100 text-indigo-700",
-    Accepted: "bg-emerald-100 text-emerald-700",
-    Disqualifed: "bg-rose-100 text-rose-700",
-    Failed: "bg-rose-100 text-rose-700",
+    "Qualified": "bg-indigo-100 text-indigo-700",
+    "Accepted": "bg-emerald-100 text-emerald-700",
+    "Failed": "bg-rose-100 text-rose-700",
     "Body Mass Index": "bg-blue-50 text-blue-500",
     "Physical Agility Test": "bg-orange-100 text-orange-600",
     "Neuro Examination": "bg-indigo-100 text-indigo-600",
-    Medical: "bg-pink-100 text-pink-600",
+    "Medical": "bg-pink-100 text-pink-600",
     "Drug Test": "bg-amber-100 text-amber-600",
     "Final Interview": "bg-teal-100 text-teal-600",
     "Oath Taking": "bg-emerald-100 text-emerald-600",
