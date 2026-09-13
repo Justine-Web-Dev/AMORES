@@ -667,6 +667,10 @@ def register_applicant_form(request):
     if 'tribe_affiliated' in data: data['tribe'] = data.pop('tribe_affiliated')[0] if isinstance(data['tribe_affiliated'], list) else data.pop('tribe_affiliated')
     if 'address' in data and not data.get('address'):
         data['address'] = 'N/A'
+    if not data.get('quota_type'):
+        settings_obj = SystemSettings.objects.first()
+        if settings_obj and settings_obj.quota_type:
+            data['quota_type'] = settings_obj.quota_type
 
     # Age validation (21 to 30)
     birthdate = data.get('birthdate')
@@ -909,6 +913,7 @@ def retrieve_application_data(request):
       "height": applicant.height,
       "tribe_affiliated": getattr(applicant, 'tribe', ''),
       "tracking_code": application.tracking_code,
+      "quota_type": getattr(applicant, 'quota_type', ''),
       "documents": ApplicantDocumentSerializer(applicant.documents.all(), many=True).data
     }
     

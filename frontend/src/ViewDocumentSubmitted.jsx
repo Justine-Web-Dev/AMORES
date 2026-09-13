@@ -14,6 +14,7 @@ const DOC_LABELS = {
   NAPOLCOM: 'Napolcom Entrance Rating',
   PD907: 'PD907 (Honor Graduate)',
   CS_PROF: 'CS Professional Eligibility',
+  ATTRITION_DOC: 'Attrition Certificate / Endorsement',
   // Legacy
   PSA: 'PSA Birth Certificate',
   SCHOLASTIC: 'Scholastic Records',
@@ -41,6 +42,11 @@ const SECTIONS = [
     title: '4. Eligibilities',
     keys: ['PRC', 'NAPOLCOM', 'PD907', 'CS_PROF', 'ELIGIBILITY'],
     fallbackLabels: ['PRC License', 'Napolcom Entrance Rating', 'PD907 (Honor Graduate)', 'CS Professional Eligibility'],
+  },
+  {
+    title: '5. Attrition Requirement',
+    keys: ['ATTRITION_DOC'],
+    fallbackLabels: ['Attrition Certificate / Endorsement'],
   },
 ]
 

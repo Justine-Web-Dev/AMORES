@@ -6,6 +6,20 @@ import ApplicationLocked from "../../Modals/ApplicationLocked";
 // --- CONFIGURATION SCHEMA ---
 const DOC_SECTIONS = [
   {
+    title: "Attrition Requirement",
+    subtitle: "Required document for Attrition quota applicants:",
+    gridCols: "md:grid-cols-2",
+    quotaFilter: "Attrition",
+    items: [
+      {
+        key: "attritionDoc",
+        label: "Attrition Certificate / Endorsement (PDF)",
+        backendType: "ATTRITION_DOC",
+        required: true,
+      },
+    ],
+  },
+  {
     title: "Identity Documents",
     gridCols: "md:grid-cols-2",
     items: [
@@ -343,17 +357,40 @@ export default function DocumentSubmission({ isApplicationOpen }) {
     }
   }, []);
 
-  const isFormValid = useMemo(() => {
-    const requiredSatisfied = ALL_DOC_CONFIGS.filter((c) => c.required).every(
-      (c) => Boolean(documents[c.key]),
-    );
+  const activeDocSections = useMemo(() => {
+    let quotaTypeVal = formData.quota_type;
+    if (!quotaTypeVal) {
+      try {
+        const saved = localStorage.getItem("applicationFormData");
+        if (saved) {
+          quotaTypeVal = JSON.parse(saved).quota_type;
+        }
+      } catch (e) {}
+    }
+    const targetQuota = (quotaTypeVal || "").toLowerCase();
+    return DOC_SECTIONS.filter((section) => {
+      if (section.quotaFilter) {
+        return targetQuota.includes(section.quotaFilter.toLowerCase());
+      }
+      return true;
+    });
+  }, [formData.quota_type]);
 
-    const eligibilitySatisfied = ALL_DOC_CONFIGS.filter(
-      (c) => c.group === "eligibility",
-    ).some((c) => Boolean(documents[c.key]));
+  const activeDocConfigs = useMemo(() => {
+    return activeDocSections.flatMap((s) => s.items);
+  }, [activeDocSections]);
+
+  const isFormValid = useMemo(() => {
+    const requiredSatisfied = activeDocConfigs
+      .filter((c) => c.required)
+      .every((c) => Boolean(documents[c.key]));
+
+    const eligibilitySatisfied = activeDocConfigs
+      .filter((c) => c.group === "eligibility")
+      .some((c) => Boolean(documents[c.key]));
 
     return requiredSatisfied && eligibilitySatisfied;
-  }, [documents]);
+  }, [documents, activeDocConfigs]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -378,18 +415,20 @@ export default function DocumentSubmission({ isApplicationOpen }) {
       const applicantId = data.id;
       const code = data.tracking_code;
 
-      const uploadQueue = ALL_DOC_CONFIGS.filter(
-        (cfg) => documents[cfg.key] && !documents[cfg.key]?.isExisting,
-      ).map((cfg) => {
-        const body = new FormData();
-        body.append("applicant", applicantId);
-        body.append("document_type", cfg.backendType);
-        body.append("file", documents[cfg.key]);
+      const uploadQueue = activeDocConfigs
+        .filter(
+          (cfg) => documents[cfg.key] && !documents[cfg.key]?.isExisting,
+        )
+        .map((cfg) => {
+          const body = new FormData();
+          body.append("applicant", applicantId);
+          body.append("document_type", cfg.backendType);
+          body.append("file", documents[cfg.key]);
 
-        return api.post("users/upload-document/", body, {
-          headers: { "Content-Type": "multipart/form-data" },
+          return api.post("users/upload-document/", body, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
         });
-      });
 
       if (uploadQueue.length > 0) {
         await Promise.all(uploadQueue);
@@ -451,7 +490,7 @@ export default function DocumentSubmission({ isApplicationOpen }) {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
-          {DOC_SECTIONS.map((section, idx) => (
+          {activeDocSections.map((section, idx) => (
             <div key={idx} className="space-y-4">
               <div>
                 <h2 className="text-lg font-semibold text-gray-800 border-l-4 border-[#2C2D86] pl-2">

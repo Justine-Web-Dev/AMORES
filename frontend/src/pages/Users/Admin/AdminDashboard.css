@@ -217,6 +217,10 @@ body.user-management-page-active {
   border-left-color: #14B8A6;
 }
 
+.admin-summary-card.cbi {
+  border-left-color: #6366F1;
+}
+
 .stat-card-container .total-applicants {
   border-left-color: #4A4DB8;
 }

@@ -21,8 +21,8 @@ function TrackApplication() {
     "Body Mass Index": "bg-blue-50 text-blue-500",
     "Physical Agility Test": "bg-orange-100 text-orange-600",
     "Neuro Examination": "bg-indigo-100 text-indigo-600",
-    Medical: "bg-pink-100 text-pink-600",
     "Drug Test": "bg-amber-100 text-amber-600",
+    "Complete Background Investigation": "bg-indigo-100 text-indigo-600",
     "Final Interview": "bg-teal-100 text-teal-600",
     "Oath Taking": "bg-emerald-100 text-emerald-600",
   };
@@ -35,6 +35,7 @@ function TrackApplication() {
     "Neuro Examination",
     "Medical",
     "Drug Test",
+    "Complete Background Investigation",
     "Final Interview",
     "Oath Taking",
   ];
@@ -54,8 +55,17 @@ function TrackApplication() {
     if (
       application.drug_test_result != null &&
       application.final_interview_score == null
-    )
+    ) {
+      // If we are here and CBI is present or absent, we just return CBI as a default if it's the current failed status.
+      // But we can check if they are failed at Drug Test. The backend doesn't save a specific CBI result, 
+      // so if they failed after Drug Test and before Final Interview, we can check `status` or just default.
+      if (application.status === "Failed" || application.status === "Rejected") {
+        if (application.rejection_reason && application.rejection_reason.toLowerCase().includes("background")) {
+          return "Complete Background Investigation";
+        }
+      }
       return "Drug Test";
+    }
     if (
       application.medical_result != null &&
       application.drug_test_result == null
@@ -158,6 +168,8 @@ function TrackApplication() {
       isPassed = true;
     } else if (application.status === "Medical" && application.medical_result && application.medical_result.toLowerCase().includes("pass")) {
       isPassed = true;
+    } else if (application.status === "Complete Background Investigation") {
+      stage = "Complete Background Investigation";
     } else if (application.status === "Drug Test" && application.drug_test_result && application.drug_test_result !== "Positive") {
       isPassed = true;
     } else if (application.status === "Final Interview" && application.final_interview_score && parseFloat(application.final_interview_score) >= 75) {
@@ -300,12 +312,14 @@ function TrackApplication() {
                                   : stage === "Neuro Examination"
                                     ? "Neuro"
                                     : stage === "Drug Test"
-                                      ? "Drug"
-                                      : stage === "Final Interview"
-                                        ? "Final"
-                                        : stage === "Oath Taking"
-                                          ? "Oath"
-                                          : stage}
+                                      ? "Laboratory Screening"
+                                      : stage === "Complete Background Investigation"
+                                        ? "Background Check"
+                                        : stage === "Final Interview"
+                                          ? "Final"
+                                          : stage === "Oath Taking"
+                                            ? "Oath"
+                                            : stage}
                       </span>
                     </div>
                   );

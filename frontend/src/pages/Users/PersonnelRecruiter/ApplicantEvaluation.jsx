@@ -20,6 +20,7 @@ import {
 import "./ApplicantEval.css";
 import MessageModal from "../../../Modals/MessageModal";
 import StatusManagement from "./StatusManagement";
+import ConfirmRecoModal from "../../../Modals/ConfirmRecoModal";
 
 function ApplicantEvaluation({ isInterviewer = false }) {
   const pageRef = useRef(null);
@@ -50,7 +51,8 @@ function ApplicantEvaluation({ isInterviewer = false }) {
 
   const [applicantInfo, setApplicantInfo] = useState([]);
   const [open, setOpen] = useState(null);
-
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [applicantToConfirm, setApplicantToConfirm] = useState(null);
   const scrollRef = useRef(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
@@ -188,6 +190,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
         "Neuro Examination",
         "Medical",
         "Drug Test",
+        "Complete Background Investigation",
         "Final Interview",
         "Oath Taking",
         "Accepted",
@@ -239,6 +242,12 @@ function ApplicantEvaluation({ isInterviewer = false }) {
     ),
     "Drug Test": (
       <HiOutlineBeaker
+        className="inline-block mr-1 align-text-bottom"
+        size={16}
+      />
+    ),
+    "Complete Background Investigation": (
+      <HiOutlineClipboardCheck
         className="inline-block mr-1 align-text-bottom"
         size={16}
       />
@@ -373,7 +382,8 @@ function ApplicantEvaluation({ isInterviewer = false }) {
     if (statusFilter === "Qualified") nextStatus = "Body Mass Index";
     else if (statusFilter === "Body Mass Index") nextStatus = "Physical Agility Test";
     else if (statusFilter === "Physical Agility Test") nextStatus = "Neuro Examination";
-    else if (statusFilter === "Drug Test") nextStatus = "Final Interview";
+    else if (statusFilter === "Drug Test") nextStatus = "Complete Background Investigation";
+    else if (statusFilter === "Complete Background Investigation") nextStatus = "Final Interview";
 
     setIsSavingSchedule(true);
     try {
@@ -411,6 +421,37 @@ function ApplicantEvaluation({ isInterviewer = false }) {
       });
     } finally {
       setIsSavingSchedule(false);
+    }
+  };
+
+  const handleUpdateRecommendation = async (applicant, isRecommended) => {
+    try {
+      const dataToSend = {
+        pat_pushups_passed: isRecommended,
+        pat_situps_passed: isRecommended,
+        pat_run_passed: isRecommended,
+      };
+      
+      if (!isRecommended) {
+        dataToSend.status = "Failed";
+        dataToSend.rejection_reason = "Failed Physical Agility Test requirements.";
+      }
+      
+      await api.put(`users/update_status/${applicant.id}/`, dataToSend);
+      setScheduleMessageConfig({
+        isOpen: true,
+        type: "success",
+        message: `Applicant successfully marked as ${isRecommended ? "Recommended" : "Not Recommended"}.`,
+      });
+      setOpen(null);
+      fetchInfo(true);
+    } catch (err) {
+      console.error("Failed to update recommendation:", err);
+      setScheduleMessageConfig({
+        isOpen: true,
+        type: "error",
+        message: "Failed to update recommendation. Please try again.",
+      });
     }
   };
 
@@ -487,6 +528,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
     if (statusFilter === "Body Mass Index") return applicant.bmi_weight != null;
     if (statusFilter === "Physical Agility Test") return applicant.pat_pushups != null;
     if (statusFilter === "Drug Test") return applicant.drug_test_result != null;
+    if (statusFilter === "Complete Background Investigation") return true;
     return false;
   };
 
@@ -499,6 +541,10 @@ function ApplicantEvaluation({ isInterviewer = false }) {
         if (sortBy === "batch1" && applicant.batch !== 1 && applicant.batch !== "B1")
           return false;
         if (sortBy === "batch2" && applicant.batch !== 2 && applicant.batch !== "B2")
+          return false;
+        if (sortBy === "attrition" && (applicant.quota_type || "").toLowerCase() !== "attrition")
+          return false;
+        if (sortBy === "regular" && (applicant.quota_type || "").toLowerCase() === "attrition")
           return false;
 
         const fullName =
@@ -537,6 +583,18 @@ function ApplicantEvaluation({ isInterviewer = false }) {
           return (a.batch || 0) - (b.batch || 0);
         } else if (sortBy === "batch2") {
           return (b.batch || 0) - (a.batch || 0);
+        } else if (sortBy === "attrition") {
+          const isA = (a.quota_type || "").toLowerCase() === 'attrition';
+          const isB = (b.quota_type || "").toLowerCase() === 'attrition';
+          if (isA && !isB) return -1;
+          if (!isA && isB) return 1;
+          return 0;
+        } else if (sortBy === "regular") {
+          const isA = (a.quota_type || "").toLowerCase() !== 'attrition';
+          const isB = (b.quota_type || "").toLowerCase() !== 'attrition';
+          if (isA && !isB) return -1;
+          if (!isA && isB) return 1;
+          return 0;
         }
         return 0;
       });
@@ -754,9 +812,11 @@ function ApplicantEvaluation({ isInterviewer = false }) {
             <option value="name">Sort by Name</option>
             <option value="batch1">Sort by Batch 1</option>
             <option value="batch2">Sort by Batch 2</option>
+            <option value="attrition">Sort by Attrition</option>
+            <option value="regular">Sort by Regular</option>
           </select>
 
-          {["Qualified", "Body Mass Index", "Physical Agility Test", "Drug Test"].includes(statusFilter) && (
+          {["Qualified", "Body Mass Index", "Physical Agility Test", "Drug Test", "Complete Background Investigation"].includes(statusFilter) && (
             <select
               value={selectionLimit}
               onChange={(e) => setSelectionLimit(e.target.value)}
@@ -771,7 +831,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
             </select>
           )}
 
-          {(["Qualified", "Body Mass Index", "Physical Agility Test", "Drug Test"].includes(statusFilter) ||
+          {(["Qualified", "Body Mass Index", "Physical Agility Test", "Drug Test", "Complete Background Investigation"].includes(statusFilter) ||
             (isInterviewer && statusFilter === "Final Interview")) && (
             <div className="flex items-center gap-2 border-l border-gray-300 pl-4 h-[38px] next-step-schedule-container">
               <div className="flex items-center gap-1.5">
@@ -783,8 +843,10 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                       : statusFilter === "Body Mass Index" 
                         ? "PAT Date:" 
                         : statusFilter === "Drug Test"
-                          ? "Final Interview Date:"
-                          : "Next Step Date:"}
+                          ? "CBI Date:"
+                          : statusFilter === "Complete Background Investigation"
+                            ? "Final Interview Date:"
+                            : "Next Step Date:"}
                 </label>
                 <input
                   type="date"
@@ -932,6 +994,9 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                 <th scope="col" className="th text-center">
                   Batch
                 </th>
+                <th scope="col" className="th text-center">
+                  Quota
+                </th>
                 <th scope="col" className="th">
                   Actions
                 </th>
@@ -1028,8 +1093,15 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                     <td>{applicant.date_graduated}</td>
 
                     <td>{applicant.created_at}</td>
-                    <td className="font-bold text-[#2C2D86]">
+                    <td className="font-bold text-[#2C2D86] text-center">
                       B{applicant.batch || 1}
+                    </td>
+                    <td className="text-center font-medium">
+                      {(applicant.quota_type || "").toLowerCase() === 'attrition' ? (
+                        <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs font-semibold">Attrition</span>
+                      ) : (
+                        <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-semibold">Regular</span>
+                      )}
                     </td>
                     <td className="px-4 py-4 text-center">
                       <div className="relative inline-block text-left action-dropdown-container">
@@ -1044,31 +1116,52 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                         </button>
 
                         {open === applicant.id && (
-                          <div className="absolute top-full right-0 mt-2 z-[9999] w-40 bg-white shadow-lg border border-gray-100 rounded-md actions">
+                          <div className="absolute top-full right-0 mt-2 z-[9999] w-45 bg-white shadow-lg border border-gray-100 rounded-md actions">
                             <ul className="flex flex-col text-[14px] gap-[5px]">
-                            <h1 className="font-bold text-black border-b pb-1 border-gray-200 action-title">
-                              Actions
-                            </h1>
-                            <button
-                              onClick={() =>
-                                navigate(`../view-details/${applicant.id}`)
-                              }
-                              className="text-left px-2 py-1 cursor-pointer view-details-btn-action"
-                            >
-                              View Details
-                            </button>
-                            <button
-                              onClick={() => {
-                                setEvaluatingApplicant(applicant);
-                                setOpen(null);
-                              }}
-                              className="text-left cursor-pointer view-details-btn-action"
-                            >
-                              Evaluate
-                            </button>
-                          </ul>
-                        </div>
-                      )}
+                              <h1 className="font-bold text-black border-b pb-1 border-gray-200 action-title">
+                                Actions
+                              </h1>
+                              {statusFilter === "Physical Agility Test" && isEvaluated(applicant) ? (
+                                <>
+                                  <button
+                                    onClick={() => {
+                                      setApplicantToConfirm(applicant);
+                                      setConfirmModalOpen(true);
+                                      setOpen(null);
+                                    }}
+                                    className="text-left px-2 py-1 cursor-pointer view-details-btn-action text-[#2C2D86] hover:bg-[#2C2D86]/10"
+                                  >
+                                    Recommended
+                                  </button>
+                                  <button
+                                    onClick={() => handleUpdateRecommendation(applicant, false)}
+                                    className="text-left px-2 py-1 cursor-pointer view-details-btn-action not-recommended-btn text-red-600 whitespace-nowrap"
+                                  >
+                                    Not Recommended
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  <button
+                                    onClick={() => navigate(`../view-details/${applicant.id}`)}
+                                    className="text-left px-2 py-1 cursor-pointer view-details-btn-action"
+                                  >
+                                    View Details
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setEvaluatingApplicant(applicant);
+                                      setOpen(null);
+                                    }}
+                                    className="text-left cursor-pointer view-details-btn-action"
+                                  >
+                                    Evaluate
+                                  </button>
+                                </>
+                              )}
+                            </ul>
+                          </div>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -1093,8 +1186,6 @@ function ApplicantEvaluation({ isInterviewer = false }) {
           </table>
         </div>
       </div>
-
-
 
       {scheduleModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-500/20 backdrop-blur-sm">
@@ -1215,6 +1306,8 @@ function ApplicantEvaluation({ isInterviewer = false }) {
           <HiArrowDown size={24} />
         </button>
       </div>
+
+      {confirmModalOpen && <ConfirmRecoModal setConfirmModalOpen={setConfirmModalOpen} applicantToConfirm={applicantToConfirm} handleUpdateRecommendation={handleUpdateRecommendation} />}
 
       <MessageModal
         isOpen={scheduleMessageConfig.isOpen}

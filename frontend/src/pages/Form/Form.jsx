@@ -31,6 +31,7 @@ function Form({ isApplicationOpen }) {
     height: "",
     tribe_affiliated: "",
     tracking_code: "",
+    quota_type: "",
   });
   const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -63,6 +64,7 @@ function Form({ isApplicationOpen }) {
 
   // Load saved form data from localStorage on mount
   useEffect(() => {
+
     const savedFormData = localStorage.getItem("applicationFormData");
     if (savedFormData) {
       try {
@@ -79,7 +81,11 @@ function Form({ isApplicationOpen }) {
             parsed[f] = "";
           }
         });
-        setFormData(parsed);
+        setFormData((prev) => ({
+          ...prev,
+          ...parsed,
+          quota_type: parsed.quota_type || prev.quota_type,
+        }));
       } catch (err) {
         console.error("Error loading saved form data:", err);
       }
@@ -166,8 +172,10 @@ function Form({ isApplicationOpen }) {
       });
 
       window.scrollTo(0, 0);
+      const savedLocal = JSON.parse(localStorage.getItem("applicationFormData") || "{}");
+      const submissionFormData = { ...formData, ...savedLocal };
       navigate("../document-submission", {
-        state: { formData },
+        state: { formData: submissionFormData },
         relative: "path",
       });
     } catch (error) {
@@ -221,6 +229,7 @@ function Form({ isApplicationOpen }) {
       height: "",
       tribe_affiliated: "",
       tracking_code: "",
+      quota_type: ""
     };
     setFormData(emptyForm);
     localStorage.removeItem("applicationFormData");
@@ -266,6 +275,7 @@ function Form({ isApplicationOpen }) {
     "pag_ibig_number",
     "phil_health_id_num",
     "height",
+    "quota_type"
   ];
 
   const isFormValid = requiredFields.every((key) => {
@@ -350,7 +360,25 @@ function Form({ isApplicationOpen }) {
           </div>
         </div>
 
-        {/* SECTION 1: Personal Details */}
+        {/* SECTION 1: Quota & Personal Details */}
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold text-gray-800 border-l-4 border-[#2C2D86] pl-2">
+            Types of Quota
+          </h2>
+          <select
+            name="quota_type"
+            id="quota_type"
+            value={formData.quota_type || ""}
+            onChange={handleChange}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2C2D86] transition cursor-pointer"
+            required
+          >
+            <option value="" disabled>Select Quota Type</option>
+            <option value="Attrition">Attrition</option>
+            <option value="Regular">Regular</option>
+          </select>
+        </div>
+
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-gray-800 border-l-4 border-[#2C2D86] pl-2">
             Personal Details

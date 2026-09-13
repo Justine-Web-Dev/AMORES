@@ -81,6 +81,11 @@ class User(AbstractUser):
         return f"{self.name} ({self.email})"
 
 class Applicant(models.Model):
+    QuotaType_Choices = [
+        ('Attrition','Attrition'),
+        ('Regular','Regular')
+    ]
+
     first_name = models.CharField(max_length=100, verbose_name="First Name")
     last_name = models.CharField(max_length=100, verbose_name="Last Name")
     middle_name = models.CharField(max_length=100, blank=True, verbose_name="Middle Name")
@@ -106,6 +111,9 @@ class Applicant(models.Model):
     tribe = models.CharField(max_length=100, null=True, blank=True, default='N/A', verbose_name="Tribe Affiliation")
     
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date Registered")
+
+    #Quota Type
+    quota_type = models.CharField(max_length=50, choices=QuotaType_Choices, null=True, blank=True, verbose_name="Quota Type")
 
     # Adding is_reapplied field to track if the applicant has re-applied
     is_reapplied = models.BooleanField(default=False)
@@ -141,6 +149,7 @@ class Application(models.Model):
         ('Neuro Examination', 'Neuro Examination'),
         ('Medical', 'Medical'),
         ('Drug Test', 'Drug Test'),
+        ('Complete Background Investigation', 'Complete Background Investigation'),
         ('Final Interview', 'Final Interview'),
         ('Oath Taking', 'Oath Taking'),
     ]
@@ -220,6 +229,8 @@ class ApplicantDocument(models.Model):
         ('NAPOLCOM', 'Napolcom Entrance Rating'),
         ('PD907', 'PD907 (Honor Graduate)'),
         ('CS_PROF', 'CS Professional Eligibility'),
+        # Attrition
+        ('ATTRITION_DOC', 'Attrition Certificate / Endorsement'),
         # Legacy / broad categories (for backward compatibility)
         ('PSA', 'PSA Birth Certificate'),
         ('ELIGIBILITY', 'Eligibilities'),

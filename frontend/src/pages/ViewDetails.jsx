@@ -26,6 +26,7 @@ function ViewDetails() {
       "Neuro Examination": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-indigo-100 text-indigo-600",
       "Medical": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-pink-100 text-pink-600",
       "Drug Test": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-amber-100 text-amber-600",
+      "Complete Background Investigation": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-indigo-100 text-indigo-600",
       "Final Interview": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-teal-100 text-teal-600",
       "Oath Taking": "inline-block mt-2 px-3 py-1 text-xs rounded-full font-semibold bg-emerald-100 text-emerald-600",
     };
@@ -74,6 +75,11 @@ function ViewDetails() {
                 <span className={`${statusColors[applicant.status]} status-detail-text`}>
                   {applicant.status}
                 </span>
+                {applicant.quota_type && (
+                  <span className="bg-blue-100 text-blue-700 px-3 py-1 text-xs rounded-full font-bold shadow-sm mt-2">
+                    {applicant.quota_type}
+                  </span>
+                )}
                 <span className="bg-[#2C2D86] text-white px-3 py-1 text-xs rounded-full font-black shadow-sm mt-2">
                   BATCH {applicant.batch || 1}
                 </span>

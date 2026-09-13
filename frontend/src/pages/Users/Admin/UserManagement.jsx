@@ -268,7 +268,7 @@ function UserManagement() {
                       </button>
 
                       {open === user.id && (
-                        <div className="absolute top-full right-0 mt-2 z-[9999] w-40 bg-white shadow-lg border border-gray-100 rounded-md actions">
+                        <div className="absolute top-full right-0 mt-2 z-[9999] w-52 bg-white shadow-lg border border-gray-100 rounded-md actions">
                           <ul className="flex flex-col text-[14px] gap-[5px]">
                             <h1 className="font-bold text-black border-b pb-1 border-gray-200 action-title">
                               Actions

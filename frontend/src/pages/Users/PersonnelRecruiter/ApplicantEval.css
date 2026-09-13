@@ -23,6 +23,12 @@
   border-radius: 4px;
   color: white;
 }
+.not-recommended-btn:hover{
+  background-color: transparent !important;
+  border: 1.5px solid #ef4444 !important;
+  border-radius: 4px;
+  color: #dc2626 !important;
+}
 .update-status-btn-action:hover{
     background-color: #2C2D86;
   border: none;

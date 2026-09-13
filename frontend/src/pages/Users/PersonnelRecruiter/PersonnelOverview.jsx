@@ -25,6 +25,7 @@ import {
   FiUsers,
   FiRefreshCw,
 } from "react-icons/fi";
+import { HiOutlineClipboardCheck } from "react-icons/hi";
 
 function PersonnelOverview() {
   const navigate = useNavigate();
@@ -137,6 +138,8 @@ function PersonnelOverview() {
         statuses["Medical"] = (statuses["Medical"] || 0) + 1;
       else if (a.status === "Drug Test")
         statuses["Drug Test"] = (statuses["Drug Test"] || 0) + 1;
+      else if (a.status === "Complete Background Investigation")
+        statuses["Complete Background Investigation"] = (statuses["Complete Background Investigation"] || 0) + 1;
       else if (a.status === "Final Interview" && (a.final_interview_score === null || a.final_interview_score === undefined))
         statuses["Final Interview"] = (statuses["Final Interview"] || 0) + 1;
     });
@@ -189,6 +192,7 @@ function PersonnelOverview() {
       (statuses["Neuro"] || 0) +
       (statuses["Medical"] || 0) +
       (statuses["Drug Test"] || 0) +
+      (statuses["Complete Background Investigation"] || 0) +
       (statuses["Final Interview"] || 0) +
       (statuses["Oath Taking"] || 0) +
       (statuses["Accepted"] || 0);
@@ -196,10 +200,12 @@ function PersonnelOverview() {
       (statuses["Neuro"] || 0) +
       (statuses["Medical"] || 0) +
       (statuses["Drug Test"] || 0) +
+      (statuses["Complete Background Investigation"] || 0) +
       (statuses["Final Interview"] || 0) +
       (statuses["Oath Taking"] || 0) +
       (statuses["Accepted"] || 0);
     const passedMedical =
+      (statuses["Complete Background Investigation"] || 0) +
       (statuses["Final Interview"] || 0) +
       (statuses["Oath Taking"] || 0) +
       (statuses["Accepted"] || 0);
@@ -273,7 +279,8 @@ function PersonnelOverview() {
       { name: "Neuro", status: "Neuro Examination" },
       { name: "Medical", status: "Medical" },
       { name: "Drug Test", status: "Drug Test" },
-      { name: "F. Interview", status: "Final Interview" },
+      { name: "CBI", status: "Complete Background Investigation" },
+      { name: "Final Interview", status: "Final Interview" },
       { name: "Oath Taking", status: "Oath Taking" },
     ];
 
@@ -581,6 +588,25 @@ function PersonnelOverview() {
               </span>
             </div>
           </div>
+
+          <div
+            className="admin-summary-card cbi"
+            onClick={() =>
+              navigate("/PersonnelDashboard/applications", {
+                state: { tab: "Complete Background Investigation" },
+              })
+            }
+            title="View Background Investigation Applicants"
+            style={{ cursor: "pointer" }}
+          >
+            <div className="flex flex-col-reverse items-center">
+              <span className="summary-label">Complete Background Investigation (CBI)</span>
+              <span className="summary-value">
+                {statusCounts["Complete Background Investigation"] || 0}
+              </span>
+            </div>
+          </div>
+
           <div
             className="admin-summary-card final-interview"
             onClick={() =>
@@ -707,9 +733,10 @@ function PersonnelOverview() {
                     BMI: "#3B82F6",
                     PAT: "#F97316",
                     Neuro: "#8B5CF6",
-                    Medical: "#EC4899",
+                    Medical: "#F43F5E",
                     "Drug Test": "#F59E0B",
-                    "Final Interview": "#14B8A6",
+                    "Complete Background Investigation": "#6366F1",
+                    "Final Interview": "#10B981",
                     "Oath Taking": "#1E3A8A",
                   };
                   return (

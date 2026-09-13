@@ -86,7 +86,7 @@ class ApplicantSerializer(serializers.ModelSerializer):
             from rest_framework.validators import UniqueValidator
             for field_name, field in self.fields.items():
                 if hasattr(field, 'validators'):
-                    field.validators = [v for v in field.validators if not isinstance(v, UniqueValidator)]
+                    field.validators = [validator for validator in field.validators if not isinstance(validator, UniqueValidator)]
 
     def validate(self, attrs):
         is_reapply = self.context.get('is_reapply', False)
@@ -186,7 +186,7 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
             'final_interview_score', 'fi_patriotism', 'fi_integrity', 'fi_awareness', 'fi_communication',
             'pat_pushups', 'pat_pushups_passed', 'pat_situps', 
             'pat_situps_passed', 'pat_run', 'pat_run_passed',
-            'is_reapplied', 'is_qualified_evaluated'
+            'is_reapplied', 'is_qualified_evaluated', 'quota_type'
         ]
 
     def get_is_qualified_evaluated(self, obj):

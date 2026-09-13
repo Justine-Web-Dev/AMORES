@@ -317,7 +317,7 @@ function StatusManagement({
           }
         } else if (currentStatus === "Drug Test") {
           if (drugResult === "Negative") {
-            // Stay in Drug Test tab so they can be scheduled for Final Interview
+            // Stay in Drug Test tab so they can be scheduled for Complete Background Investigation
             statusToSave = "Drug Test";
           } else if (drugResult === "Positive") {
             statusToSave = "Failed";
@@ -419,6 +419,7 @@ function StatusManagement({
     "Neuro Examination",
     "Medical",
     "Drug Test",
+    "Complete Background Investigation",
     "Final Interview",
     "Oath Taking",
     "Accepted",

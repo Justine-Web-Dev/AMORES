@@ -13,6 +13,7 @@ const STAGES = [
     { id: 'Neuro Examination', title: 'Neuro', icon: <HiOutlineChatAlt2 />, colorClass: 'column-psych' },
     { id: 'Medical', title: 'Medical', icon: <HiOutlineClipboardCheck />, colorClass: 'column-medical' },
     { id: 'Drug Test', title: 'Drug Test', icon: <HiOutlineClipboardCheck />, colorClass: 'column-drug' },
+    { id: 'Complete Background Investigation', title: 'Background Investigation', icon: <HiOutlineClipboardCheck />, colorClass: 'column-drug' },
     { id: 'Final Interview', title: 'Final Interview', icon: <HiOutlineBadgeCheck />, colorClass: 'column-final' },
     { id: 'Oath Taking', title: 'Oath Taking', icon: <HiOutlineBadgeCheck />, colorClass: 'column-oath' },
     { id: 'Accepted', title: 'Accepted', icon: <HiOutlineBadgeCheck />, colorClass: 'column-accepted' },
@@ -56,6 +57,7 @@ function TrackingScreening() {
             case 'Neuro Examination': return 'card-psych';
             case 'Medical': return 'card-medical';
             case 'Drug Test': return 'card-drug';
+            case 'Complete Background Investigation': return 'card-drug';
             case 'Final Interview': return 'card-final';
             case 'Oath Taking': return 'card-oath';
             case 'Rejected': return 'card-rejected';
@@ -102,7 +104,7 @@ function TrackingScreening() {
                                                         Sch: {new Date(applicant.scheduled_date).toLocaleDateString()} {applicant.scheduled_time ? `@ ${applicant.scheduled_time}` : ''}
                                                     </span>
                                                 ) : (
-                                                    ['Body Mass Index', 'Physical Agility Test', 'Neuro Examination', 'Medical', 'Drug Test', 'Final Interview', 'Oath Taking'].includes(stage.id) ? (
+                                                    ['Body Mass Index', 'Physical Agility Test', 'Neuro Examination', 'Medical', 'Drug Test', 'Complete Background Investigation', 'Final Interview', 'Oath Taking'].includes(stage.id) ? (
                                                         <span className="text-gray-500 font-semibold italic">Sch: TBA</span>
                                                     ) : (
                                                         <span>{new Date(applicant.created_at).toLocaleDateString()}</span>
