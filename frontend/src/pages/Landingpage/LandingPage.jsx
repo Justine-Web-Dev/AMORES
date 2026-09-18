@@ -201,7 +201,7 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
                   </div>
                   <div>
                     <h4 className="text-2xl md:text-3xl lg:text-xl xl:text-2xl 2xl:text-3xl font-black tracking-tight text-[#EB612A]">
-                      2,400+
+                      2,400+*
                     </h4>
                     <p className="text-xs text-gray-200 font-medium mt-1">
                       Available regular quotas allocated for qualified
@@ -218,7 +218,7 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
                   </div>
                   <div>
                     <h4 className="text-2xl md:text-3xl lg:text-xl xl:text-2xl 2xl:text-3xl font-black tracking-tight text-[#EB612A]">
-                      16 Regional
+                      16 Regional*
                     </h4>
                     <p className="text-xs text-gray-200 font-medium mt-1">
                       Police Offices actively evaluating documentation channels
@@ -236,7 +236,7 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
                   <div>
                     <h4 className="text-2xl md:text-3xl lg:text-xl xl:text-2xl 2xl:text-3xl font-black tracking-tight text-white uppercase">
                       {startDateObject && endDateObject
-                        ? `${startDateObject.toLocaleString("en-US", { month: "long", day: "numeric" })} - ${endDateObject.toLocaleString("en-US", { month: "long", day: "numeric" })}`
+                        ? `${startDateObject.toLocaleString("en-US", { month: "short", day: "numeric" })} - ${endDateObject.toLocaleString("en-US", { month: "short", day: "numeric" })}`
                         : "TBA"}
                     </h4>
                     <p className="text-xs text-gray-200 font-medium mt-1">

@@ -37,6 +37,7 @@ function PersonnelOverview() {
   const [statusCounts, setStatusCounts] = useState({});
   const [selectedYear, setSelectedYear] = useState("All");
   const [selectedBatch, setSelectedBatch] = useState("All");
+  const [selectedProvince, setSelectedProvince] = useState("All");
   const [years, setYears] = useState([]);
   const [monthlyData, setMonthlyData] = useState([]);
   const [metrics, setMetrics] = useState({
@@ -85,7 +86,7 @@ function PersonnelOverview() {
       ].sort((a, b) => b - a);
 
       setYears(uniqueYears);
-      processMetrics(applicantsData, selectedYear, selectedBatch);
+      processMetrics(applicantsData, selectedYear, selectedBatch, selectedProvince);
     } catch (err) {
       console.error("Error fetching dashboard overview data:", err);
     } finally {
@@ -98,7 +99,7 @@ function PersonnelOverview() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function processMetrics(allData, yearFilter, batchFilter) {
+  function processMetrics(allData, yearFilter, batchFilter, provinceFilter = "All") {
     let data = allData;
     if (yearFilter !== "All") {
       data = data.filter((a) => {
@@ -109,6 +110,13 @@ function PersonnelOverview() {
 
     if (batchFilter !== "All") {
       data = data.filter((a) => String(a.batch) === String(batchFilter));
+    }
+
+    if (provinceFilter !== "All") {
+      data = data.filter((a) => {
+        const norm = (a.province || "").trim().replace(/\b\w/g, c => c.toUpperCase());
+        return norm === provinceFilter;
+      });
     }
 
     setFilteredApplicantCount(data.length);
@@ -261,10 +269,11 @@ function PersonnelOverview() {
     const getTop5 = (attr, excludeOther = false) => {
       const counts = {};
       data.forEach((a) => {
-        const val = a[attr];
-        if (excludeOther && (!val || val === "Other")) return;
-        const finalVal = val || "Other";
-        counts[finalVal] = (counts[finalVal] || 0) + 1;
+        const raw = a[attr];
+        if (excludeOther && (!raw || raw === "Other")) return;
+        const val = raw ? raw.trim().replace(/\b\w/g, c => c.toUpperCase()) : "Other";
+        if (excludeOther && val === "Other") return;
+        counts[val] = (counts[val] || 0) + 1;
       });
       return Object.keys(counts)
         .map((name) => ({ name, count: counts[name] }))
@@ -340,13 +349,28 @@ function PersonnelOverview() {
       setSelectedBatch("All");
     }
 
-    processMetrics(applicants, val, newBatch);
+    processMetrics(applicants, val, newBatch, selectedProvince);
   };
 
   const handleBatchChange = (e) => {
     const val = e.target.value;
     setSelectedBatch(val);
-    processMetrics(applicants, selectedYear, val);
+    processMetrics(applicants, selectedYear, val, selectedProvince);
+  };
+
+  const availableProvinces = useMemo(() => {
+    return [...new Set(
+      applicants
+        .map(a => a.province)
+        .filter(Boolean)
+        .map(p => p.trim().replace(/\b\w/g, c => c.toUpperCase()))
+    )].sort();
+  }, [applicants]);
+
+  const handleProvinceChange = (e) => {
+    const val = e.target.value;
+    setSelectedProvince(val);
+    processMetrics(applicants, selectedYear, selectedBatch, val);
   };
 
   return (
@@ -394,6 +418,22 @@ function PersonnelOverview() {
                 <option key={batch} value={batch}>
                   {batch}
                 </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2 border-t md:border-t-0 pt-2 md:pt-0">
+            <label className="text-xs font-bold text-gray-600 uppercase tracking-tight">
+              Province:
+            </label>
+            <select
+              value={selectedProvince}
+              onChange={handleProvinceChange}
+              className="bg-white border border-gray-200 rounded px-3 py-1.5 text-sm font-medium outline-none focus:ring-2 focus:ring-[#2C2D86] shadow-sm"
+            >
+              <option value="All">All Provinces</option>
+              {availableProvinces.map((prov) => (
+                <option key={prov} value={prov}>{prov}</option>
               ))}
             </select>
           </div>

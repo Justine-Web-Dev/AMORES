@@ -31,6 +31,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
   );
   const [sortBy, setSortBy] = useState("default");
   const [selectionLimit, setSelectionLimit] = useState("300");
+  const [provinceFilter, setProvinceFilter] = useState("All");
   const [evaluatingApplicant, setEvaluatingApplicant] = useState(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -426,15 +427,25 @@ function ApplicantEvaluation({ isInterviewer = false }) {
 
   const handleUpdateRecommendation = async (applicant, isRecommended) => {
     try {
-      const dataToSend = {
-        pat_pushups_passed: isRecommended,
-        pat_situps_passed: isRecommended,
-        pat_run_passed: isRecommended,
-      };
+      const dataToSend = {};
       
-      if (!isRecommended) {
-        dataToSend.status = "Failed";
-        dataToSend.rejection_reason = "Failed Physical Agility Test requirements.";
+      if (statusFilter === "Physical Agility Test") {
+        dataToSend.pat_pushups_passed = isRecommended;
+        dataToSend.pat_situps_passed = isRecommended;
+        dataToSend.pat_run_passed = isRecommended;
+        
+        if (!isRecommended) {
+          dataToSend.status = "Failed";
+          dataToSend.rejection_reason = "Failed Physical Agility Test requirements.";
+        }
+      } else if (statusFilter === "Neuro Examination") {
+        if (isRecommended) {
+          dataToSend.status = "Medical";
+          dataToSend.psychological_result = "Passed (Recommended)";
+        } else {
+          dataToSend.status = "Failed";
+          dataToSend.rejection_reason = "Failed Neuro Examination.";
+        }
       }
       
       await api.put(`users/update_status/${applicant.id}/`, dataToSend);
@@ -552,7 +563,10 @@ function ApplicantEvaluation({ isInterviewer = false }) {
         const matchesSearch = fullName.includes(searchTerm.toLowerCase());
         const matchesStatus =
           statusFilter === "All" || applicant.status === statusFilter;
-        return matchesSearch && matchesStatus;
+        const normalizedProvince = (applicant.province || "").trim().replace(/\b\w/g, c => c.toUpperCase());
+        const matchesProvince =
+          provinceFilter === "All" || normalizedProvince === provinceFilter;
+        return matchesSearch && matchesStatus && matchesProvince;
       })
       .sort((a, b) => {
         const evalA = isEvaluated(a);
@@ -598,7 +612,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
         }
         return 0;
       });
-  }, [applicantInfo, searchTerm, statusFilter, sortBy]);
+  }, [applicantInfo, searchTerm, statusFilter, sortBy, provinceFilter]);
 
   const handleExportExcel = () => {
     const dataForExport = applicantInfo.filter((applicant) => {
@@ -607,7 +621,10 @@ function ApplicantEvaluation({ isInterviewer = false }) {
       const matchesSearch = fullName.includes(searchTerm.toLowerCase());
       const matchesStatus =
         statusFilter === "All" || applicant.status === statusFilter;
-      return matchesSearch && matchesStatus;
+      const normalizedProvince = (applicant.province || "").trim().replace(/\b\w/g, c => c.toUpperCase());
+      const matchesProvince =
+        provinceFilter === "All" || normalizedProvince === provinceFilter;
+      return matchesSearch && matchesStatus && matchesProvince;
     });
 
     const exportData = dataForExport.map((applicant) => {
@@ -658,16 +675,20 @@ function ApplicantEvaluation({ isInterviewer = false }) {
         "BMI Weight (kg)": applicant.bmi_weight || "N/A",
         "BMI Result": applicant.bmi_result || "N/A",
         "PAT Score (%)": applicant.pat_score || "N/A",
-        "1-Min Push UPS":
+        "1-Min Push-Ups":
           applicant.pat_pushups !== null
-            ? `${applicant.pat_pushups} (${applicant.pat_pushups_passed ? "PASSED" : "FAILED"})`
+            ? `${applicant.pat_pushups} (${applicant.pat_pushups_passed || (parseInt(applicant.pat_pushups, 10) >= 30) ? "PASSED" : "FAILED"})`
             : "N/A",
-        "1-Min Sit-On":
+        "1-Min Sit-Ups":
           applicant.pat_situps !== null
-            ? `${applicant.pat_situps} (${applicant.pat_situps_passed ? "PASSED" : "FAILED"})`
+            ? `${applicant.pat_situps} (${applicant.pat_situps_passed || (parseInt(applicant.pat_situps, 10) >= 30) ? "PASSED" : "FAILED"})`
             : "N/A",
         "3K Run": applicant.pat_run
-          ? `${applicant.pat_run} (${applicant.pat_run_passed ? "PASSED" : "FAILED"})`
+          ? `${applicant.pat_run} (${applicant.pat_run_passed || (() => {
+              const parts = String(applicant.pat_run).split(":");
+              let totalSeconds = parts.length === 2 ? parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10) : parseFloat(applicant.pat_run) * 60;
+              return !isNaN(totalSeconds) && totalSeconds > 0 && totalSeconds <= 900;
+            })() ? "PASSED" : "FAILED"})`
           : "N/A",
         "Neuro/Psych Results": applicant.psychological_result || "N/A",
         "Medical Findings": applicant.medical_result || "N/A",
@@ -816,22 +837,36 @@ function ApplicantEvaluation({ isInterviewer = false }) {
             <option value="regular">Sort by Regular</option>
           </select>
 
-          {["Qualified", "Body Mass Index", "Physical Agility Test", "Drug Test", "Complete Background Investigation"].includes(statusFilter) && (
+          <select
+            value={provinceFilter}
+            onChange={(e) => setProvinceFilter(e.target.value)}
+            className="sort-select"
+          >
+            <option value="All">All Provinces</option>
+            {[...new Set(
+              applicantInfo
+                .map(app => app.province)
+                .filter(Boolean)
+                .map(p => p.trim().replace(/\b\w/g, c => c.toUpperCase()))
+            )].sort().map(prov => (
+              <option key={prov} value={prov}>{prov}</option>
+            ))}
+          </select>
+
+          {["Qualified", "Body Mass Index", "Physical Agility Test", "Complete Background Investigation"].includes(statusFilter) && (
             <select
               value={selectionLimit}
               onChange={(e) => setSelectionLimit(e.target.value)}
               className="sort-select"
             >
               <option value="All">Applicant Limit: All</option>
-              <option value="100">Applicant Limit: 100</option>
-              <option value="200">Applicant Limit: 200</option>
               <option value="300">Applicant Limit: 300</option>
               <option value="400">Applicant Limit: 400</option>
               <option value="500">Applicant Limit: 500</option>
             </select>
           )}
 
-          {(["Qualified", "Body Mass Index", "Physical Agility Test", "Drug Test", "Complete Background Investigation"].includes(statusFilter) ||
+          {(["Qualified", "Body Mass Index", "Physical Agility Test", "Complete Background Investigation"].includes(statusFilter) ||
             (isInterviewer && statusFilter === "Final Interview")) && (
             <div className="flex items-center gap-2 border-l border-gray-300 pl-4 h-[38px] next-step-schedule-container">
               <div className="flex items-center gap-1.5">
@@ -1121,7 +1156,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                               <h1 className="font-bold text-black border-b pb-1 border-gray-200 action-title">
                                 Actions
                               </h1>
-                              {statusFilter === "Physical Agility Test" && isEvaluated(applicant) ? (
+                              {(statusFilter === "Physical Agility Test" && isEvaluated(applicant)) || statusFilter === "Neuro Examination" ? (
                                 <>
                                   <button
                                     onClick={() => {
@@ -1188,7 +1223,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
       </div>
 
       {scheduleModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-500/20 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-500/20">
           <div className="bg-white rounded-lg p-6 w-full max-w-lg shadow-2xl border border-gray-100 transform transition-all text-left">
             <h3 className="text-lg font-bold text-gray-900 border-b border-gray-200 pb-3 mb-4">
               Select Applicant to Schedule
@@ -1247,7 +1282,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
       )}
 
       {evaluatingApplicant && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-500/20 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-500/20 p-4">
           <div className="bg-white rounded-lg w-full max-w-2xl shadow-2xl border border-gray-100 transform transition-all text-left relative flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center px-6 py-5 border-b border-gray-200 bg-white rounded-t-lg z-20 shrink-0">
               <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 m-0">

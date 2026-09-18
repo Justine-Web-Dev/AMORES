@@ -16,6 +16,7 @@ from .utils import (
 )
 from .services import evaluate_initial_application_status
 from .screening import evaluate_initial_application_status
+from .audit_logger import log_action
 from rest_framework.decorators import api_view, parser_classes
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -1455,7 +1456,7 @@ def anonymize_applicant(request):
         applicant.phil_health_id_num = f"ANON-{applicant.id}"
         applicant.save()
         
-        log_action(request.user, "APPLICANT_ANONYMIZE", f"Anonymized applicant {old_name} (ID: {applicant_id})", request, target_resource="Applicant")
+        log_action(request.user, "APPLICANT_ANONYMIZE", f"Anonymized applicant {old_name} (ID: {applicant_id})", target_resource="Applicant")
         return Response({"message": "Applicant data has been scrubbed successfully."}, status=status.HTTP_200_OK)
     except Applicant.DoesNotExist:
         return Response({"error": "Applicant not found."}, status=status.HTTP_404_NOT_FOUND)
@@ -1467,7 +1468,7 @@ def export_applicant_data(request, applicant_id):
         applicant = Applicant.objects.get(id=applicant_id)
         serializer = ApplicantSerializer(applicant)
         
-        log_action(request.user, "APPLICANT_EXPORT", f"Exported data for applicant (ID: {applicant_id})", request, target_resource="Applicant")
+        log_action(request.user, "APPLICANT_EXPORT", f"Exported data for applicant (ID: {applicant_id})", target_resource="Applicant")
         return Response(serializer.data, status=status.HTTP_200_OK)
     except Applicant.DoesNotExist:
         return Response({"error": "Applicant not found."}, status=status.HTTP_404_NOT_FOUND)

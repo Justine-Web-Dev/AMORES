@@ -57,9 +57,6 @@ function StatusManagement({
 
   const [schDate, setSchDate] = useState(applicantData?.scheduled_date || "");
   const [schTime, setSchTime] = useState(applicantData?.scheduled_time || "");
-  const [drugResult, setDrugResult] = useState(
-    applicantData?.drug_test_result || "",
-  );
   const [bmiHeight, setBmiHeight] = useState(applicantData?.bmi_height || "");
   const [bmiWeight, setBmiWeight] = useState(applicantData?.bmi_weight || "");
   const [patPushups, setPatPushups] = useState(
@@ -85,6 +82,9 @@ function StatusManagement({
   );
   const [medicalResult, setMedicalResult] = useState(
     applicantData?.medical_result || "",
+  );
+  const [drugResult, setDrugResult] = useState(
+    applicantData?.drug_test_result || "",
   );
 
   // Final Interview detailed fields
@@ -143,8 +143,6 @@ function StatusManagement({
       setSchDate(applicantData.scheduled_date || "");
       setSchTime(applicantData.scheduled_time || "");
 
-      setDrugResult(applicantData.drug_test_result || "");
-
       setBmiHeight(applicantData.bmi_height || "");
       setBmiWeight(applicantData.bmi_weight || "");
       setPatPushups(applicantData.pat_pushups || "");
@@ -167,6 +165,7 @@ function StatusManagement({
       setPsychologicalResult(applicantData.psychological_result || "");
 
       setMedicalResult(applicantData.medical_result || "");
+      setDrugResult(applicantData.drug_test_result || "");
 
       setFinalInterviewScore(applicantData.final_interview_score || "");
       setFiPatriotism(applicantData.fi_patriotism ?? "");
@@ -275,6 +274,22 @@ function StatusManagement({
       let statusToSave = selectedStatus;
       let finalRejectionReason = rejectionReason;
 
+      const finalPatPushupsPassed = patPushups !== "" ? (parseInt(patPushups, 10) >= 30) : null;
+      const finalPatSitupsPassed = patSitups !== "" ? (parseInt(patSitups, 10) >= 30) : null;
+      let finalPatRunPassed = null;
+      if (patRun !== "") {
+        const parts = patRun.split(":");
+        let totalSeconds = 0;
+        if (parts.length === 2) {
+          totalSeconds = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+        } else {
+          totalSeconds = parseFloat(patRun) * 60;
+        }
+        if (!isNaN(totalSeconds) && totalSeconds > 0) {
+          finalPatRunPassed = totalSeconds <= 900;
+        }
+      }
+
       if (currentStatus === "New Applicant") {
         statusToSave = selectedStatus;
       } else {
@@ -301,27 +316,33 @@ function StatusManagement({
           }
         } else if (currentStatus === "Physical Agility Test") {
           if (
-            patPushupsPassed === false ||
-            patSitupsPassed === false ||
-            patRunPassed === false
+            finalPatPushupsPassed === false ||
+            finalPatSitupsPassed === false ||
+            finalPatRunPassed === false
           ) {
             statusToSave = "Failed";
             const failedEvents = [];
-            if (patPushupsPassed === false) failedEvents.push("Push-Ups");
-            if (patSitupsPassed === false) failedEvents.push("Sit-Ups");
-            if (patRunPassed === false) failedEvents.push("Run");
+            if (finalPatPushupsPassed === false) failedEvents.push("Push-Ups");
+            if (finalPatSitupsPassed === false) failedEvents.push("Sit-Ups");
+            if (finalPatRunPassed === false) failedEvents.push("Run");
             finalRejectionReason = `Failed Physical Agility Test requirements in: ${failedEvents.join(", ")}.`;
           } else {
             // Stay in Physical Agility Test tab so they can be scheduled for Neuro Examination
             statusToSave = "Physical Agility Test";
           }
-        } else if (currentStatus === "Drug Test") {
-          if (drugResult === "Negative") {
-            // Stay in Drug Test tab so they can be scheduled for Complete Background Investigation
-            statusToSave = "Drug Test";
-          } else if (drugResult === "Positive") {
+        } else if (currentStatus === "Neuro Examination") {
+          if (psychologicalResult === "Recommended") {
+            statusToSave = "Medical";
+          } else if (psychologicalResult === "Not Recommended") {
             statusToSave = "Failed";
-            finalRejectionReason = "Positive Drug Test result.";
+            finalRejectionReason = "Failed Neuro Examination.";
+          }
+        } else if (currentStatus === "Drug Test") {
+          if (drugResult === "Passed") {
+            statusToSave = "Complete Background Investigation";
+          } else if (drugResult === "Failed") {
+            statusToSave = "Failed";
+            finalRejectionReason = "Failed Drug Test result.";
           }
         } else if (currentStatus === "Final Interview") {
           const fiScore = getFiComputedScore();
@@ -345,7 +366,6 @@ function StatusManagement({
         rejection_reason:
           statusToSave === "Failed" ? finalRejectionReason : null,
         performed_by: currentUser,
-        drug_test_result: drugResult || null,
         bmi_height: bmiHeight === "" ? null : bmiHeight,
         bmi_weight: bmiWeight === "" ? null : bmiWeight,
         bmi_result:
@@ -356,13 +376,14 @@ function StatusManagement({
               ).toFixed(1)
             : null,
         pat_pushups: patPushups === "" ? null : parseInt(patPushups),
-        pat_pushups_passed: patPushupsPassed,
+        pat_pushups_passed: finalPatPushupsPassed,
         pat_situps: patSitups === "" ? null : parseInt(patSitups),
-        pat_situps_passed: patSitupsPassed,
+        pat_situps_passed: finalPatSitupsPassed,
         pat_run: patRun === "" ? null : patRun,
-        pat_run_passed: patRunPassed,
+        pat_run_passed: finalPatRunPassed,
         psychological_result: psychologicalResult || null,
         medical_result: medicalResult || null,
+        drug_test_result: drugResult || null,
         fi_patriotism: fiPatriotism === "" ? null : parseFloat(fiPatriotism),
         fi_integrity: fiIntegrity === "" ? null : parseFloat(fiIntegrity),
         fi_awareness: fiAwareness === "" ? null : parseFloat(fiAwareness),
@@ -540,14 +561,17 @@ function StatusManagement({
         {selectedStatus === "Neuro Examination" && (
           <div className="pt-2">
             <label className="text-xs font-bold text-gray-500 uppercase">
-              Neuro/Psychological Findings
+              Neuro Remarks
             </label>
-            <textarea
+            <select
               value={psychologicalResult}
               onChange={(e) => setPsychologicalResult(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded mt-1 text-sm min-h-[80px] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
-              placeholder="Enter psychological examination results..."
-            />
+              className="status-option mt-1"
+            >
+              <option value="">Select Remarks</option>
+              <option value="Recommended">Recommended</option>
+              <option value="Not Recommended">Not Recommended</option>
+            </select>
           </div>
         )}
 
@@ -563,6 +587,24 @@ function StatusManagement({
               className="w-full p-2 border border-gray-300 rounded mt-1 text-sm min-h-[80px] focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all"
               placeholder="Enter medical examination findings..."
             />
+          </div>
+        )}
+
+        {/* Drug Test Specific Option */}
+        {selectedStatus === "Drug Test" && (
+          <div className="pt-2">
+            <label className="text-xs font-bold text-gray-500 uppercase">
+              Drug Test Result
+            </label>
+            <select
+              value={drugResult}
+              onChange={(e) => setDrugResult(e.target.value)}
+              className="status-option mt-1"
+            >
+              <option value="">Select Result</option>
+              <option value="Passed">Passed</option>
+              <option value="Failed">Failed</option>
+            </select>
           </div>
         )}
 
@@ -602,23 +644,6 @@ function StatusManagement({
           </div>
         )}
 
-        {/* Drug Test Specific Option */}
-        {selectedStatus === "Drug Test" && (
-          <div className="pt-2">
-            <label className="text-xs font-bold text-gray-500 uppercase">
-              Drug Test Result
-            </label>
-            <select
-              value={drugResult}
-              onChange={(e) => setDrugResult(e.target.value)}
-              className="status-option mt-1"
-            >
-              <option value="">Select Result</option>
-              <option value="Negative">Negative</option>
-              <option value="Positive">Positive</option>
-            </select>
-          </div>
-        )}
       </div>
 
       {selectedStatus === "Failed" && (
@@ -644,8 +669,6 @@ function StatusManagement({
             return applicantData?.bmi_weight != null;
           if (currentStatus === "Physical Agility Test")
             return applicantData?.pat_pushups != null;
-          if (currentStatus === "Drug Test")
-            return applicantData?.drug_test_result != null;
           return false;
         })();
 
@@ -659,13 +682,13 @@ function StatusManagement({
                 (!bmiHeight || !bmiWeight)) ||
               (selectedStatus === "Physical Agility Test" &&
                 (patPushups === "" || patSitups === "" || patRun === "")) ||
+              (selectedStatus === "Neuro Examination" && !psychologicalResult) ||
               (selectedStatus === "Drug Test" && !drugResult) ||
               (selectedStatus === "Final Interview" &&
                 (fiPatriotism === "" ||
                   fiIntegrity === "" ||
                   fiAwareness === "" ||
-                  fiCommunication === "")) ||
-              isEvaluated
+                  fiCommunication === ""))
             }
             className={`rounded-[4px] text-white font-semibold save-changes-btn mt-6 h-11 transition-all w-full ${
               isUpdating ||
@@ -679,17 +702,12 @@ function StatusManagement({
                 (fiPatriotism === "" ||
                   fiIntegrity === "" ||
                   fiAwareness === "" ||
-                  fiCommunication === "")) ||
-              isEvaluated
+                  fiCommunication === ""))
                 ? "bg-gray-400 cursor-not-allowed"
                 : "cursor-pointer bg-[#2C2D86] hover:bg-[#1e1f5e] shadow-md hover:shadow-lg active:scale-[0.98]"
             }`}
           >
-            {isEvaluated
-              ? "Evaluated"
-              : isUpdating
-                ? "Evaluating..."
-                : "Evaluate"}
+            {isUpdating ? "Evaluating..." : isEvaluated ? "Update Evaluation" : "Evaluate"}
           </button>
         );
       })()}

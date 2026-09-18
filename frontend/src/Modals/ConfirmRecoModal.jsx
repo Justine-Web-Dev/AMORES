@@ -9,7 +9,7 @@ function ConfirmRecoModal({setConfirmModalOpen, applicantToConfirm, handleUpdate
               Recommend {applicantToConfirm?.firstname} {applicantToConfirm?.lastname}?
             </h3>
             <p className="text-[15px] text-gray-600 mb-8 leading-relaxed">
-              Marking this candidate as Recommended will automatically update their Physical Agility Test status to <span className="font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">Passed</span>.
+              Marking this candidate as Recommended will automatically update their {applicantToConfirm?.status || "Physical Agility Test"} status to <span className="font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded">Passed</span>.
             </p>
             <div className="flex justify-end gap-3 pt-2">
               <button
