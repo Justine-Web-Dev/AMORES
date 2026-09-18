@@ -2,9 +2,7 @@
 FROM python:3.12-slim
 
 # Install system dependencies (including Tesseract OCR and build tools)
-RUN apt-get update && apt-get install -y \
-    tesseract-ocr \
-    tesseract-ocr-eng \
+RUN apt-get update && apt-get install -y \ \ -eng \
     libtesseract-dev \
     build-essential \
     pkg-config \

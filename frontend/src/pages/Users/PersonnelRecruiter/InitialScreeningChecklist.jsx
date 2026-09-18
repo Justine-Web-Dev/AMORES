@@ -7,38 +7,7 @@ function InitialScreeningChecklist({ applicantId, onComplete }) {
     citizenship_is_filipino: false,
   });
 
-  // Automatically check boxes if AI verified the corresponding documents
-  React.useEffect(() => {
-    const fetchAndApplyAIData = async () => {
-      try {
-        const response = await api.get(
-          `users/view-applicant-document/${applicantId}`,
-        );
-        const documents = response.data;
 
-        let newFlags = { ...flags };
-
-        documents.forEach((doc) => {
-          if (doc.ai_verified) {
-            if (
-              doc.document_type === "BIRTH_CERT" ||
-              doc.document_type === "PSA"
-            ) {
-              newFlags.citizenship_is_filipino = true;
-            }
-          }
-        });
-
-        setFlags(newFlags);
-      } catch (err) {
-        console.error("Failed to fetch documents for AI auto-check", err);
-      }
-    };
-
-    if (applicantId) {
-      fetchAndApplyAIData();
-    }
-  }, [applicantId]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [modalConfig, setModalConfig] = useState({

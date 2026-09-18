@@ -976,13 +976,7 @@ def upload_document(request):
     if serializer.is_valid():
         document = serializer.save()
         
-        # Trigger background OCR processing
-        try:
-            import threading
-            from .services_ocr import process_document_ocr
-            threading.Thread(target=process_document_ocr, args=(document.id,)).start()
-        except Exception as e:
-            print(f"Failed to start OCR thread: {e}")
+        pass
             
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -1000,24 +994,13 @@ def get_applicant_documents(request, applicant_id):
         doc.delete()
 
     documents = ApplicantDocument.objects.filter(applicant_id=applicant_id)
-    
-    # Automatically trigger OCR re-scan in background threads when recruiter views or refreshes details page
-    try:
-        from .services_ocr import process_document_ocr
-        import threading
-        for doc in documents:
-            threading.Thread(target=process_document_ocr, args=(doc.id,)).start()
-    except Exception as e:
-        print(f"Failed to trigger auto re-scan on load: {e}")
-        
     serializer = ApplicantDocumentSerializer(documents, many=True, context={'request': request})
     return Response(serializer.data)
 
 @api_view(['POST'])
 def scan_document(request, doc_id):
     try:
-        from .services_ocr import process_document_ocr
-        process_document_ocr(doc_id)
+        pass
         
         # Fetch the updated document
         document = ApplicantDocument.objects.get(id=doc_id)
@@ -1346,11 +1329,7 @@ class SubmitApplicationView(APIView):
                         document_type='BIRTH_CERT',
                         file=birth_cert_file
                     )
-                    from .services_ocr import process_document_ocr
-                    import threading
-                    transaction.on_commit(
-                        lambda: threading.Thread(target=process_document_ocr, args=(doc.id,)).start()
-                    )
+                    pass
                 screening_result = evaluate_initial_application_status(application, request.data, performer_user=None)
                 
                 return Response(screening_result, status=status.HTTP_201_CREATED)
