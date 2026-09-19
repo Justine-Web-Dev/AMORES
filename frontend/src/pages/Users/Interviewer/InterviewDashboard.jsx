@@ -114,7 +114,7 @@ function InterviewDashboard() {
       const formattedApplicants = data
         .filter((app) => app.status === "Final Interview")
         .map((app) => {
-          const isEvaluated = app.final_interview_score != null;
+          const isEvaluated = app.evaluation_final_interview != null;
           return {
             ...app,
             trackingId: app.tracking_code || `APP-${app.id}`,

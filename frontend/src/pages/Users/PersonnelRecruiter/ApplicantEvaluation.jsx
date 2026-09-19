@@ -21,6 +21,7 @@ import "./ApplicantEval.css";
 import MessageModal from "../../../Modals/MessageModal";
 import StatusManagement from "./StatusManagement";
 import ConfirmRecoModal from "../../../Modals/ConfirmRecoModal";
+import ConfirmMedicalModal from "../../../Modals/ConfirmMedicalModal";
 
 function ApplicantEvaluation({ isInterviewer = false }) {
   const pageRef = useRef(null);
@@ -54,6 +55,11 @@ function ApplicantEvaluation({ isInterviewer = false }) {
   const [open, setOpen] = useState(null);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [applicantToConfirm, setApplicantToConfirm] = useState(null);
+  const [confirmNotRecoModalOpen, setConfirmNotRecoModalOpen] = useState(false);
+  const [applicantToNotReco, setApplicantToNotReco] = useState(null);
+  const [confirmMedicalModal, setConfirmMedicalModal] = useState(false);
+  const [medicalApplicantToConfirm, setMedicalApplicantToConfirm] = useState(null);
+  const [medicalIsPassed, setMedicalIsPassed] = useState(true);
   const scrollRef = useRef(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
@@ -341,10 +347,11 @@ function ApplicantEvaluation({ isInterviewer = false }) {
       fetchInfo(true);
     } catch (err) {
       console.error("Failed to update schedule:", err);
+      const serverError = err.response?.data?.error || err.response?.data?.detail || err.message;
       setScheduleMessageConfig({
         isOpen: true,
         type: "error",
-        message: "Failed to assign schedule. Please try again.",
+        message: `Failed to assign schedule. Error: ${serverError}`,
       });
     } finally {
       setIsSavingSchedule(false);
@@ -421,10 +428,11 @@ function ApplicantEvaluation({ isInterviewer = false }) {
       fetchInfo(true);
     } catch (err) {
       console.error("Failed to update schedules:", err);
+      const serverError = err.response?.data?.error || err.response?.data?.detail || err.message;
       setScheduleMessageConfig({
         isOpen: true,
         type: "error",
-        message: "Failed to assign schedules. Please try again.",
+        message: `Failed to assign schedules. Error: ${serverError}`,
       });
     } finally {
       setIsSavingSchedule(false);
@@ -453,13 +461,25 @@ function ApplicantEvaluation({ isInterviewer = false }) {
           dataToSend.status = "Failed";
           dataToSend.rejection_reason = "Failed Neuro Examination.";
         }
+      } else if (statusFilter === "Medical") {
+        if (isRecommended) {
+          dataToSend.status = "Drug Test";
+          dataToSend.medical_result = "Passed";
+        } else {
+          dataToSend.status = "Failed";
+          dataToSend.rejection_reason = "Failed Medical Examination.";
+          dataToSend.medical_result = "Failed";
+        }
       }
       
       await api.put(`users/update_status/${applicant.id}/`, dataToSend);
+      const actionLabel = statusFilter === "Medical"
+        ? (isRecommended ? "Passed" : "Failed")
+        : (isRecommended ? "Recommended" : "Not Recommended");
       setScheduleMessageConfig({
         isOpen: true,
         type: "success",
-        message: `Applicant successfully marked as ${isRecommended ? "Recommended" : "Not Recommended"}.`,
+        message: `Applicant successfully marked as ${actionLabel}.`,
       });
       setOpen(null);
       fetchInfo(true);
@@ -1179,10 +1199,39 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                                     Recommended
                                   </button>
                                   <button
-                                    onClick={() => handleUpdateRecommendation(applicant, false)}
+                                    onClick={() => {
+                                      setApplicantToNotReco(applicant);
+                                      setConfirmNotRecoModalOpen(true);
+                                      setOpen(null);
+                                    }}
                                     className="text-left px-2 py-1 cursor-pointer view-details-btn-action not-recommended-btn text-red-600 whitespace-nowrap"
                                   >
                                     Not Recommended
+                                  </button>
+                                </>
+                              ) : statusFilter === "Medical" ? (
+                                <>
+                                  <button
+                                    onClick={() => {
+                                      setMedicalApplicantToConfirm(applicant);
+                                      setMedicalIsPassed(true);
+                                      setConfirmMedicalModal(true);
+                                      setOpen(null);
+                                    }}
+                                    className="text-left px-2 py-1 cursor-pointer view-details-btn-action text-[#2C2D86] hover:bg-[#2C2D86]/10"
+                                  >
+                                    Passed
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setMedicalApplicantToConfirm(applicant);
+                                      setMedicalIsPassed(false);
+                                      setConfirmMedicalModal(true);
+                                      setOpen(null);
+                                    }}
+                                    className="text-left px-2 py-1 cursor-pointer view-details-btn-action not-recommended-btn text-red-600 whitespace-nowrap"
+                                  >
+                                    Failed
                                   </button>
                                 </>
                               ) : (
@@ -1364,6 +1413,47 @@ function ApplicantEvaluation({ isInterviewer = false }) {
       </div>
 
       {confirmModalOpen && <ConfirmRecoModal setConfirmModalOpen={setConfirmModalOpen} applicantToConfirm={applicantToConfirm} handleUpdateRecommendation={handleUpdateRecommendation} />}
+
+      {confirmNotRecoModalOpen && (
+        <div>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40">
+            <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl border border-gray-100 transform transition-all">
+              <h3 className="text-xl font-bold text-gray-900 mb-3 border-b border-gray-100 pb-3">
+                Mark {applicantToNotReco?.firstname} {applicantToNotReco?.lastname} as Not Recommended?
+              </h3>
+              <p className="text-[15px] text-gray-600 mb-8 leading-relaxed">
+                Marking this applicant as <span className="font-semibold text-red-600 bg-red-50 px-1.5 py-0.5 rounded">Not Recommended</span> will move them to the <span className="font-semibold">Failed</span> stage.
+              </p>
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  onClick={() => setConfirmNotRecoModalOpen(false)}
+                  className="px-5 py-2.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 active:scale-95 transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    handleUpdateRecommendation(applicantToNotReco, false);
+                    setConfirmNotRecoModalOpen(false);
+                  }}
+                  className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold cursor-pointer transition-all active:scale-95 shadow-md shadow-red-900/20"
+                >
+                  Not Recommend Applicant
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmMedicalModal && (
+        <ConfirmMedicalModal
+          setConfirmMedicalModal={setConfirmMedicalModal}
+          applicantToConfirm={medicalApplicantToConfirm}
+          isPassed={medicalIsPassed}
+          handleUpdateRecommendation={handleUpdateRecommendation}
+        />
+      )}
 
       <MessageModal
         isOpen={scheduleMessageConfig.isOpen}

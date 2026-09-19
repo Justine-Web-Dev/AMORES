@@ -1064,14 +1064,16 @@ def update_applicant_status(request, pk):
                 fi.score = total
                 fi.save()
                 
-                if total < 70:
-                    application.status = 'Failed'
-                    application.rejection_reason = f"Failed Final Interview with a score of {total:.2f}%."
-                    new_status = 'Failed'
-                else:
-                    # Oath Taking
-                    application.status = 'Oath Taking'
-                    new_status = 'Oath Taking'
+                # Auto-progression removed per user request. 
+                # The applicant will remain in the 'Final Interview' stage, marked as Evaluated.
+                # if total < 70:
+                #     application.status = 'Failed'
+                #     application.rejection_reason = f"Failed Final Interview with a score of {total:.2f}%."
+                #     new_status = 'Failed'
+                # else:
+                #     # Oath Taking
+                #     application.status = 'Oath Taking'
+                #     new_status = 'Oath Taking'
         # --- END AUTO COMPUTE LOGIC ---
 
 
