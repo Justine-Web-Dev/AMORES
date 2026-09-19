@@ -74,8 +74,6 @@ function LoginForm() {
         if (data.role === 'SUPER_ADMIN') {
           routeRole = 'SUPER_ADMIN';
         }
-        
-        console.log("Login data:", data);
 
         sessionStorage.setItem("token", data.token);
         sessionStorage.setItem("role", routeRole);

@@ -181,35 +181,82 @@ class Application(models.Model):
 class Evaluation(models.Model):
     application = models.OneToOneField(Application, on_delete=models.CASCADE, related_name='evaluation', verbose_name="Application")
     
-    # Health & Physical
-    bmi_height = models.FloatField(null=True, blank=True, verbose_name="BMI Height (m)")
-    bmi_weight = models.FloatField(null=True, blank=True, verbose_name="BMI Weight (kg)")
-    bmi_result = models.CharField(max_length=50, null=True, blank=True, verbose_name="BMI Result")
-    
-    # Examination Results
-    pat_score = models.FloatField(null=True, blank=True, verbose_name="PAT Score")
-    pat_pushups = models.IntegerField(null=True, blank=True, verbose_name="Push UPS")
-    pat_pushups_passed = models.BooleanField(null=True, blank=True)
-    pat_situps = models.IntegerField(null=True, blank=True, verbose_name="Sit UPS")
-    pat_situps_passed = models.BooleanField(null=True, blank=True)
-    pat_run = models.CharField(max_length=10, null=True, blank=True, verbose_name="3km Run")
-    pat_run_passed = models.BooleanField(null=True, blank=True)
-    psychological_result = models.TextField(null=True, blank=True, verbose_name="Psychological Result")
-    medical_result = models.TextField(null=True, blank=True, verbose_name="Medical Result")
-    drug_test_result = models.CharField(max_length=50, null=True, blank=True, verbose_name="Drug Test Result")
-    
-    # Final Interview Detailed Rubric
-    fi_patriotism = models.FloatField(null=True, blank=True, verbose_name="Patriotism and Service Orientation Score")
-    fi_integrity = models.FloatField(null=True, blank=True, verbose_name="Integrity/Values Score")
-    fi_awareness = models.FloatField(null=True, blank=True, verbose_name="Awareness of Issues Score")
-    fi_communication = models.FloatField(null=True, blank=True, verbose_name="Communication Skills Score")
-    final_interview_score = models.FloatField(null=True, blank=True, verbose_name="Final Interview Score")
-
     # Qualified evaluation status
     is_qualified_evaluated = models.BooleanField(default=False, null=True, blank=True, verbose_name="Is Qualified Evaluated")
+    is_bmi_evaluated = models.BooleanField(default=False, null=True, blank=True, verbose_name="Is BMI Evaluated")
+    is_pat_evaluated = models.BooleanField(default=False, null=True, blank=True, verbose_name="Is PAT Evaluated")
 
     def __str__(self):
         return f"Evaluation for {self.application.tracking_code}"
+
+class EvaluationBMI(models.Model):
+    application = models.OneToOneField(Application, on_delete=models.CASCADE, related_name='evaluation_bmi', verbose_name="Application")
+    height = models.FloatField(null=True, blank=True, verbose_name="Height (cm)")
+    weight = models.FloatField(null=True, blank=True, verbose_name="Weight (kg)")
+    result = models.CharField(max_length=50, null=True, blank=True, verbose_name="BMI Result")
+
+    def __str__(self):
+        return f"BMI Evaluation for {self.application.tracking_code}"
+
+class EvaluationPAT(models.Model):
+    application = models.OneToOneField(Application, on_delete=models.CASCADE, related_name='evaluation_pat', verbose_name="Application")
+    pushups = models.IntegerField(null=True, blank=True, verbose_name="Pushups")
+    pushups_passed = models.BooleanField(null=True, blank=True, verbose_name="Pushups Passed")
+    situps = models.IntegerField(null=True, blank=True, verbose_name="Situps")
+    situps_passed = models.BooleanField(null=True, blank=True, verbose_name="Situps Passed")
+    run = models.CharField(max_length=50, null=True, blank=True, verbose_name="Run Time")
+    run_passed = models.BooleanField(null=True, blank=True, verbose_name="Run Passed")
+    score = models.FloatField(null=True, blank=True, verbose_name="PAT Score (%)")
+
+    def __str__(self):
+        return f"PAT Evaluation for {self.application.tracking_code}"
+
+class EvaluationFinalInterview(models.Model):
+    application = models.OneToOneField(Application, on_delete=models.CASCADE, related_name='evaluation_final_interview', verbose_name="Application")
+    score = models.FloatField(null=True, blank=True, verbose_name="Final Interview Score (%)")
+
+    def __str__(self):
+        return f"Final Interview Evaluation for {self.application.tracking_code}"
+
+class FailedApplicant(models.Model):
+    application = models.OneToOneField(Application, on_delete=models.CASCADE, related_name='failed_record', verbose_name="Application")
+    failed_stage = models.CharField(max_length=100, verbose_name="Stage Failed")
+    reason = models.TextField(verbose_name="Rejection Reason")
+    failed_at = models.DateTimeField(auto_now_add=True, verbose_name="Date Failed")
+
+    def __str__(self):
+        return f"Failed: {self.application.applicant.first_name} {self.application.applicant.last_name} at {self.failed_stage}"
+
+class EvaluationCriteria(models.Model):
+    CATEGORY_CHOICES = (
+        ('Interview', 'Final Interview'),
+        ('PAT', 'Physical Agility Test'),
+        ('BMI', 'Body Mass Index'),
+        ('Medical', 'Medical'),
+        ('Neuro', 'Neuro Examination'),
+        ('DrugTest', 'Drug Test'),
+    )
+    name = models.CharField(max_length=100)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='Interview')
+    max_score = models.FloatField(default=25.0)
+    is_active = models.BooleanField(default=True)
+    order = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.get_category_display()} - {self.name}"
+
+class EvaluationScore(models.Model):
+    evaluation = models.ForeignKey(Evaluation, on_delete=models.CASCADE, related_name='criteria_scores')
+    criterion = models.ForeignKey(EvaluationCriteria, on_delete=models.CASCADE)
+    score = models.FloatField(null=True, blank=True)
+    text_value = models.CharField(max_length=255, null=True, blank=True)
+    boolean_value = models.BooleanField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('evaluation', 'criterion')
+
+    def __str__(self):
+        return f"{self.evaluation} - {self.criterion.name}: {self.score}"
 
 class ApplicantDocument(models.Model):
     applicant = models.ForeignKey(Applicant, on_delete=models.CASCADE, related_name='documents', verbose_name="Applicant")      

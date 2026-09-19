@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Applicant, Application, Evaluation, ApplicantDocument, AuditLog, SystemSettings, ApplicationDraft
+from .models import User, Applicant, Application, Evaluation, ApplicantDocument, AuditLog, SystemSettings, ApplicationDraft, EvaluationCriteria, EvaluationScore
 
 class UserAdmin(admin.ModelAdmin):
     list_display = ("name", "email", "role", "is_archived")
@@ -53,11 +53,44 @@ class AuditLogAdmin(admin.ModelAdmin):
 admin.site.register(AuditLog, AuditLogAdmin)
 admin.site.register(SystemSettings)
 class EvaluationAdmin(admin.ModelAdmin):
-    list_display = ("application", "bmi_result", "pat_score", "psychological_result", "medical_result", "final_interview_score")
-    list_filter = ("bmi_result", "psychological_result", "medical_result")
+    list_display = ("application", "is_qualified_evaluated")
     search_fields = ("application__tracking_code", "application__applicant__last_name")
 
 admin.site.register(Evaluation, EvaluationAdmin)
+
+from .models import EvaluationBMI, EvaluationPAT, EvaluationFinalInterview, FailedApplicant
+
+class EvaluationBMIAdmin(admin.ModelAdmin):
+    list_display = ("application", "height", "weight", "result")
+
+class EvaluationPATAdmin(admin.ModelAdmin):
+    list_display = ("application", "pushups", "situps", "run", "pat_result")
+
+    def pat_result(self, obj):
+        if obj.pushups_passed is True and obj.situps_passed is True and obj.run_passed is True:
+            return "PASSED"
+        elif obj.pushups_passed is False or obj.situps_passed is False or obj.run_passed is False:
+            return "FAILED"
+        return "-"
+    pat_result.short_description = "PAT RESULT"
+
+class EvaluationFinalInterviewAdmin(admin.ModelAdmin):
+    list_display = ("application", "score")
+
+class FailedApplicantAdmin(admin.ModelAdmin):
+    list_display = ("application", "get_applicant_name", "failed_stage", "reason", "failed_at")
+    search_fields = ("application__tracking_code", "application__applicant__last_name", "application__applicant__first_name", "failed_stage")
+
+    def get_applicant_name(self, obj):
+        return f"{obj.application.applicant.first_name} {obj.application.applicant.last_name}"
+    get_applicant_name.short_description = "Applicant Name"
+
+admin.site.register(EvaluationBMI, EvaluationBMIAdmin)
+admin.site.register(EvaluationPAT, EvaluationPATAdmin)
+admin.site.register(EvaluationFinalInterview, EvaluationFinalInterviewAdmin)
+admin.site.register(FailedApplicant, FailedApplicantAdmin)
+admin.site.register(EvaluationCriteria)
+admin.site.register(EvaluationScore)
 
 class ApplicationDraftAdmin(admin.ModelAdmin):
     list_display = ("draft_code", "created_at", "updated_at")

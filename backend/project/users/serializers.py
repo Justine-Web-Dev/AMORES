@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Applicant, Application, Evaluation, ApplicantDocument, SystemSettings, AuditLog, GlobalSetting, Role, Permission, RolePermission
+from .models import User, Applicant, Application, Evaluation, ApplicantDocument, SystemSettings, AuditLog, GlobalSetting, Role, Permission, RolePermission, EvaluationCriteria, EvaluationScore, EvaluationBMI, EvaluationPAT, EvaluationFinalInterview, FailedApplicant
 from django.utils.dateparse import parse_datetime
 from django.contrib.auth.hashers import make_password, identify_hasher
 
@@ -42,13 +42,46 @@ class UsersSerializers(serializers.ModelSerializer):
             validated_data['password'] = make_password(validated_data['password'])
         return super().update(instance, validated_data)
 
+class EvaluationCriteriaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EvaluationCriteria
+        fields = '__all__'
+
+class EvaluationScoreSerializer(serializers.ModelSerializer):
+    criterion_name = serializers.CharField(source='criterion.name', read_only=True)
+    max_score = serializers.FloatField(source='criterion.max_score', read_only=True)
+
+    class Meta:
+        model = EvaluationScore
+        fields = ['id', 'criterion', 'criterion_name', 'score', 'max_score', 'text_value', 'boolean_value']
+
+class EvaluationBMISerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EvaluationBMI
+        fields = '__all__'
+
+class EvaluationPATSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EvaluationPAT
+        fields = '__all__'
+
+class EvaluationFinalInterviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EvaluationFinalInterview
+        fields = '__all__'
+
 class EvaluationSerializer(serializers.ModelSerializer):
+    criteria_scores = EvaluationScoreSerializer(many=True, read_only=True)
+    
     class Meta:
         model = Evaluation
         fields = '__all__'
 
 class ApplicationSerializer(serializers.ModelSerializer):
     evaluation = EvaluationSerializer(read_only=True)
+    evaluation_bmi = EvaluationBMISerializer(read_only=True)
+    evaluation_pat = EvaluationPATSerializer(read_only=True)
+    evaluation_final_interview = EvaluationFinalInterviewSerializer(read_only=True)
     
     class Meta:
         model = Application
@@ -145,30 +178,20 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
     batch = serializers.SerializerMethodField()
     
     # Flattened Evaluation Fields (Safely handle missing evaluations)
-    bmi_height = serializers.SerializerMethodField()
+    evaluation_bmi = serializers.SerializerMethodField()
     bmi_weight = serializers.SerializerMethodField()
-    bmi_result = serializers.SerializerMethodField()
-    pat_score = serializers.SerializerMethodField()
-    psychological_result = serializers.SerializerMethodField()
-    medical_result = serializers.SerializerMethodField()
-    drug_test_result = serializers.SerializerMethodField()
-    final_interview_score = serializers.SerializerMethodField()
-    
+    evaluation_pat = serializers.SerializerMethodField()
     pat_pushups = serializers.SerializerMethodField()
-    pat_pushups_passed = serializers.SerializerMethodField()
-    pat_situps = serializers.SerializerMethodField()
-    pat_situps_passed = serializers.SerializerMethodField()
-    pat_run = serializers.SerializerMethodField()
-    pat_run_passed = serializers.SerializerMethodField()
+    evaluation_final_interview = serializers.SerializerMethodField()
+    
     status_updated_at = serializers.SerializerMethodField()
     is_reapplied = serializers.SerializerMethodField()
     created_at = serializers.SerializerMethodField()
     
-    fi_patriotism = serializers.SerializerMethodField()
-    fi_integrity = serializers.SerializerMethodField()
-    fi_awareness = serializers.SerializerMethodField()
-    fi_communication = serializers.SerializerMethodField()
+    criteria_scores = serializers.SerializerMethodField()
     is_qualified_evaluated = serializers.SerializerMethodField()
+    is_bmi_evaluated = serializers.SerializerMethodField()
+    is_pat_evaluated = serializers.SerializerMethodField()
     
     class Meta:
         model = Applicant
@@ -181,17 +204,22 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
             'firstname', 'lastname', 'cp_number', 'middle_initial',
             'status', 'status_updated_at', 'tracking_code', 'rejection_reason', 'scheduled_date', 
             'scheduled_time', 'evaluation_remarks', 'oath_taking_date', 'batch',
-            'bmi_height', 'bmi_weight', 'bmi_result', 'pat_score', 
-            'psychological_result', 'medical_result', 'drug_test_result', 
-            'final_interview_score', 'fi_patriotism', 'fi_integrity', 'fi_awareness', 'fi_communication',
-            'pat_pushups', 'pat_pushups_passed', 'pat_situps', 
-            'pat_situps_passed', 'pat_run', 'pat_run_passed',
-            'is_reapplied', 'is_qualified_evaluated', 'quota_type'
+            'evaluation_bmi', 'bmi_weight', 'evaluation_pat', 'pat_pushups',
+            'evaluation_final_interview', 'criteria_scores',
+            'is_reapplied', 'is_qualified_evaluated', 'is_bmi_evaluated', 'is_pat_evaluated', 'quota_type'
         ]
 
     def get_is_qualified_evaluated(self, obj):
         eval_obj = self._get_eval(obj)
         return eval_obj.is_qualified_evaluated if eval_obj else False
+
+    def get_is_bmi_evaluated(self, obj):
+        eval_obj = self._get_eval(obj)
+        return eval_obj.is_bmi_evaluated if eval_obj else False
+
+    def get_is_pat_evaluated(self, obj):
+        eval_obj = self._get_eval(obj)
+        return eval_obj.is_pat_evaluated if eval_obj else False
 
     def get_is_reapplied(self, obj):
         return getattr(obj, 'is_reapplied', False)
@@ -214,7 +242,7 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
 
     def _get_app(self, obj):
         if hasattr(obj, 'prefetched_applications'):
-            return obj.prefetched_applications[0] if obj.prefetched_applications else None
+            return obj.prefetched_applications[0] if len(obj.prefetched_applications) > 0 else None
         return obj.active_application
 
     def _get_eval(self, obj):
@@ -257,77 +285,64 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
         app = self._get_app(obj)
         return app.batch if app else 1
 
-    def get_bmi_height(self, obj):
-        eval_obj = self._get_eval(obj)
-        return eval_obj.bmi_height if eval_obj else None
+    def get_evaluation_bmi(self, obj):
+        app = self._get_app(obj)
+        if app and hasattr(app, 'evaluation_bmi'):
+            return app.evaluation_bmi.result
+        return None
 
     def get_bmi_weight(self, obj):
-        eval_obj = self._get_eval(obj)
-        return eval_obj.bmi_weight if eval_obj else None
+        app = self._get_app(obj)
+        if app and hasattr(app, 'evaluation_bmi'):
+            return app.evaluation_bmi.weight
+        return None
 
-    def get_bmi_result(self, obj):
-        eval_obj = self._get_eval(obj)
-        return eval_obj.bmi_result if eval_obj else None
-
-    def get_pat_score(self, obj):
-        eval_obj = self._get_eval(obj)
-        return eval_obj.pat_score if eval_obj else None
+    def get_evaluation_pat(self, obj):
+        app = self._get_app(obj)
+        if app and hasattr(app, 'evaluation_pat'):
+            return app.evaluation_pat.score
+        return None
 
     def get_pat_pushups(self, obj):
-        eval_obj = self._get_eval(obj)
-        return eval_obj.pat_pushups if eval_obj else None
+        app = self._get_app(obj)
+        if app and hasattr(app, 'evaluation_pat'):
+            return app.evaluation_pat.pushups
+        return None
 
-    def get_pat_pushups_passed(self, obj):
-        eval_obj = self._get_eval(obj)
-        return eval_obj.pat_pushups_passed if eval_obj else None
+    def get_evaluation_final_interview(self, obj):
+        app = self._get_app(obj)
+        if app and hasattr(app, 'evaluation_final_interview'):
+            return app.evaluation_final_interview.score
+        return None
 
-    def get_pat_situps(self, obj):
-        eval_obj = self._get_eval(obj)
-        return eval_obj.pat_situps if eval_obj else None
 
-    def get_pat_situps_passed(self, obj):
-        eval_obj = self._get_eval(obj)
-        return eval_obj.pat_situps_passed if eval_obj else None
 
-    def get_pat_run(self, obj):
+    def get_criteria_scores(self, obj):
         eval_obj = self._get_eval(obj)
-        return eval_obj.pat_run if eval_obj else None
-
-    def get_pat_run_passed(self, obj):
-        eval_obj = self._get_eval(obj)
-        return eval_obj.pat_run_passed if eval_obj else None
-
-    def get_psychological_result(self, obj):
-        eval_obj = self._get_eval(obj)
-        return eval_obj.psychological_result if eval_obj else None
-
-    def get_medical_result(self, obj):
-        eval_obj = self._get_eval(obj)
-        return eval_obj.medical_result if eval_obj else None
-
-    def get_drug_test_result(self, obj):
-        eval_obj = self._get_eval(obj)
-        return eval_obj.drug_test_result if eval_obj else None
-
-    def get_final_interview_score(self, obj):
-        eval_obj = self._get_eval(obj)
-        return eval_obj.final_interview_score if eval_obj else None
-
-    def get_fi_patriotism(self, obj):
-        eval_obj = self._get_eval(obj)
-        return eval_obj.fi_patriotism if eval_obj else None
-
-    def get_fi_integrity(self, obj):
-        eval_obj = self._get_eval(obj)
-        return eval_obj.fi_integrity if eval_obj else None
-
-    def get_fi_awareness(self, obj):
-        eval_obj = self._get_eval(obj)
-        return eval_obj.fi_awareness if eval_obj else None
-
-    def get_fi_communication(self, obj):
-        eval_obj = self._get_eval(obj)
-        return eval_obj.fi_communication if eval_obj else None
+        scores_list = []
+        if eval_obj:
+            scores = eval_obj.criteria_scores.all()
+            scores_list = EvaluationScoreSerializer(scores, many=True).data
+            
+            app = self._get_app(obj)
+            if app:
+                if hasattr(app, 'evaluation_bmi'):
+                    bmi = app.evaluation_bmi
+                    if bmi.height is not None:
+                        scores_list.append({'criterion_name': 'BMI Height', 'score': bmi.height})
+                    if bmi.weight is not None:
+                        scores_list.append({'criterion_name': 'BMI Weight', 'score': bmi.weight})
+                
+                if hasattr(app, 'evaluation_pat'):
+                    pat = app.evaluation_pat
+                    if pat.pushups is not None:
+                        scores_list.append({'criterion_name': 'PAT Pushups', 'score': pat.pushups, 'boolean_value': pat.pushups_passed})
+                    if pat.situps is not None:
+                        scores_list.append({'criterion_name': 'PAT Situps', 'score': pat.situps, 'boolean_value': pat.situps_passed})
+                    if pat.run is not None:
+                        scores_list.append({'criterion_name': 'PAT Run', 'text_value': pat.run, 'boolean_value': pat.run_passed})
+                        
+        return scores_list
 
 class ApplicantDocumentSerializer(serializers.ModelSerializer):
     applicant = serializers.PrimaryKeyRelatedField(queryset=Applicant.objects.all())
@@ -442,7 +457,7 @@ class ApplicantDashboardSerializer(serializers.ModelSerializer):
 
     def _get_app(self, obj):
         if hasattr(obj, 'prefetched_applications'):
-            return obj.prefetched_applications[0] if obj.prefetched_applications else None
+            return obj.prefetched_applications[0] if len(obj.prefetched_applications) > 0 else None
         return obj.active_application
 
     def get_created_at(self, obj):
@@ -461,3 +476,10 @@ class ApplicantDashboardSerializer(serializers.ModelSerializer):
         app = self._get_app(obj)
         return app.batch if app else None
 
+class FailedApplicantSerializer(serializers.ModelSerializer):
+    applicant_details = ApplicantFullSerializer(source='application.applicant', read_only=True)
+    tracking_code = serializers.CharField(source='application.tracking_code', read_only=True)
+
+    class Meta:
+        model = FailedApplicant
+        fields = ['id', 'application', 'tracking_code', 'failed_stage', 'reason', 'failed_at', 'applicant_details']

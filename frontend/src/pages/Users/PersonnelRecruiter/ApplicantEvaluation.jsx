@@ -58,6 +58,12 @@ function ApplicantEvaluation({ isInterviewer = false }) {
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
 
+  // Pagination for performance
+  const [visibleCount, setVisibleCount] = useState(30);
+  useEffect(() => {
+    setVisibleCount(30); // Reset visible count when filters change
+  }, [statusFilter, searchTerm, provinceFilter, sortBy]);
+
   // Dashboard scroll state
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [showScrollBottom, setShowScrollBottom] = useState(true);
@@ -433,6 +439,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
         dataToSend.pat_pushups_passed = isRecommended;
         dataToSend.pat_situps_passed = isRecommended;
         dataToSend.pat_run_passed = isRecommended;
+        dataToSend.is_pat_evaluated = true;
         
         if (!isRecommended) {
           dataToSend.status = "Failed";
@@ -495,9 +502,24 @@ function ApplicantEvaluation({ isInterviewer = false }) {
   const fetchInfo = async (isSilent = false) => {
     !isSilent && setLoading(true);
     try {
-      const response = await api.get("users/applicants/all/");
-      setApplicantInfo(response.data);
-      console.log(response.data);
+      const [response, failedResponse] = await Promise.all([
+        api.get("users/applicants/all/"),
+        api.get("users/applicants/failed/")
+      ]);
+      
+      // Filter out the old failed applicants from the main list
+      let activeApps = response.data.filter(app => app.status !== "Failed");
+      
+      // Map the new FailedApplicant records into the expected Applicant structure
+      let failedApps = failedResponse.data.map(failed => ({
+          ...failed.applicant_details,
+          status: "Failed",
+          rejection_reason: failed.reason,
+          failed_stage: failed.failed_stage,
+          failed_at: failed.failed_at
+      }));
+      
+      setApplicantInfo([...activeApps, ...failedApps]);
     } catch (err) {
       console.error("Error fetching applicant info:", err);
     } finally {
@@ -535,9 +557,9 @@ function ApplicantEvaluation({ isInterviewer = false }) {
 
   const isEvaluated = (applicant) => {
     if (statusFilter === "Qualified") return applicant.is_qualified_evaluated === true;
-    if (statusFilter === "Final Interview") return applicant.final_interview_score != null;
-    if (statusFilter === "Body Mass Index") return applicant.bmi_weight != null;
-    if (statusFilter === "Physical Agility Test") return applicant.pat_pushups != null;
+    if (statusFilter === "Final Interview") return applicant.evaluation_final_interview != null;
+    if (statusFilter === "Body Mass Index") return applicant.is_bmi_evaluated === true;
+    if (statusFilter === "Physical Agility Test") return applicant.is_pat_evaluated === true;
     if (statusFilter === "Drug Test") return applicant.drug_test_result != null;
     if (statusFilter === "Complete Background Investigation") return true;
     return false;
@@ -638,10 +660,10 @@ function ApplicantEvaluation({ isInterviewer = false }) {
           //marital status
           //place of application (attrition)
           "Municipality": applicant.city_municipality || "N/A",
-          "Patriotism": applicant.fi_patriotism,
-          "Integrity": applicant.fi_integrity,
-          "Awareness": applicant.fi_awareness,
-          "Communication": applicant.fi_communication,
+          ...((applicant.criteria_scores || []).reduce((acc, scoreObj) => {
+            acc[scoreObj.criterion_name || `Criterion ${scoreObj.criterion}`] = scoreObj.score;
+            return acc;
+          }, {})),
         };
       }
 
@@ -671,29 +693,17 @@ function ApplicantEvaluation({ isInterviewer = false }) {
         "Next Scheduled Time": applicant.scheduled_time || "N/A",
         "Oath Taking Date": applicant.oath_taking_date || "N/A",
         "Evaluation Remarks": applicant.evaluation_remarks || "N/A",
-        "BMI Height (cm)": applicant.bmi_height || "N/A",
-        "BMI Weight (kg)": applicant.bmi_weight || "N/A",
-        "BMI Result": applicant.bmi_result || "N/A",
-        "PAT Score (%)": applicant.pat_score || "N/A",
-        "1-Min Push-Ups":
-          applicant.pat_pushups !== null
-            ? `${applicant.pat_pushups} (${applicant.pat_pushups_passed || (parseInt(applicant.pat_pushups, 10) >= 30) ? "PASSED" : "FAILED"})`
-            : "N/A",
-        "1-Min Sit-Ups":
-          applicant.pat_situps !== null
-            ? `${applicant.pat_situps} (${applicant.pat_situps_passed || (parseInt(applicant.pat_situps, 10) >= 30) ? "PASSED" : "FAILED"})`
-            : "N/A",
-        "3K Run": applicant.pat_run
-          ? `${applicant.pat_run} (${applicant.pat_run_passed || (() => {
-              const parts = String(applicant.pat_run).split(":");
-              let totalSeconds = parts.length === 2 ? parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10) : parseFloat(applicant.pat_run) * 60;
-              return !isNaN(totalSeconds) && totalSeconds > 0 && totalSeconds <= 900;
-            })() ? "PASSED" : "FAILED"})`
-          : "N/A",
-        "Neuro/Psych Results": applicant.psychological_result || "N/A",
-        "Medical Findings": applicant.medical_result || "N/A",
-        "Drug Test Result": applicant.drug_test_result || "N/A",
-        "Final Interview Score (%)": applicant.final_interview_score || "N/A",
+        "BMI Result": applicant.evaluation_bmi || "N/A",
+        "PAT Score (%)": applicant.evaluation_pat || "N/A",
+        "Final Interview Score (%)": applicant.evaluation_final_interview || "N/A",
+        ...((applicant.criteria_scores || []).reduce((acc, scoreObj) => {
+          let value = scoreObj.score !== null ? scoreObj.score : scoreObj.text_value;
+          if (scoreObj.boolean_value !== null) {
+            value = `${value || ""} (${scoreObj.boolean_value ? 'PASSED' : 'FAILED'})`.trim();
+          }
+          acc[scoreObj.criterion_name || `Criterion ${scoreObj.criterion}`] = value || "N/A";
+          return acc;
+        }, {})),
         "Registration Date": applicant.created_at,
       };
     });
@@ -1057,7 +1067,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                   </td>
                 </tr>
               ) : filteredAndSorted.length > 0 ? (
-                filteredAndSorted.map((applicant) => (
+                filteredAndSorted.slice(0, visibleCount).map((applicant) => (
                   <tr
                     key={applicant.id}
                     className="hover:bg-gray-50 transition-colors text-center"
@@ -1219,6 +1229,17 @@ function ApplicantEvaluation({ isInterviewer = false }) {
               )}
             </tbody>
           </table>
+          
+          {filteredAndSorted.length > visibleCount && (
+            <div className="flex justify-center p-4 bg-gray-50 border-t border-gray-200">
+              <button
+                onClick={() => setVisibleCount(prev => prev + 30)}
+                className="px-6 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-md shadow-sm hover:bg-gray-50 focus:outline-none transition-colors"
+              >
+                Load More ({filteredAndSorted.length - visibleCount} remaining)
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

@@ -87,23 +87,18 @@ function StatusManagement({
     applicantData?.drug_test_result || "",
   );
 
-  // Final Interview detailed fields
-  const [fiPatriotism, setFiPatriotism] = useState(
-    applicantData?.fi_patriotism || "",
-  );
-  const [fiIntegrity, setFiIntegrity] = useState(
-    applicantData?.fi_integrity || "",
-  );
-  const [fiAwareness, setFiAwareness] = useState(
-    applicantData?.fi_awareness || "",
-  );
-  const [fiCommunication, setFiCommunication] = useState(
-    applicantData?.fi_communication || "",
-  );
+  const [criteriaList, setCriteriaList] = useState([]);
+  const [scores, setScores] = useState({});
+
+  useEffect(() => {
+    api.get("/users/evaluation-criteria/")
+      .then(res => setCriteriaList(res.data))
+      .catch(err => console.error("Failed to fetch criteria", err));
+  }, []);
 
   // No longer a raw state, it will be computed from the fields, but fallback to applicantData if fields are empty
   const [finalInterviewScore, setFinalInterviewScore] = useState(
-    applicantData?.final_interview_score || "",
+    applicantData?.evaluation_final_interview || "",
   );
 
   const isAccepted = currentStatus === "Accepted";
@@ -143,35 +138,40 @@ function StatusManagement({
       setSchDate(applicantData.scheduled_date || "");
       setSchTime(applicantData.scheduled_time || "");
 
-      setBmiHeight(applicantData.bmi_height || "");
-      setBmiWeight(applicantData.bmi_weight || "");
-      setPatPushups(applicantData.pat_pushups || "");
-      setPatPushupsPassed(
-        applicantData.pat_pushups != null
-          ? !!applicantData.pat_pushups_passed
-          : null,
-      );
-      setPatSitups(applicantData.pat_situps || "");
-      setPatSitupsPassed(
-        applicantData.pat_situps != null
-          ? !!applicantData.pat_situps_passed
-          : null,
-      );
-      setPatRun(applicantData.pat_run || "");
-      setPatRunPassed(
-        applicantData.pat_run != null ? !!applicantData.pat_run_passed : null,
-      );
+      setSchDate(applicantData.scheduled_date || "");
+      setSchTime(applicantData.scheduled_time || "");
 
-      setPsychologicalResult(applicantData.psychological_result || "");
-
-      setMedicalResult(applicantData.medical_result || "");
-      setDrugResult(applicantData.drug_test_result || "");
-
-      setFinalInterviewScore(applicantData.final_interview_score || "");
-      setFiPatriotism(applicantData.fi_patriotism ?? "");
-      setFiIntegrity(applicantData.fi_integrity ?? "");
-      setFiAwareness(applicantData.fi_awareness ?? "");
-      setFiCommunication(applicantData.fi_communication ?? "");
+      setFinalInterviewScore(applicantData.evaluation_final_interview || "");
+      if (applicantData.criteria_scores) {
+        const initScores = {};
+        applicantData.criteria_scores.forEach(s => {
+          // FI Scores based on ID map
+          initScores[s.criterion] = s.score;
+          
+          // Map specific fields back to state based on name
+          const criterionName = s.criterion_name;
+          if (criterionName === 'BMI Height') setBmiHeight(s.score || "");
+          if (criterionName === 'BMI Weight') setBmiWeight(s.score || "");
+          
+          if (criterionName === 'PAT Pushups') {
+            setPatPushups(s.score || "");
+            setPatPushupsPassed(s.boolean_value);
+          }
+          if (criterionName === 'PAT Situps') {
+            setPatSitups(s.score || "");
+            setPatSitupsPassed(s.boolean_value);
+          }
+          if (criterionName === 'PAT Run') {
+            setPatRun(s.text_value || "");
+            setPatRunPassed(s.boolean_value);
+          }
+          
+          if (criterionName === 'Psychological Result') setPsychologicalResult(s.text_value || "");
+          if (criterionName === 'Medical Result') setMedicalResult(s.text_value || "");
+          if (criterionName === 'Drug Test Result') setDrugResult(s.text_value || "");
+        });
+        setScores(initScores);
+      }
     }
   }, [currentStatus, currentRejectionReason, applicantData]);
 
@@ -198,7 +198,9 @@ function StatusManagement({
     if (patPushups !== "") {
       const score = parseInt(patPushups, 10);
       if (!isNaN(score)) {
-        setPatPushupsPassed(score >= 30);
+        const isFemale = applicantData?.gender?.toLowerCase() === 'female';
+        const minPushups = isFemale ? 25 : 35;
+        setPatPushupsPassed(score >= minPushups);
       } else {
         setPatPushupsPassed(null);
       }
@@ -211,7 +213,9 @@ function StatusManagement({
     if (patSitups !== "") {
       const score = parseInt(patSitups, 10);
       if (!isNaN(score)) {
-        setPatSitupsPassed(score >= 30);
+        const isFemale = applicantData?.gender?.toLowerCase() === 'female';
+        const minSitups = isFemale ? 25 : 35;
+        setPatSitupsPassed(score >= minSitups);
       } else {
         setPatSitupsPassed(null);
       }
@@ -231,7 +235,9 @@ function StatusManagement({
       }
 
       if (!isNaN(totalSeconds) && totalSeconds > 0) {
-        setPatRunPassed(totalSeconds <= 900);
+        const isFemale = applicantData?.gender?.toLowerCase() === 'female';
+        const maxSeconds = isFemale ? 1260 : 1140;
+        setPatRunPassed(totalSeconds < maxSeconds);
       } else {
         setPatRunPassed(null);
       }
@@ -241,19 +247,16 @@ function StatusManagement({
   };
 
   const getFiComputedScore = () => {
-    if (
-      fiPatriotism === "" &&
-      fiIntegrity === "" &&
-      fiAwareness === "" &&
-      fiCommunication === ""
-    )
-      return finalInterviewScore;
-    const total =
-      (parseFloat(fiPatriotism) || 0) +
-      (parseFloat(fiIntegrity) || 0) +
-      (parseFloat(fiAwareness) || 0) +
-      (parseFloat(fiCommunication) || 0);
-    return Math.min(total, 100);
+    let total = 0;
+    let hasAny = false;
+    criteriaList.forEach(c => {
+      if (scores[c.id] !== undefined && scores[c.id] !== "") {
+        total += parseFloat(scores[c.id]) || 0;
+        hasAny = true;
+      }
+    });
+    if (!hasAny) return finalInterviewScore;
+    return Math.min(total, criteriaList.reduce((acc, c) => acc + c.max_score, 0));
   };
 
   const handleUpdate = async () => {
@@ -286,7 +289,9 @@ function StatusManagement({
           totalSeconds = parseFloat(patRun) * 60;
         }
         if (!isNaN(totalSeconds) && totalSeconds > 0) {
-          finalPatRunPassed = totalSeconds <= 900;
+          const isFemale = applicantData?.gender?.toLowerCase() === 'female';
+          const maxSeconds = isFemale ? 1260 : 1140;
+          finalPatRunPassed = totalSeconds <= maxSeconds;
         }
       }
 
@@ -332,10 +337,10 @@ function StatusManagement({
           }
         } else if (currentStatus === "Neuro Examination") {
           if (psychologicalResult === "Recommended") {
-            statusToSave = "Medical";
+            statusToSave = "Medical Examination";
           } else if (psychologicalResult === "Not Recommended") {
             statusToSave = "Failed";
-            finalRejectionReason = "Failed Neuro Examination.";
+            finalRejectionReason = "Failed Neuro Examination: Not Recommended.";
           }
         } else if (currentStatus === "Drug Test") {
           if (drugResult === "Passed") {
@@ -361,35 +366,50 @@ function StatusManagement({
         }
       }
 
+      const combinedScores = criteriaList.filter(c => c.category === 'Interview').map(c => ({
+        criterion_id: c.id,
+        score: parseFloat(scores[c.id]) || 0
+      }));
+
+      const addCriteria = (name, scoreVal, textVal, boolVal) => {
+        const criterion = criteriaList.find(c => c.name === name);
+        if (criterion) {
+          combinedScores.push({
+            criterion_id: criterion.id,
+            score: scoreVal !== null && scoreVal !== "" && !isNaN(scoreVal) ? parseFloat(scoreVal) : null,
+            text_value: textVal || null,
+            boolean_value: boolVal !== null ? boolVal : null
+          });
+        }
+      };
+
+      addCriteria('BMI Height', bmiHeight, null, null);
+      addCriteria('BMI Weight', bmiWeight, null, null);
+      addCriteria('BMI Result', null, bmiHeight && bmiWeight ? (parseFloat(bmiWeight) / ((parseFloat(bmiHeight) / 100) * (parseFloat(bmiHeight) / 100))).toFixed(1) : null, null);
+      
+      addCriteria('PAT Pushups', patPushups, null, finalPatPushupsPassed);
+      addCriteria('PAT Situps', patSitups, null, finalPatSitupsPassed);
+      addCriteria('PAT Run', null, patRun, finalPatRunPassed);
+      
+      addCriteria('Psychological Result', null, psychologicalResult, null);
+      addCriteria('Medical Result', null, medicalResult, null);
+      addCriteria('Drug Test Result', null, drugResult, null);
+
       const dataToSend = {
         status: statusToSave,
         rejection_reason:
           statusToSave === "Failed" ? finalRejectionReason : null,
         performed_by: currentUser,
-        bmi_height: bmiHeight === "" ? null : bmiHeight,
-        bmi_weight: bmiWeight === "" ? null : bmiWeight,
-        bmi_result:
+        evaluation_bmi:
           bmiHeight && bmiWeight
             ? (
                 parseFloat(bmiWeight) /
                 ((parseFloat(bmiHeight) / 100) * (parseFloat(bmiHeight) / 100))
               ).toFixed(1)
             : null,
-        pat_pushups: patPushups === "" ? null : parseInt(patPushups),
-        pat_pushups_passed: finalPatPushupsPassed,
-        pat_situps: patSitups === "" ? null : parseInt(patSitups),
-        pat_situps_passed: finalPatSitupsPassed,
-        pat_run: patRun === "" ? null : patRun,
-        pat_run_passed: finalPatRunPassed,
-        psychological_result: psychologicalResult || null,
-        medical_result: medicalResult || null,
-        drug_test_result: drugResult || null,
-        fi_patriotism: fiPatriotism === "" ? null : parseFloat(fiPatriotism),
-        fi_integrity: fiIntegrity === "" ? null : parseFloat(fiIntegrity),
-        fi_awareness: fiAwareness === "" ? null : parseFloat(fiAwareness),
-        fi_communication:
-          fiCommunication === "" ? null : parseFloat(fiCommunication),
-        final_interview_score:
+        evaluation_pat: null, // PAT Score is computed manually or left null for now
+        criteria_scores: combinedScores,
+        evaluation_final_interview:
           getFiComputedScore() === "" ? null : getFiComputedScore(),
         // Schedule
         scheduled_date:
@@ -409,6 +429,14 @@ function StatusManagement({
           currentStatus === "Qualified" || statusToSave === "Qualified"
             ? true
             : applicantData?.is_qualified_evaluated || false,
+        is_bmi_evaluated:
+          currentStatus === "Body Mass Index" || statusToSave === "Body Mass Index"
+            ? true
+            : applicantData?.is_bmi_evaluated || false,
+        is_pat_evaluated:
+          currentStatus === "Physical Agility Test" || statusToSave === "Physical Agility Test"
+            ? true
+            : applicantData?.is_pat_evaluated || false,
       };
 
       await api.put(`users/update_status/${applicantId}/`, dataToSend);
@@ -622,23 +650,14 @@ function StatusManagement({
             )}
             <div className="border border-gray-200 rounded-lg p-5 text-sm bg-white shadow-sm">
               <CriteriaForm
-                values={{
-                  fiPatriotism,
-                  fiIntegrity,
-                  fiAwareness,
-                  fiCommunication,
-                }}
+                criteriaList={criteriaList}
+                values={scores}
                 onChange={(key, val) => {
-                  const setters = {
-                    fiPatriotism: setFiPatriotism,
-                    fiIntegrity: setFiIntegrity,
-                    fiAwareness: setFiAwareness,
-                    fiCommunication: setFiCommunication,
-                  };
-                  setters[key]?.(val);
+                  setScores(prev => ({ ...prev, [key]: val }));
                 }}
                 isInterviewer={isInterviewer}
                 totalScore={getFiComputedScore()}
+                maxTotal={criteriaList.reduce((acc, c) => acc + c.max_score, 0)}
               />
             </div>
           </div>

@@ -1,9 +1,8 @@
 # Use the official lightweight Python image
 FROM python:3.12-slim
 
-# Install system dependencies (including Tesseract OCR and build tools)
-RUN apt-get update && apt-get install -y \ \ -eng \
-    libtesseract-dev \
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
     build-essential \
     pkg-config \
     default-libmysqlclient-dev \

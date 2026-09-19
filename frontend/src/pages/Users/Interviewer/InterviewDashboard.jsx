@@ -138,18 +138,31 @@ function InterviewDashboard() {
     }
   };
 
+  const [criteriaList, setCriteriaList] = useState([]);
+  
+  const fetchCriteria = async () => {
+    try {
+      const res = await api.get("/users/evaluation-criteria/");
+      setCriteriaList(res.data);
+    } catch (e) {
+      console.error("Failed to fetch criteria", e);
+    }
+  };
+
   useEffect(() => {
+    fetchCriteria();
     fetchApplicants();
   }, []);
 
   const handleStartInterview = (applicant) => {
     setSelectedApplicant(applicant);
-    setScores({
-      fiPatriotism: applicant.fi_patriotism || "",
-      fiIntegrity: applicant.fi_integrity || "",
-      fiAwareness: applicant.fi_awareness || "",
-      fiCommunication: applicant.fi_communication || "",
-    });
+    const initialScores = {};
+    if (applicant.criteria_scores) {
+      applicant.criteria_scores.forEach(scoreObj => {
+        initialScores[scoreObj.criterion] = scoreObj.score;
+      });
+    }
+    setScores(initialScores);
   };
 
   const handleScoreChange = (key, val) => {
@@ -157,28 +170,19 @@ function InterviewDashboard() {
   };
 
   const getFiComputedScore = () => {
-    const { fiPatriotism, fiIntegrity, fiAwareness, fiCommunication } = scores;
-    if (
-      fiPatriotism === "" &&
-      fiIntegrity === "" &&
-      fiAwareness === "" &&
-      fiCommunication === ""
-    ) {
-      return "";
-    }
-    const total =
-      (parseFloat(fiPatriotism) || 0) +
-      (parseFloat(fiIntegrity) || 0) +
-      (parseFloat(fiAwareness) || 0) +
-      (parseFloat(fiCommunication) || 0);
-    return Math.min(total, 100);
+    let total = 0;
+    let hasAny = false;
+    criteriaList.forEach(c => {
+      if (scores[c.id] !== undefined && scores[c.id] !== "") {
+        total += parseFloat(scores[c.id]) || 0;
+        hasAny = true;
+      }
+    });
+    if (!hasAny) return "";
+    return Math.min(total, criteriaList.reduce((acc, c) => acc + c.max_score, 0));
   };
 
-  const isFormValid =
-    scores.fiPatriotism !== "" &&
-    scores.fiIntegrity !== "" &&
-    scores.fiAwareness !== "" &&
-    scores.fiCommunication !== "";
+  const isFormValid = criteriaList.every(c => scores[c.id] !== undefined && scores[c.id] !== "");
 
   const handleSubmitEvaluation = async () => {
     const score = getFiComputedScore();
@@ -190,10 +194,10 @@ function InterviewDashboard() {
     setSubmitting(true);
     try {
       const payload = {
-        fi_patriotism: scores.fiPatriotism,
-        fi_integrity: scores.fiIntegrity,
-        fi_awareness: scores.fiAwareness,
-        fi_communication: scores.fiCommunication,
+        criteria_scores: criteriaList.map(c => ({
+          criterion_id: c.id,
+          score: parseFloat(scores[c.id]) || 0
+        })),
         final_interview_score: score,
       };
 
@@ -205,10 +209,7 @@ function InterviewDashboard() {
             ? {
                 ...app,
                 displayStatus: "Evaluated",
-                fi_patriotism: scores.fiPatriotism,
-                fi_integrity: scores.fiIntegrity,
-                fi_awareness: scores.fiAwareness,
-                fi_communication: scores.fiCommunication,
+                criteria_scores: payload.criteria_scores.map(cs => ({ criterion: cs.criterion_id, score: cs.score, criterion_name: criteriaList.find(c => c.id === cs.criterion_id)?.name })),
                 final_interview_score: score,
               }
             : app,
@@ -496,10 +497,12 @@ function InterviewDashboard() {
 
                 <div className="p-6 max-h-[60vh] overflow-y-auto">
                   <CriteriaForm
+                    criteriaList={criteriaList}
                     values={scores}
                     onChange={handleScoreChange}
                     isInterviewer={true}
                     totalScore={getFiComputedScore()}
+                    maxTotal={criteriaList.reduce((acc, c) => acc + c.max_score, 0)}
                     disabled={selectedApplicant.displayStatus === "Evaluated"}
                   />
                 </div>

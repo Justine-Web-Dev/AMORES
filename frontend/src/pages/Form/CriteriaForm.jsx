@@ -1,26 +1,5 @@
 import React from "react";
-const CRITERIA_FIELD = [
-  {
-    key: "fiPatriotism",
-    title: "I. PATRIOTISM AND SERVICE ORIENTATION",
-    max: 25,
-  },
-  {
-    key: "fiIntegrity",
-    title: "II. INTEGRITY/VALUES",
-    max: 25,
-  },
-  {
-    key: "fiAwareness",
-    title: "III. AWARENESS OF ISSUES",
-    max: 25,
-  },
-  {
-    key: "fiCommunication",
-    title: "IV. COMMUNICATION SKILLS",
-    max: 25,
-  },
-];
+
 
 function CritriaField({ label, max, value, onChange, disabled }) {
   const handleChange = (e) => {
@@ -51,17 +30,17 @@ function CritriaField({ label, max, value, onChange, disabled }) {
   );
 }
 
-function CriteriaForm({ values, onChange, isInterviewer, totalScore, disabled }) {
+function CriteriaForm({ criteriaList = [], values = {}, onChange, isInterviewer, totalScore, disabled, maxTotal = 100 }) {
   return (
     <>
       <div className="grid grid-cols-2 gap-6 items-stretch">
-        {CRITERIA_FIELD.map((field) => (
+        {criteriaList.map((field) => (
           <CritriaField
-            key={field.key}
-            label={field.title}
-            max={field.max}
-            value={values[field.key]}
-            onChange={(val) => onChange(field.key, val)}
+            key={field.id}
+            label={field.name}
+            max={field.max_score}
+            value={values[field.id] || ""}
+            onChange={(val) => onChange(field.id, val)}
             disabled={!isInterviewer || disabled}
           />
         ))}
@@ -70,7 +49,7 @@ function CriteriaForm({ values, onChange, isInterviewer, totalScore, disabled })
       {/* Total Score */}
       <div className="sticky bottom-0 mt-6 border-t-2 border-gray-200 flex justify-between items-center bg-white p-4 rounded-b-lg shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)] z-10">
         <span className="text-base font-bold text-gray-800 uppercase tracking-wider">
-          Total Score (100%):
+          Total Score ({maxTotal}%):
         </span>
         <span
           className={`text-2xl font-black ${totalScore !== "" && totalScore !== null && parseFloat(totalScore) >= 70 ? "text-emerald-600" : "text-rose-600"}`}

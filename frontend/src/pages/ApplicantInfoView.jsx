@@ -46,6 +46,10 @@ function ApplicantInfoView({ data }) {
             <p>{data.age || "N/A"}</p>
           </div>
           <div className="info-item">
+            <label>Gender</label>
+            <p>{data.gender || "N/A"}</p>
+          </div>
+          <div className="info-item">
             <label>CP #</label>
             <p>{data.cp_number || "N/A"}</p>
           </div>

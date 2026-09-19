@@ -493,7 +493,11 @@ def get_applicant_queryset():
   return Applicant.objects.prefetch_related(
     Prefetch(
       'applications',
-      queryset=Application.objects.select_related('evaluation').order_by('-created_at'),
+      queryset=Application.objects.select_related(
+          'evaluation', 'evaluation_bmi', 'evaluation_pat', 'evaluation_final_interview'
+      ).prefetch_related(
+          'evaluation__criteria_scores', 'evaluation__criteria_scores__criterion'
+      ).order_by('-created_at'),
       to_attr='prefetched_applications'
     )
   )
@@ -503,6 +507,29 @@ def get_applicant_form(request):
   applicants = get_applicant_queryset()
   serializer = ApplicantFullSerializer(applicants, many=True)
   return Response(serializer.data)
+
+@api_view(['GET'])
+def get_failed_applicants(request):
+    from .models import FailedApplicant, Application
+    from .serializers import FailedApplicantSerializer
+    from django.db.models import Prefetch
+    
+    failed = FailedApplicant.objects.select_related('application', 'application__applicant').order_by('-failed_at')
+    
+    failed = failed.prefetch_related(
+        Prefetch(
+            'application__applicant__applications',
+            queryset=Application.objects.select_related(
+                'evaluation', 'evaluation_bmi', 'evaluation_pat', 'evaluation_final_interview'
+            ).prefetch_related(
+                'evaluation__criteria_scores', 'evaluation__criteria_scores__criterion'
+            ).order_by('-created_at'),
+            to_attr='prefetched_applications'
+        )
+    )
+    
+    serializer = FailedApplicantSerializer(failed, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
 def get_dashboard_applicants(request):
@@ -517,14 +544,40 @@ def get_dashboard_applicants(request):
         app_created_at=Subquery(latest_app_subquery.values('created_at')[:1]),
         app_status=Subquery(latest_app_subquery.values('status')[:1]),
         app_batch=Subquery(latest_app_subquery.values('batch')[:1]),
-        app_final_interview_score=Subquery(
+        app_evaluation_final_interview=Subquery(
             Application.objects.filter(
                 applicant=OuterRef('pk')
-            ).order_by('-created_at').values('evaluation__final_interview_score')[:1]
+            ).order_by('-created_at').values('evaluation_final_interview__score')[:1]
+        ),
+        app_pat_pushups=Subquery(
+            Application.objects.filter(
+                applicant=OuterRef('pk')
+            ).order_by('-created_at').values('evaluation_pat__pushups')[:1]
+        ),
+        app_evaluation_pat=Subquery(
+            Application.objects.filter(
+                applicant=OuterRef('pk')
+            ).order_by('-created_at').values('evaluation_pat__score')[:1]
+        ),
+        app_bmi_weight=Subquery(
+            Application.objects.filter(
+                applicant=OuterRef('pk')
+            ).order_by('-created_at').values('evaluation_bmi__weight')[:1]
+        ),
+        app_is_bmi_evaluated=Subquery(
+            Evaluation.objects.filter(
+                application__applicant=OuterRef('pk')
+            ).order_by('-application__created_at').values('is_bmi_evaluated')[:1]
+        ),
+        app_is_pat_evaluated=Subquery(
+            Evaluation.objects.filter(
+                application__applicant=OuterRef('pk')
+            ).order_by('-application__created_at').values('is_pat_evaluated')[:1]
         )
     ).values(
         'id', 'created_at', 'app_created_at', 'app_batch', 'app_status',
-        'app_final_interview_score',
+        'app_evaluation_final_interview', 'app_pat_pushups', 'app_evaluation_pat', 'app_bmi_weight',
+        'app_is_bmi_evaluated', 'app_is_pat_evaluated',
         'gender', 'birthdate', 'program', 'name_of_school', 'province', 'is_reapplied'
     )
 
@@ -552,7 +605,12 @@ def get_dashboard_applicants(request):
             'created_at': created_at_val,
             'batch': a['app_batch'],
             'status': a['app_status'],
-            'final_interview_score': a['app_final_interview_score'],
+            'evaluation_final_interview': a['app_evaluation_final_interview'],
+            'pat_pushups': a['app_pat_pushups'],
+            'evaluation_pat': a['app_evaluation_pat'],
+            'bmi_weight': a['app_bmi_weight'],
+            'is_bmi_evaluated': a['app_is_bmi_evaluated'],
+            'is_pat_evaluated': a['app_is_pat_evaluated'],
             'gender': a['gender'],
             'age': age,
             'program': a['program'],
@@ -803,6 +861,14 @@ def send_schedule_email(applicant_email, applicant_name, scheduled_date, schedul
     except Exception as e:
         print(f"[AMORES] Schedule email send failed for {applicant_email}: {e}", flush=True)
 
+@api_view(['GET'])
+def get_evaluation_criteria(request):
+    from .models import EvaluationCriteria
+    from .serializers import EvaluationCriteriaSerializer
+    criteria = EvaluationCriteria.objects.filter(is_active=True).order_by('order', 'name')
+    serializer = EvaluationCriteriaSerializer(criteria, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 @api_view(['PUT'])
 @permission_classes([IsRecruiterOrInterviewer])
 def update_applicant_status(request, pk):
@@ -817,23 +883,197 @@ def update_applicant_status(request, pk):
         new_status = request.data.get('status')
         if new_status:
             application.status = new_status
+            
+            # Auto-create evaluation records for these stages
+            from .models import EvaluationBMI, EvaluationPAT, EvaluationFinalInterview
+            if new_status == 'Body Mass Index':
+                EvaluationBMI.objects.get_or_create(application=application)
+            elif new_status == 'Physical Agility Test':
+                EvaluationPAT.objects.get_or_create(application=application)
+            elif new_status == 'Final Interview':
+                EvaluationFinalInterview.objects.get_or_create(application=application)
         
         if new_status == 'Failed':
             application.rejection_reason = request.data.get('rejection_reason')
 
         # Evaluation fields
         eval_fields = [
-            'bmi_height', 'bmi_weight', 'bmi_result', 'pat_score', 
-            'pat_pushups', 'pat_pushups_passed', 'pat_situps', 
-            'pat_situps_passed', 'pat_run', 'pat_run_passed',
-            'psychological_result', 'medical_result', 'drug_test_result', 
-            'final_interview_score', 'fi_patriotism', 'fi_integrity',
-            'fi_awareness', 'fi_communication', 'is_qualified_evaluated'
+            'is_qualified_evaluated',
+            'is_bmi_evaluated',
+            'is_pat_evaluated'
         ]
         for field in eval_fields:
             if field in request.data:
                 setattr(evaluation, field, request.data.get(field))
+                
+        # Handle explicitly separated models (BMI, PAT, FI)
+        from .models import EvaluationBMI, EvaluationPAT, EvaluationFinalInterview
+        
+        if 'evaluation_final_interview' in request.data:
+            fi, _ = EvaluationFinalInterview.objects.get_or_create(application=application)
+            fi.score = request.data.get('evaluation_final_interview')
+            fi.save()
+            
+        if 'evaluation_bmi' in request.data:
+            bmi, _ = EvaluationBMI.objects.get_or_create(application=application)
+            bmi.result = request.data.get('evaluation_bmi')
+            bmi.save()
+            
+        if 'evaluation_pat' in request.data:
+            pat, _ = EvaluationPAT.objects.get_or_create(application=application)
+            pat.score = request.data.get('evaluation_pat')
+            pat.save()
+        
+        # Handle dynamic criteria scores
+        if 'criteria_scores' in request.data:
+            from .models import EvaluationCriteria, EvaluationScore
+            scores_data = request.data.get('criteria_scores')
+            if isinstance(scores_data, list):
+                for score_item in scores_data:
+                    criterion_id = score_item.get('criterion_id')
+                    score_value = score_item.get('score')
+                    text_value = score_item.get('text_value')
+                    boolean_value = score_item.get('boolean_value')
+                    
+                    if criterion_id is not None:
+                        try:
+                            criterion = EvaluationCriteria.objects.get(id=criterion_id)
+                            
+                            # Intercept explicit model data if they come through criteria_scores array
+                            if criterion.name == 'BMI Height':
+                                bmi, _ = EvaluationBMI.objects.get_or_create(application=application)
+                                bmi.height = score_value
+                                bmi.save()
+                            elif criterion.name == 'BMI Weight':
+                                bmi, _ = EvaluationBMI.objects.get_or_create(application=application)
+                                bmi.weight = score_value
+                                bmi.save()
+                            elif criterion.name == 'PAT Pushups':
+                                pat, _ = EvaluationPAT.objects.get_or_create(application=application)
+                                pat.pushups = score_value
+                                pat.pushups_passed = boolean_value
+                                pat.save()
+                            elif criterion.name == 'PAT Situps':
+                                pat, _ = EvaluationPAT.objects.get_or_create(application=application)
+                                pat.situps = score_value
+                                pat.situps_passed = boolean_value
+                                pat.save()
+                            elif criterion.name == 'PAT Run':
+                                pat, _ = EvaluationPAT.objects.get_or_create(application=application)
+                                pat.run = text_value
+                                pat.run_passed = boolean_value
+                                pat.save()
+                            else:
+                                EvaluationScore.objects.update_or_create(
+                                    evaluation=evaluation,
+                                    criterion=criterion,
+                                    defaults={
+                                        'score': score_value,
+                                        'text_value': text_value,
+                                        'boolean_value': boolean_value
+                                    }
+                                )
+                        except EvaluationCriteria.DoesNotExist:
+                            pass
+                            
         evaluation.save()
+        
+        # --- AUTO COMPUTE LOGIC ---
+        if hasattr(evaluation, 'evaluation_bmi') and evaluation.evaluation_bmi.height and evaluation.evaluation_bmi.weight:
+            try:
+                h = float(evaluation.evaluation_bmi.height)
+                w = float(evaluation.evaluation_bmi.weight)
+                if h >= 100 and w >= 30:
+                    h_m = h / 100
+                    bmi_val = w / (h_m * h_m)
+                    evaluation.evaluation_bmi.result = f"{bmi_val:.1f}"
+                    evaluation.evaluation_bmi.save()
+                    
+                    if application.status == 'Body Mass Index':
+                        if not (18.5 <= bmi_val <= 25.0):
+                            application.status = 'Failed'
+                            cat = "Underweight" if bmi_val < 18.5 else "Overweight"
+                            application.rejection_reason = f"{cat}. Calculated BMI is {bmi_val:.1f} (Normal range: 18.5 - 25.0)."
+                            new_status = 'Failed'
+            except ValueError:
+                pass
+
+        if hasattr(evaluation, 'evaluation_pat'):
+            pat = evaluation.evaluation_pat
+            pat_failed = False
+            failed_events = []
+            
+            if pat.pushups is not None:
+                try:
+                    is_female = applicant.gender and applicant.gender.lower() == 'female'
+                    min_pushups = 25 if is_female else 35
+                    pat.pushups_passed = float(pat.pushups) >= min_pushups
+                    if not pat.pushups_passed: 
+                        pat_failed = True
+                        failed_events.append("Push-Ups")
+                except ValueError:
+                    pass
+            
+            if pat.situps is not None:
+                try:
+                    is_female = applicant.gender and applicant.gender.lower() == 'female'
+                    min_situps = 25 if is_female else 35
+                    pat.situps_passed = float(pat.situps) >= min_situps
+                    if not pat.situps_passed: 
+                        pat_failed = True
+                        failed_events.append("Sit-Ups")
+                except ValueError:
+                    pass
+                    
+            if pat.run:
+                try:
+                    parts = pat.run.split(":")
+                    if len(parts) == 2:
+                        total_seconds = int(parts[0]) * 60 + int(parts[1])
+                    else:
+                        total_seconds = float(pat.run) * 60
+                    
+                    is_female = applicant.gender and applicant.gender.lower() == 'female'
+                    max_seconds = 1260 if is_female else 1140
+                    
+                    pat.run_passed = total_seconds < max_seconds
+                    if not pat.run_passed:
+                        pat_failed = True
+                        failed_events.append("Run")
+                except ValueError:
+                    pass
+                    
+            pat.save()
+            
+            if application.status == 'Physical Agility Test':
+                # Check if all events were passed (only if they were actually submitted)
+                # But typically they are submitted together. We fail if pat_failed is True.
+                if pat_failed:
+                    application.status = 'Failed'
+                    application.rejection_reason = f"Failed Physical Agility Test requirements in: {', '.join(failed_events)}."
+                    new_status = 'Failed'
+
+        if application.status == 'Final Interview':
+            fi_scores = EvaluationScore.objects.filter(
+                evaluation=evaluation, 
+                criterion__category='Interview'
+            )
+            if fi_scores.exists():
+                total = sum(s.score for s in fi_scores if s.score is not None)
+                fi, _ = EvaluationFinalInterview.objects.get_or_create(application=application)
+                fi.score = total
+                fi.save()
+                
+                if total < 70:
+                    application.status = 'Failed'
+                    application.rejection_reason = f"Failed Final Interview with a score of {total:.2f}%."
+                    new_status = 'Failed'
+                else:
+                    # Oath Taking
+                    application.status = 'Oath Taking'
+                    new_status = 'Oath Taking'
+        # --- END AUTO COMPUTE LOGIC ---
+
 
         old_scheduled_date = application.scheduled_date
         old_scheduled_time = application.scheduled_time
@@ -844,6 +1084,21 @@ def update_applicant_status(request, pk):
             if field in request.data:
                 setattr(application, field, request.data.get(field))
         application.save()
+        
+        # Create FailedApplicant record if failed
+        if application.status == 'Failed':
+            from .models import FailedApplicant
+            # Attempt to determine the stage they failed at
+            stage = request.data.get('status') or application.status # Fallback
+            # If the stage is exactly 'Failed', we might not know which stage they failed AT.
+            # But earlier in this function, we do: new_status = request.data.get('status')
+            FailedApplicant.objects.get_or_create(
+                application=application,
+                defaults={
+                    'failed_stage': 'Unknown' if not new_status or new_status == 'Failed' else new_status,
+                    'reason': application.rejection_reason or 'No reason provided.'
+                }
+            )
         
         # Email Notification if schedule is updated
         schedule_updated = False
@@ -934,6 +1189,12 @@ def track_application_status(request):
     applicant = application.applicant
     evaluation = getattr(application, 'evaluation', None)
 
+    # Map dynamic criteria scores
+    criteria_map = {}
+    if evaluation:
+        for s in evaluation.criteria_scores.all():
+            criteria_map[s.criterion.name] = s
+
     return Response({
         "tracking_code": application.tracking_code,
         "applicant_id": applicant.id,
@@ -946,19 +1207,19 @@ def track_application_status(request):
         "rejection_reason" : application.rejection_reason,
         "scheduled_date": application.scheduled_date,
         "scheduled_time": application.scheduled_time,
-        "drug_test_result": evaluation.drug_test_result if evaluation else None,
-        "bmi_height": evaluation.bmi_height if evaluation else None,
-        "bmi_weight": evaluation.bmi_weight if evaluation else None,
-        "pat_score": evaluation.pat_score if evaluation else None,
-        "pat_pushups": evaluation.pat_pushups if evaluation else None,
-        "pat_situps": evaluation.pat_situps if evaluation else None,
-        "pat_run": evaluation.pat_run if evaluation else None,
-        "pat_pushups_passed": evaluation.pat_pushups_passed if evaluation else None,
-        "pat_situps_passed": evaluation.pat_situps_passed if evaluation else None,
-        "pat_run_passed": evaluation.pat_run_passed if evaluation else None,
-        "psychological_result": evaluation.psychological_result if evaluation else None,
-        "medical_result": evaluation.medical_result if evaluation else None,
-        "final_interview_score": evaluation.final_interview_score if evaluation else None,
+        "drug_test_result": criteria_map.get("Drug Test Result").text_value if "Drug Test Result" in criteria_map else None,
+        "bmi_height": application.evaluation_bmi.height if hasattr(application, 'evaluation_bmi') else None,
+        "bmi_weight": application.evaluation_bmi.weight if hasattr(application, 'evaluation_bmi') else None,
+        "evaluation_pat": application.evaluation_pat.score if hasattr(application, 'evaluation_pat') else None,
+        "pat_pushups": application.evaluation_pat.pushups if hasattr(application, 'evaluation_pat') else None,
+        "pat_situps": application.evaluation_pat.situps if hasattr(application, 'evaluation_pat') else None,
+        "pat_run": application.evaluation_pat.run if hasattr(application, 'evaluation_pat') else None,
+        "pat_pushups_passed": application.evaluation_pat.pushups_passed if hasattr(application, 'evaluation_pat') else None,
+        "pat_situps_passed": application.evaluation_pat.situps_passed if hasattr(application, 'evaluation_pat') else None,
+        "pat_run_passed": application.evaluation_pat.run_passed if hasattr(application, 'evaluation_pat') else None,
+        "psychological_result": criteria_map.get("Psychological Result").text_value if "Psychological Result" in criteria_map else None,
+        "medical_result": criteria_map.get("Medical Result").text_value if "Medical Result" in criteria_map else None,
+        "evaluation_final_interview": application.evaluation_final_interview.score if hasattr(application, 'evaluation_final_interview') else None,
         "oath_taking_date": application.oath_taking_date,
         "evaluation_remarks": application.evaluation_remarks
     }, status=status.HTTP_200_OK)
@@ -1000,10 +1261,28 @@ def get_applicant_documents(request, applicant_id):
 @api_view(['POST'])
 def scan_document(request, doc_id):
     try:
-        pass
-        
-        # Fetch the updated document
+        from .ocr_service import verify_document
         document = ApplicantDocument.objects.get(id=doc_id)
+        
+        # Determine mime type from file extension
+        import mimetypes
+        file_name = document.file.name
+        mime_type, _ = mimetypes.guess_type(file_name)
+        if not mime_type:
+            mime_type = 'image/jpeg' # Default fallback
+            
+        # Read image bytes
+        image_bytes = document.file.read()
+        
+        # Call Gemini OCR Service
+        result = verify_document(image_bytes, mime_type, document.get_document_type_display())
+        
+        # Update document
+        document.ocr_text = result.get('extracted_text', '')
+        document.ai_verified = result.get('is_valid', False)
+        document.ai_remarks = result.get('rejection_reason', '')
+        document.save()
+        
         serializer = ApplicantDocumentSerializer(document, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     except Exception as e:
@@ -1131,7 +1410,19 @@ def update_global_setting(request):
         setting.description = request.data.get('description', setting.description)
         if 'is_active' in request.data:
             setting.is_active = request.data['is_active']
-        setting.save()
+            
+        # Evaluation fields
+        evaluation = setting
+        if 'is_qualified_evaluated' in request.data:
+            evaluation.is_qualified_evaluated = request.data['is_qualified_evaluated']
+            
+        if 'is_bmi_evaluated' in request.data:
+            evaluation.is_bmi_evaluated = request.data['is_bmi_evaluated']
+            
+        if 'is_pat_evaluated' in request.data:
+            evaluation.is_pat_evaluated = request.data['is_pat_evaluated']
+            
+        evaluation.save()
         
         log_action(
             user=request.user,
