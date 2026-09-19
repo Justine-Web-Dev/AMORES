@@ -143,7 +143,8 @@ function InterviewDashboard() {
   const fetchCriteria = async () => {
     try {
       const res = await api.get("/users/evaluation-criteria/");
-      setCriteriaList(res.data);
+      // Only load criteria meant for the Final Interview
+      setCriteriaList(res.data.filter(c => c.category === "Interview"));
     } catch (e) {
       console.error("Failed to fetch criteria", e);
     }
