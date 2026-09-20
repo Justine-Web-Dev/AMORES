@@ -311,7 +311,7 @@ class SystemSettings(models.Model):
     current_batch = models.IntegerField(default=1, verbose_name="Current Batch")
     
     QUOTA_TYPES = [('Attrition', 'Attrition (Regional)'), ('Regular', 'Regular (National)')]
-    quota_type = models.CharField(max_length=50, choices=QUOTA_TYPES, default='Attrition', verbose_name="Type of Quota")
+    quota_type = models.CharField(max_length=50, choices=QUOTA_TYPES, default='Regular', verbose_name="Type of Quota")
     
     last_updated = models.DateTimeField(auto_now=True)
 

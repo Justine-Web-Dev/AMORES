@@ -63,8 +63,16 @@ from .models import EvaluationBMI, EvaluationPAT, EvaluationFinalInterview, Fail
 class EvaluationBMIAdmin(admin.ModelAdmin):
     list_display = ("application", "height", "weight", "result")
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(application__status='Body Mass Index')
+
 class EvaluationPATAdmin(admin.ModelAdmin):
     list_display = ("application", "pushups", "situps", "run", "pat_result")
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(application__status='Physical Agility Test')
 
     def pat_result(self, obj):
         if obj.pushups_passed is True and obj.situps_passed is True and obj.run_passed is True:
@@ -76,6 +84,10 @@ class EvaluationPATAdmin(admin.ModelAdmin):
 
 class EvaluationFinalInterviewAdmin(admin.ModelAdmin):
     list_display = ("application", "score")
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(application__status='Final Interview')
 
 class FailedApplicantAdmin(admin.ModelAdmin):
     list_display = ("application", "get_applicant_name", "failed_stage", "reason", "failed_at")

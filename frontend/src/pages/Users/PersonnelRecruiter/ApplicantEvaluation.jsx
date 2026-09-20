@@ -676,14 +676,13 @@ function ApplicantEvaluation({ isInterviewer = false }) {
           "Last Name": applicant.lastname,
           "Middle Name": applicant.middle_name || "N/A",
           "Barangay": applicant.barangay || "N/A",
-          //eligibility
-          //marital status
-          //place of application (attrition)
+          "Type of Quota": applicant.quota_type || "N/A",
           "Municipality": applicant.city_municipality || "N/A",
           ...((applicant.criteria_scores || []).reduce((acc, scoreObj) => {
             acc[scoreObj.criterion_name || `Criterion ${scoreObj.criterion}`] = scoreObj.score;
             return acc;
           }, {})),
+          "Total Score (%)": applicant.evaluation_final_interview !== null ? applicant.evaluation_final_interview : "N/A",
         };
       }
 
@@ -1162,10 +1161,12 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                       B{applicant.batch || 1}
                     </td>
                     <td className="text-center font-medium">
-                      {(applicant.quota_type || "").toLowerCase() === 'attrition' ? (
+                      {!applicant.quota_type || applicant.quota_type === "N/A" ? (
+                        <span className="bg-gray-100 text-gray-500 px-3 py-1 rounded-full text-xs font-semibold">N/A</span>
+                      ) : applicant.quota_type.toLowerCase() === 'attrition' ? (
                         <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs font-semibold">Attrition</span>
                       ) : (
-                        <span className="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs font-semibold">Regular</span>
+                        <span className="bg-green-100 text-green-600 px-3 py-1 rounded-full text-xs font-semibold">Regular</span>
                       )}
                     </td>
                     <td className="px-4 py-4 text-center">
