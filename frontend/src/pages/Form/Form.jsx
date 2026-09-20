@@ -246,7 +246,16 @@ function Form({ isApplicationOpen }) {
 
     try {
       setIsLoading(true);
-      const res = await api.post("users/applications/draft/save/", formData);
+      const draftPayload = {
+        ...formData,
+        address: {
+          barangay: formData.barangay,
+          city_municipality: formData.city_municipality,
+          province: formData.province,
+          zip_code: formData.zip_code
+        }
+      };
+      const res = await api.post("users/applications/draft/save/", draftPayload);
       setDraftCode(res.data.draft_code);
       setIsSuccessModalOpen(true);
     } catch (error) {

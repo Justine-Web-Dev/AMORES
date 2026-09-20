@@ -110,3 +110,9 @@ class ApplicationDraftAdmin(admin.ModelAdmin):
     list_filter = ("created_at", "updated_at")
 
 admin.site.register(ApplicationDraft, ApplicationDraftAdmin)
+
+from .models import Address
+@admin.register(Address)
+class AddressAdmin(admin.ModelAdmin):
+    list_display = ("full_address", "barangay", "city_municipality", "province", "zip_code")
+    search_fields = ("barangay", "city_municipality", "province")

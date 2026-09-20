@@ -6,7 +6,7 @@ from unittest.mock import patch
 from django.test import SimpleTestCase, TestCase
 from django.urls import reverse
 
-from .models import Applicant, Application, GlobalSetting, User
+from .models import Applicant, Application, User
 from .serializers import ApplicantFullSerializer
 from .utils import (
     build_database_backup_command,
@@ -195,10 +195,7 @@ class AdministratorLoginTests(TestCase):
         self.assertFalse(self.old_admin.is_active)
         self.assertTrue(self.old_admin.is_archived)
         self.assertTrue(self.new_admin.is_active)
-        self.assertEqual(
-            GlobalSetting.objects.get(key='ACTIVE_ADMIN_ID').value,
-            self.new_admin.id,
-        )
+
 
         inactive_users = self.client.get(
             reverse('get_user'),

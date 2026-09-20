@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Applicant, Application, Evaluation, ApplicantDocument, SystemSettings, AuditLog, GlobalSetting, Role, Permission, RolePermission, EvaluationCriteria, EvaluationScore, EvaluationBMI, EvaluationPAT, EvaluationFinalInterview, FailedApplicant
+from .models import User, Applicant, Application, Evaluation, ApplicantDocument, SystemSettings, AuditLog, Role, Permission, RolePermission, EvaluationCriteria, EvaluationScore, EvaluationBMI, EvaluationPAT, EvaluationFinalInterview, FailedApplicant, Address
 from django.utils.dateparse import parse_datetime
 from django.contrib.auth.hashers import make_password, identify_hasher
 
@@ -87,12 +87,18 @@ class ApplicationSerializer(serializers.ModelSerializer):
         model = Application
         fields = '__all__'
 
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = ['id', 'barangay', 'city_municipality', 'province', 'zip_code', 'full_address']
+        read_only_fields = ['full_address']
+
 class ApplicantSerializer(serializers.ModelSerializer):
     date_graduated = FlexibleDateField()
     birthdate = FlexibleDateField(required=False, allow_null=True)
     created_at = serializers.SerializerMethodField()
     age = serializers.SerializerMethodField()
-    address = serializers.ReadOnlyField()
+    address = AddressSerializer(required=False, allow_null=True)
     
     # We include fields from active applications to help the frontend
     current_application = ApplicationSerializer(source='active_application', read_only=True)
@@ -133,6 +139,25 @@ class ApplicantSerializer(serializers.ModelSerializer):
                 
         return attrs
     
+    def create(self, validated_data):
+        address_data = validated_data.pop('address', None)
+        if address_data:
+            address_instance = Address.objects.create(**address_data)
+            validated_data['address'] = address_instance
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        address_data = validated_data.pop('address', None)
+        if address_data:
+            if instance.address:
+                for attr, value in address_data.items():
+                    setattr(instance.address, attr, value)
+                instance.address.save()
+            else:
+                instance.address = Address.objects.create(**address_data)
+                
+        return super().update(instance, validated_data)
+
     def get_created_at(self, obj):
         app = getattr(obj, 'active_application', None)
         if app and app.created_at:
@@ -159,7 +184,7 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
     birthdate = FlexibleDateField(required=False, allow_null=True)
     created_at = serializers.SerializerMethodField()
     age = serializers.SerializerMethodField()
-    address = serializers.ReadOnlyField()
+    address = AddressSerializer(read_only=True)
     
     # Mapping back to old names for frontend compatibility
     firstname = serializers.CharField(source='first_name')
@@ -198,7 +223,6 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'first_name', 'last_name', 'middle_name', 'birthdate', 'age', 'email', 
             'contact_number', 'gender', 'program', 'date_graduated', 'address',
-            'barangay', 'city_municipality', 'province', 'zip_code',
             'name_of_school', 'latin_honor', 'pag_ibig_number', 
             'phil_health_id_num', 'height', 'tribe', 'created_at',
             'firstname', 'lastname', 'cp_number', 'middle_initial',
@@ -401,10 +425,7 @@ class AuditLogSerializer(serializers.ModelSerializer):
             return obj.performer_name
         return 'System'
 
-class GlobalSettingSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = GlobalSetting
-        fields = '__all__'
+
 
 # --- Governance & RBAC Serializers ---
 

@@ -605,7 +605,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
         const matchesSearch = fullName.includes(searchTerm.toLowerCase());
         const matchesStatus =
           statusFilter === "All" || applicant.status === statusFilter;
-        const normalizedProvince = (applicant.province || "").trim().replace(/\b\w/g, c => c.toUpperCase());
+        const normalizedProvince = (applicant.address?.province || "").trim().replace(/\b\w/g, c => c.toUpperCase());
         const matchesProvince =
           provinceFilter === "All" || normalizedProvince === provinceFilter;
         return matchesSearch && matchesStatus && matchesProvince;
@@ -663,7 +663,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
       const matchesSearch = fullName.includes(searchTerm.toLowerCase());
       const matchesStatus =
         statusFilter === "All" || applicant.status === statusFilter;
-      const normalizedProvince = (applicant.province || "").trim().replace(/\b\w/g, c => c.toUpperCase());
+      const normalizedProvince = (applicant.address?.province || "").trim().replace(/\b\w/g, c => c.toUpperCase());
       const matchesProvince =
         provinceFilter === "All" || normalizedProvince === provinceFilter;
       return matchesSearch && matchesStatus && matchesProvince;
@@ -675,9 +675,9 @@ function ApplicantEvaluation({ isInterviewer = false }) {
           "First Name": applicant.firstname,
           "Last Name": applicant.lastname,
           "Middle Name": applicant.middle_name || "N/A",
-          "Barangay": applicant.barangay || "N/A",
+          "Barangay": applicant.address?.barangay || "N/A",
           "Type of Quota": applicant.quota_type || "N/A",
-          "Municipality": applicant.city_municipality || "N/A",
+          "Municipality": applicant.address?.city_municipality || "N/A",
           ...((applicant.criteria_scores || []).reduce((acc, scoreObj) => {
             acc[scoreObj.criterion_name || `Criterion ${scoreObj.criterion}`] = scoreObj.score;
             return acc;
@@ -696,7 +696,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
         Gender: applicant.gender || "N/A",
         Email: applicant.email,
         "Contact #": applicant.cp_number,
-        "Permanent Address": applicant.address || "N/A",
+        "Permanent Address": applicant.address?.full_address || "N/A",
         Height: applicant.height,
         Tribe: applicant.tribe || "N/A",
         "Pag-IBIG No.": applicant.pag_ibig_number,
@@ -874,7 +874,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
             <option value="All">All Provinces</option>
             {[...new Set(
               applicantInfo
-                .map(app => app.province)
+                .map(app => app.address?.province)
                 .filter(Boolean)
                 .map(p => p.trim().replace(/\b\w/g, c => c.toUpperCase()))
             )].sort().map(prov => (
@@ -1152,7 +1152,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                     <td>{applicant.age}</td>
                     <td>{applicant.gender}</td>
                     <td>{applicant.program}</td>
-                    <td>{applicant.address || "N/A"}</td>
+                    <td>{applicant.address?.full_address || "N/A"}</td>
                     {/* <td>{applicant.name_of_school}</td> */}
                     <td>{applicant.date_graduated}</td>
 

@@ -403,6 +403,12 @@ export default function DocumentSubmission({ isApplicationOpen }) {
         date_graduated: formData.date_graduated
           ? new Date(formData.date_graduated).toISOString().split("T")[0]
           : null,
+        address: {
+          barangay: formData.barangay,
+          city_municipality: formData.city_municipality,
+          province: formData.province,
+          zip_code: formData.zip_code
+        }
       };
 
       const { data } = formData.tracking_code

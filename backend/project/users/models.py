@@ -80,6 +80,20 @@ class User(AbstractUser):
     def __str__(self):
         return f"{self.name} ({self.email})"
 
+class Address(models.Model):
+    barangay = models.CharField(max_length=100, null=True, blank=True, verbose_name="Barangay")
+    city_municipality = models.CharField(max_length=100, null=True, blank=True, verbose_name="City/Municipality")
+    province = models.CharField(max_length=100, null=True, blank=True, verbose_name="Province")
+    zip_code = models.CharField(max_length=10, null=True, blank=True, verbose_name="Zip Code")
+
+    @property
+    def full_address(self):
+        parts = [self.barangay, self.city_municipality, self.province, self.zip_code]
+        return ", ".join(filter(None, parts))
+
+    def __str__(self):
+        return self.full_address
+
 class Applicant(models.Model):
     QuotaType_Choices = [
         ('Attrition','Attrition'),
@@ -94,10 +108,7 @@ class Applicant(models.Model):
     gender = models.CharField(max_length=10, choices=[('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')], null=True, blank=True, verbose_name="Gender")
     birthdate = models.DateField(verbose_name="Birthdate", null=True, blank=True)
     
-    barangay = models.CharField(max_length=100, null=True, blank=True, verbose_name="Barangay")
-    city_municipality = models.CharField(max_length=100, null=True, blank=True, verbose_name="City/Municipality")
-    province = models.CharField(max_length=100, null=True, blank=True, verbose_name="Province")
-    zip_code = models.CharField(max_length=10, null=True, blank=True, verbose_name="Zip Code")
+    address = models.OneToOneField(Address, on_delete=models.SET_NULL, null=True, blank=True, related_name="applicant_profile", verbose_name="Address")
     
     # Education
     program = models.CharField(max_length=100, verbose_name="Program/Course")
@@ -119,9 +130,10 @@ class Applicant(models.Model):
     is_reapplied = models.BooleanField(default=False)
 
     @property
-    def address(self):
-        parts = [self.barangay, self.city_municipality, self.province, self.zip_code]
-        return ", ".join(filter(None, parts))
+    def full_address(self):
+        if self.address:
+            return self.address.full_address
+        return "N/A"
 
     @property
     def age(self):
@@ -339,19 +351,7 @@ class AuditLog(models.Model):
         performer = self.performer.name if self.performer else self.performer_name
         return f"{performer} - {self.action} at {self.timestamp}"
 
-class GlobalSetting(models.Model):
-    key = models.CharField(max_length=100, unique=True, verbose_name="Key")
-    value = models.JSONField(verbose_name="Value")
-    description = models.TextField(null=True, blank=True, verbose_name="Description")
-    is_active = models.BooleanField(default=True, verbose_name="Is Active")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
 
-    class Meta:
-        verbose_name = "Global Setting"
-        verbose_name_plural = "Global Settings"
-
-    def __str__(self):
-        return f"{self.key}: {self.value}"
 
 # --- Dynamic RBAC Models ---
 

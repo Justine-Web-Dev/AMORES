@@ -4,7 +4,7 @@ from .serializers import (
     UsersSerializers, ApplicantSerializer, ApplicantFullSerializer, ApplicantDocumentSerializer, 
     SystemSettingsSerializer, AuditLogSerializer, ApplicantDashboardSerializer
 )
-from .models import User, Applicant, Application, Evaluation, ApplicantDocument, SystemSettings, AuditLog, GlobalSetting
+from .models import User, Applicant, Application, Evaluation, ApplicantDocument, SystemSettings, AuditLog
 from .utils import (
     create_audit_log,
     get_user_from_request,
@@ -265,18 +265,12 @@ def login_user(request):
     # Only one administrator account may remain active at a time.
     if user.role == User.Roles.ADMINISTRATOR:
         with transaction.atomic():
-            setting, created = GlobalSetting.objects.select_for_update().get_or_create(
-                key='ACTIVE_ADMIN_ID', defaults={'value': user.id}
+            User.objects.filter(
+                role=User.Roles.ADMINISTRATOR,
+            ).exclude(pk=user.id).update(
+                is_active=False,
+                is_archived=True,
             )
-            if not created:
-                User.objects.filter(
-                    role=User.Roles.ADMINISTRATOR,
-                ).exclude(pk=user.id).update(
-                    is_active=False,
-                    is_archived=True,
-                )
-                setting.value = user.id
-                setting.save(update_fields=['value', 'updated_at'])
         create_audit_log(user, 'SYSTEM', f"Administrator '{user.email}' logged in. They are now the only active administrator.")
 
     return Response({
@@ -578,7 +572,7 @@ def get_dashboard_applicants(request):
         'id', 'created_at', 'app_created_at', 'app_batch', 'app_status',
         'app_evaluation_final_interview', 'app_pat_pushups', 'app_evaluation_pat', 'app_bmi_weight',
         'app_is_bmi_evaluated', 'app_is_pat_evaluated',
-        'gender', 'birthdate', 'program', 'name_of_school', 'province', 'is_reapplied'
+        'gender', 'birthdate', 'program', 'name_of_school', 'address__province', 'is_reapplied'
     )
 
     today = date.today()
@@ -615,7 +609,7 @@ def get_dashboard_applicants(request):
             'age': age,
             'program': a['program'],
             'school': a['name_of_school'],
-            'province': a['province'],
+            'province': a['address__province'],
             'is_reapplied': a['is_reapplied']
         })
         
@@ -1155,10 +1149,10 @@ def retrieve_application_data(request):
       "firstname": applicant.first_name,
       "middle_name": applicant.middle_name,
       "birthdate": applicant.birthdate,
-      "barangay": applicant.barangay,
-      "city_municipality": applicant.city_municipality,
-      "province": applicant.province,
-      "zip_code": applicant.zip_code,
+      "barangay": applicant.address.barangay if applicant.address else None,
+      "city_municipality": applicant.address.city_municipality if applicant.address else None,
+      "province": applicant.address.province if applicant.address else None,
+      "zip_code": applicant.address.zip_code if applicant.address else None,
       "gender": applicant.gender,
       "cp_number": applicant.contact_number,
       "program": applicant.program,
@@ -1380,71 +1374,6 @@ def get_audit_logs(request):
     logs = AuditLog.objects.all().order_by('-timestamp')[:500]
     serializer = AuditLogSerializer(logs, many=True)
     return Response(serializer.data)
-
-@api_view(['GET'])
-@permission_classes([IsSuperAdmin])
-def get_global_settings(request):
-    from .models import GlobalSetting
-    from .serializers import GlobalSettingSerializer
-    settings = GlobalSetting.objects.all()
-    serializer = GlobalSettingSerializer(settings, many=True)
-    return Response(serializer.data)
-
-@api_view(['POST', 'PUT'])
-@permission_classes([IsSuperAdmin])
-def update_global_setting(request):
-    from .models import GlobalSetting
-    from .serializers import GlobalSettingSerializer
-    from .audit_logger import log_action
-    
-    key = request.data.get('key')
-    if not key:
-        return Response({"error": "Key is required"}, status=status.HTTP_400_BAD_REQUEST)
-        
-    setting, created = GlobalSetting.objects.get_or_create(key=key, defaults={
-        'value': request.data.get('value', ''),
-        'description': request.data.get('description', '')
-    })
-    
-    if not created:
-        old_val = setting.value
-        setting.value = request.data.get('value', setting.value)
-        setting.description = request.data.get('description', setting.description)
-        if 'is_active' in request.data:
-            setting.is_active = request.data['is_active']
-            
-        # Evaluation fields
-        evaluation = setting
-        if 'is_qualified_evaluated' in request.data:
-            evaluation.is_qualified_evaluated = request.data['is_qualified_evaluated']
-            
-        if 'is_bmi_evaluated' in request.data:
-            evaluation.is_bmi_evaluated = request.data['is_bmi_evaluated']
-            
-        if 'is_pat_evaluated' in request.data:
-            evaluation.is_pat_evaluated = request.data['is_pat_evaluated']
-            
-        evaluation.save()
-        
-        log_action(
-            user=request.user,
-            action="UPDATE",
-            target_resource="GlobalSetting",
-            details=f"Updated global setting {key}",
-            changes={"old": old_val, "new": setting.value},
-            ip_address=request.META.get('REMOTE_ADDR')
-        )
-    else:
-        log_action(
-            user=request.user,
-            action="CREATE",
-            target_resource="GlobalSetting",
-            details=f"Created global setting {key}",
-            changes={"new": setting.value},
-            ip_address=request.META.get('REMOTE_ADDR')
-        )
-        
-    return Response(GlobalSettingSerializer(setting).data)
 
 @api_view(['POST'])
 @permission_classes([IsAdministrator])

@@ -140,7 +140,7 @@ function DashboardOverview() {
 
     if (provinceFilter !== "All") {
       data = data.filter((a) => {
-        const norm = (a.province || "").trim().replace(/\b\w/g, c => c.toUpperCase());
+        const norm = (a.address?.province || "").trim().replace(/\b\w/g, c => c.toUpperCase());
         return norm === provinceFilter;
       });
     }
@@ -390,7 +390,7 @@ function DashboardOverview() {
   const availableProvinces = useMemo(() => {
     return [...new Set(
       applicants
-        .map(a => a.province)
+        .map(a => a.address?.province)
         .filter(Boolean)
         .map(p => p.trim().replace(/\b\w/g, c => c.toUpperCase()))
     )].sort();

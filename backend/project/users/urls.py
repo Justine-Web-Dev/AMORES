@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import register_user,login_user, get_user,update_user, change_password, forgot_password, verify_otp, reset_password, get_applicant_form,register_applicant_form, track_status,track_application_status, retrieve_application_data, upload_document,get_applicant_documents, scan_document, get_single_applicant,update_applicant_status,get_active_applicants, get_all_applicants, get_failed_applicants, get_system_settings, update_system_settings, get_global_settings, update_global_setting, get_audit_logs, backup_database, restore_database, validate_applicant_form, SubmitApplicationView, reapply_update_view, get_system_health, anonymize_applicant, export_applicant_data, get_dashboard_applicants, save_application_draft, retrieve_application_draft, get_evaluation_criteria
+from .views import register_user,login_user, get_user,update_user, change_password, forgot_password, verify_otp, reset_password, get_applicant_form,register_applicant_form, track_status,track_application_status, retrieve_application_data, upload_document,get_applicant_documents, scan_document, get_single_applicant,update_applicant_status,get_active_applicants, get_all_applicants, get_failed_applicants, get_system_settings, update_system_settings, get_audit_logs, backup_database, restore_database, validate_applicant_form, SubmitApplicationView, reapply_update_view, get_system_health, anonymize_applicant, export_applicant_data, get_dashboard_applicants, save_application_draft, retrieve_application_draft, get_evaluation_criteria
 
 urlpatterns = [
   #Login Users
@@ -48,10 +48,7 @@ urlpatterns = [
     path('system-settings/', get_system_settings, name='get_system_settings'),
     path('system-settings/update/', update_system_settings, name='update_system_settings'),
     
-  #Global Platform Settings (Super Admin)
-    path('global-settings/', get_global_settings, name='get_global_settings'),
-    path('global-settings/update/', update_global_setting, name='update_global_setting'),
-    
+
   #Audit Logs
     path('audit-logs/', get_audit_logs, name='get_audit_logs'),
     
