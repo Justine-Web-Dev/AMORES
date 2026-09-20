@@ -387,6 +387,7 @@ function TrackApplication() {
                   <div className="flex items-center gap-2">
                     <p className="font-bold text-gray-800">
                       {application.bmi_height} cm / {application.bmi_weight} kg
+                      {application.bmi_height && application.bmi_weight ? ` (BMI: ${(application.bmi_weight / Math.pow(application.bmi_height / 100, 2)).toFixed(1)})` : ""}
                     </p>
                     {(hasPassedStage("Body Mass Index") || (application.bmi_height && !hasFailedStage("Body Mass Index"))) && (
                       <div className="inline-block px-2 py-0.5 border border-green-600 text-green-600 font-bold text-[10px] uppercase tracking-wider rounded w-max bg-green-50">
@@ -419,7 +420,7 @@ function TrackApplication() {
                       <p className="font-bold text-gray-800">
                         {application.pat_pushups}
                       </p>
-                      {application.pat_pushups_passed || (parseInt(application.pat_pushups, 10) >= 30) ? (
+                      {application.pat_pushups_passed ? (
                         <div className="inline-block px-2 py-0.5 border border-green-600 text-green-600 font-bold text-[10px] uppercase tracking-wider rounded w-max bg-green-50">
                           PASSED
                         </div>
@@ -436,7 +437,7 @@ function TrackApplication() {
                       <p className="font-bold text-gray-800">
                         {application.pat_situps}
                       </p>
-                      {application.pat_situps_passed || (parseInt(application.pat_situps, 10) >= 30) ? (
+                      {application.pat_situps_passed ? (
                         <div className="inline-block px-2 py-0.5 border border-green-600 text-green-600 font-bold text-[10px] uppercase tracking-wider rounded w-max bg-green-50">
                           PASSED
                         </div>
@@ -453,11 +454,7 @@ function TrackApplication() {
                       <p className="font-bold text-gray-800">
                         {application.pat_run}
                       </p>
-                      {application.pat_run_passed || (() => {
-                        const parts = String(application.pat_run).split(":");
-                        let totalSeconds = parts.length === 2 ? parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10) : parseFloat(application.pat_run) * 60;
-                        return !isNaN(totalSeconds) && totalSeconds > 0 && totalSeconds <= 900;
-                      })() ? (
+                      {application.pat_run_passed ? (
                         <div className="inline-block px-2 py-0.5 border border-green-600 text-green-600 font-bold text-[10px] uppercase tracking-wider rounded w-max bg-green-50">
                           PASSED
                         </div>

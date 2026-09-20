@@ -55,40 +55,39 @@ function StatusManagement({
     message: "",
   });
 
-  const [schDate, setSchDate] = useState(applicantData?.scheduled_date || "");
-  const [schTime, setSchTime] = useState(applicantData?.scheduled_time || "");
-  const [bmiHeight, setBmiHeight] = useState(applicantData?.bmi_height || "");
-  const [bmiWeight, setBmiWeight] = useState(applicantData?.bmi_weight || "");
-  const [patPushups, setPatPushups] = useState(
-    applicantData?.pat_pushups || "",
-  );
-  const [patPushupsPassed, setPatPushupsPassed] = useState(
-    applicantData?.pat_pushups != null
-      ? !!applicantData?.pat_pushups_passed
-      : null,
-  );
-  const [patSitups, setPatSitups] = useState(applicantData?.pat_situps || "");
-  const [patSitupsPassed, setPatSitupsPassed] = useState(
-    applicantData?.pat_situps != null
-      ? !!applicantData?.pat_situps_passed
-      : null,
-  );
-  const [patRun, setPatRun] = useState(applicantData?.pat_run || "");
-  const [patRunPassed, setPatRunPassed] = useState(
-    applicantData?.pat_run != null ? !!applicantData?.pat_run_passed : null,
-  );
-  const [psychologicalResult, setPsychologicalResult] = useState(
-    applicantData?.psychological_result || "",
-  );
-  const [medicalResult, setMedicalResult] = useState(
-    applicantData?.medical_result || "",
-  );
-  const [drugResult, setDrugResult] = useState(
-    applicantData?.drug_test_result || "",
-  );
+  const [draftData] = useState(() => {
+    if (!applicantId) return null;
+    try {
+      const str = sessionStorage.getItem(`eval_draft_${applicantId}`);
+      return str ? JSON.parse(str) : null;
+    } catch(e) { return null; }
+  });
+
+  const [schDate, setSchDate] = useState(draftData?.schDate ?? applicantData?.scheduled_date ?? "");
+  const [schTime, setSchTime] = useState(draftData?.schTime ?? applicantData?.scheduled_time ?? "");
+  const [bmiHeight, setBmiHeight] = useState(draftData?.bmiHeight ?? applicantData?.bmi_height ?? "");
+  const [bmiWeight, setBmiWeight] = useState(draftData?.bmiWeight ?? applicantData?.bmi_weight ?? "");
+  const [patPushups, setPatPushups] = useState(draftData?.patPushups ?? applicantData?.pat_pushups ?? "");
+  const [patPushupsPassed, setPatPushupsPassed] = useState(draftData?.patPushupsPassed ?? (applicantData?.pat_pushups != null ? !!applicantData?.pat_pushups_passed : null));
+  const [patSitups, setPatSitups] = useState(draftData?.patSitups ?? applicantData?.pat_situps ?? "");
+  const [patSitupsPassed, setPatSitupsPassed] = useState(draftData?.patSitupsPassed ?? (applicantData?.pat_situps != null ? !!applicantData?.pat_situps_passed : null));
+  const [patRun, setPatRun] = useState(draftData?.patRun ?? applicantData?.pat_run ?? "");
+  const [patRunPassed, setPatRunPassed] = useState(draftData?.patRunPassed ?? (applicantData?.pat_run != null ? !!applicantData?.pat_run_passed : null));
+  const [psychologicalResult, setPsychologicalResult] = useState(draftData?.psychologicalResult ?? applicantData?.psychological_result ?? "");
+  const [medicalResult, setMedicalResult] = useState(draftData?.medicalResult ?? applicantData?.medical_result ?? "");
+  const [drugResult, setDrugResult] = useState(draftData?.drugResult ?? applicantData?.drug_test_result ?? "");
 
   const [criteriaList, setCriteriaList] = useState([]);
-  const [scores, setScores] = useState({});
+  const [scores, setScores] = useState(() => {
+    if (draftData?.scores) return draftData.scores;
+    const initScores = {};
+    if (applicantData?.criteria_scores) {
+      applicantData.criteria_scores.forEach(s => {
+        initScores[s.criterion] = s.score;
+      });
+    }
+    return initScores;
+  });
 
   useEffect(() => {
     api.get("/users/evaluation-criteria/")
@@ -96,9 +95,8 @@ function StatusManagement({
       .catch(err => console.error("Failed to fetch criteria", err));
   }, []);
 
-  // No longer a raw state, it will be computed from the fields, but fallback to applicantData if fields are empty
   const [finalInterviewScore, setFinalInterviewScore] = useState(
-    applicantData?.evaluation_final_interview || "",
+    draftData?.finalInterviewScore ?? applicantData?.evaluation_final_interview ?? ""
   );
 
   const isAccepted = currentStatus === "Accepted";
@@ -135,45 +133,71 @@ function StatusManagement({
 
     // Sync evaluation states if data refreshes
     if (applicantData) {
-      setSchDate(applicantData.scheduled_date || "");
-      setSchTime(applicantData.scheduled_time || "");
+      const draftKey = `eval_draft_${applicantId}`;
+      const draftStr = sessionStorage.getItem(draftKey);
+      let draft = null;
+      try { if (draftStr) draft = JSON.parse(draftStr); } catch (e) {}
 
-      setSchDate(applicantData.scheduled_date || "");
-      setSchTime(applicantData.scheduled_time || "");
+      let dSchDate = applicantData.scheduled_date || "";
+      let dSchTime = applicantData.scheduled_time || "";
+      let dBmiHeight = "";
+      let dBmiWeight = "";
+      let dPatPushups = "";
+      let dPatPushupsPassed = null;
+      let dPatSitups = "";
+      let dPatSitupsPassed = null;
+      let dPatRun = "";
+      let dPatRunPassed = null;
+      let dPsychologicalResult = "";
+      let dMedicalResult = "";
+      let dDrugResult = "";
+      let dScores = {};
+      let dFinalInterviewScore = applicantData.evaluation_final_interview || "";
 
-      setFinalInterviewScore(applicantData.evaluation_final_interview || "");
       if (applicantData.criteria_scores) {
-        const initScores = {};
         applicantData.criteria_scores.forEach(s => {
-          // FI Scores based on ID map
-          initScores[s.criterion] = s.score;
-          
-          // Map specific fields back to state based on name
-          const criterionName = s.criterion_name;
-          if (criterionName === 'BMI Height') setBmiHeight(s.score || "");
-          if (criterionName === 'BMI Weight') setBmiWeight(s.score || "");
-          
-          if (criterionName === 'PAT Pushups') {
-            setPatPushups(s.score || "");
-            setPatPushupsPassed(s.boolean_value);
-          }
-          if (criterionName === 'PAT Situps') {
-            setPatSitups(s.score || "");
-            setPatSitupsPassed(s.boolean_value);
-          }
-          if (criterionName === 'PAT Run') {
-            setPatRun(s.text_value || "");
-            setPatRunPassed(s.boolean_value);
-          }
-          
-          if (criterionName === 'Psychological Result') setPsychologicalResult(s.text_value || "");
-          if (criterionName === 'Medical Result') setMedicalResult(s.text_value || "");
-          if (criterionName === 'Drug Test Result') setDrugResult(s.text_value || "");
+          dScores[s.criterion] = s.score;
+      const name = s.criterion_name;
+          if (name === 'BMI Height' && !draftData) dBmiHeight = s.score || "";
+          if (name === 'BMI Weight' && !draftData) dBmiWeight = s.score || "";
+          if (name === 'PAT Pushups' && !draftData) { dPatPushups = s.score || ""; dPatPushupsPassed = s.boolean_value; }
+          if (name === 'PAT Situps' && !draftData) { dPatSitups = s.score || ""; dPatSitupsPassed = s.boolean_value; }
+          if (name === 'PAT Run' && !draftData) { dPatRun = s.text_value || ""; dPatRunPassed = s.boolean_value; }
+          if (name === 'Psychological Result' && !draftData) dPsychologicalResult = s.text_value || "";
+          if (name === 'Medical Result' && !draftData) dMedicalResult = s.text_value || "";
+          if (name === 'Drug Test Result' && !draftData) dDrugResult = s.text_value || "";
         });
-        setScores(initScores);
+      }
+
+      setSchDate(draft?.schDate ?? dSchDate);
+      setSchTime(draft?.schTime ?? dSchTime);
+      if (!draftData) {
+        setBmiHeight(dBmiHeight);
+        setBmiWeight(dBmiWeight);
+        setPatPushups(dPatPushups);
+        setPatPushupsPassed(dPatPushupsPassed);
+        setPatSitups(dPatSitups);
+        setPatSitupsPassed(dPatSitupsPassed);
+        setPatRun(dPatRun);
+        setPatRunPassed(dPatRunPassed);
+        setPsychologicalResult(dPsychologicalResult);
+        setMedicalResult(dMedicalResult);
+        setDrugResult(dDrugResult);
+        setScores(dScores);
+        setFinalInterviewScore(dFinalInterviewScore);
       }
     }
-  }, [currentStatus, currentRejectionReason, applicantData]);
+  }, [currentStatus, currentRejectionReason, applicantData, applicantId, draftData]);
+
+  useEffect(() => {
+    if (applicantId) {
+      const draftKey = `eval_draft_${applicantId}`;
+      const draft = {
+        schDate, schTime, bmiHeight, bmiWeight, patPushups, patPushupsPassed, patSitups, patSitupsPassed, patRun, patRunPassed, psychologicalResult, medicalResult, drugResult, scores, finalInterviewScore
+      };
+      sessionStorage.setItem(draftKey, JSON.stringify(draft));
+    }
+  }, [applicantId, schDate, schTime, bmiHeight, bmiWeight, patPushups, patPushupsPassed, patSitups, patSitupsPassed, patRun, patRunPassed, psychologicalResult, medicalResult, drugResult, scores, finalInterviewScore]);
 
   const handleBmiBlur = () => {
     if (currentStatus === "Body Mass Index" && bmiHeight && bmiWeight) {
@@ -237,7 +261,7 @@ function StatusManagement({
       if (!isNaN(totalSeconds) && totalSeconds > 0) {
         const isFemale = applicantData?.gender?.toLowerCase() === 'female';
         const maxSeconds = isFemale ? 1260 : 1140;
-        setPatRunPassed(totalSeconds < maxSeconds);
+        setPatRunPassed(totalSeconds <= maxSeconds);
       } else {
         setPatRunPassed(null);
       }
@@ -440,6 +464,7 @@ function StatusManagement({
       };
 
       await api.put(`users/update_status/${applicantId}/`, dataToSend);
+      sessionStorage.removeItem(`eval_draft_${applicantId}`);
       setModalConfig({
         isOpen: true,
         type: "success",

@@ -1030,7 +1030,7 @@ def update_applicant_status(request, pk):
                     is_female = applicant.gender and applicant.gender.lower() == 'female'
                     max_seconds = 1260 if is_female else 1140
                     
-                    pat.run_passed = total_seconds < max_seconds
+                    pat.run_passed = total_seconds <= max_seconds
                     if not pat.run_passed:
                         pat_failed = True
                         failed_events.append("Run")

@@ -449,7 +449,9 @@ function ApplicantEvaluation({ isInterviewer = false }) {
         dataToSend.pat_run_passed = isRecommended;
         dataToSend.is_pat_evaluated = true;
         
-        if (!isRecommended) {
+        if (isRecommended) {
+          dataToSend.status = "Neuro Examination";
+        } else {
           dataToSend.status = "Failed";
           dataToSend.rejection_reason = "Failed Physical Agility Test requirements.";
         }
