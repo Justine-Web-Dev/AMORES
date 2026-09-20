@@ -301,8 +301,11 @@ function StatusManagement({
       let statusToSave = selectedStatus;
       let finalRejectionReason = rejectionReason;
 
-      const finalPatPushupsPassed = patPushups !== "" ? (parseInt(patPushups, 10) >= 30) : null;
-      const finalPatSitupsPassed = patSitups !== "" ? (parseInt(patSitups, 10) >= 30) : null;
+      const isFemale = applicantData?.gender?.toLowerCase() === 'female';
+      const minPushups = isFemale ? 25 : 35;
+      const minSitups = isFemale ? 25 : 35;
+      const finalPatPushupsPassed = patPushups !== "" ? (parseInt(patPushups, 10) >= minPushups) : null;
+      const finalPatSitupsPassed = patSitups !== "" ? (parseInt(patSitups, 10) >= minSitups) : null;
       let finalPatRunPassed = null;
       if (patRun !== "") {
         const parts = patRun.split(":");
@@ -313,7 +316,6 @@ function StatusManagement({
           totalSeconds = parseFloat(patRun) * 60;
         }
         if (!isNaN(totalSeconds) && totalSeconds > 0) {
-          const isFemale = applicantData?.gender?.toLowerCase() === 'female';
           const maxSeconds = isFemale ? 1260 : 1140;
           finalPatRunPassed = totalSeconds <= maxSeconds;
         }
