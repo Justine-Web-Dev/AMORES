@@ -567,15 +567,27 @@ def get_dashboard_applicants(request):
             Evaluation.objects.filter(
                 application__applicant=OuterRef('pk')
             ).order_by('-application__created_at').values('is_pat_evaluated')[:1]
+        ),
+        app_locked_by=Subquery(
+            Application.objects.filter(
+                applicant=OuterRef('pk')
+            ).order_by('-created_at').values('evaluating_by__name')[:1]
+        ),
+        app_lock_time=Subquery(
+            Application.objects.filter(
+                applicant=OuterRef('pk')
+            ).order_by('-created_at').values('evaluation_lock_time')[:1]
         )
     ).values(
         'id', 'created_at', 'app_created_at', 'app_batch', 'app_status',
         'app_evaluation_final_interview', 'app_pat_pushups', 'app_evaluation_pat', 'app_bmi_weight',
-        'app_is_bmi_evaluated', 'app_is_pat_evaluated',
+        'app_is_bmi_evaluated', 'app_is_pat_evaluated', 'app_locked_by', 'app_lock_time',
         'gender', 'birthdate', 'program', 'name_of_school', 'address__province', 'is_reapplied'
     )
-
+    
+    from django.utils import timezone
     today = date.today()
+    now = timezone.now()
     data = []
     for a in applicants:
         age = None
@@ -594,6 +606,11 @@ def get_dashboard_applicants(request):
         else:
             created_at_val = app_created_at or created_at
             
+        locked_by = None
+        if a['app_locked_by'] and a['app_lock_time']:
+            if (now - a['app_lock_time']).total_seconds() < 15 * 60:
+                locked_by = a['app_locked_by']
+
         data.append({
             'id': a['id'],
             'created_at': created_at_val,
@@ -610,7 +627,8 @@ def get_dashboard_applicants(request):
             'program': a['program'],
             'school': a['name_of_school'],
             'province': a['address__province'],
-            'is_reapplied': a['is_reapplied']
+            'is_reapplied': a['is_reapplied'],
+            'locked_by': locked_by
         })
         
     return Response(data)
@@ -869,6 +887,7 @@ def update_applicant_status(request, pk):
     try:
         applicant = Applicant.objects.get(pk=pk)
         application = applicant.active_application
+        print(f"[DEBUG] manage_evaluation_lock called for pk: {pk}, active_application: {application}")
         if not application:
             return Response({"error": "No active application found"}, status=status.HTTP_404_NOT_FOUND)
         
@@ -1749,3 +1768,46 @@ def retrieve_application_draft(request, draft_code):
         }, status=status.HTTP_200_OK)
     except ApplicationDraft.DoesNotExist:
         return Response({"error": "Draft not found"}, status=status.HTTP_404_NOT_FOUND)
+
+@api_view(['POST', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def manage_evaluation_lock(request, pk):
+    try:
+        from django.utils import timezone
+        print(f"[DEBUG] manage_evaluation_lock reached for pk: {pk}", flush=True)
+        applicant = Applicant.objects.get(pk=pk)
+        application = applicant.active_application
+        if not application:
+            return Response({"error": "No active application found"}, status=status.HTTP_404_NOT_FOUND)
+            
+        current_user = request.user
+        now = timezone.now()
+        timeout_minutes = 15
+        
+        if request.method == 'POST':
+            # Check if locked by someone else
+            if application.evaluating_by and application.evaluating_by != current_user:
+                if application.evaluation_lock_time and (now - application.evaluation_lock_time).total_seconds() < timeout_minutes * 60:
+                    return Response({
+                        "error": "Application is currently locked",
+                        "locked_by": application.evaluating_by.name
+                    }, status=status.HTTP_409_CONFLICT)
+            
+            # Lock it
+            application.evaluating_by = current_user
+            application.evaluation_lock_time = now
+            application.save(update_fields=['evaluating_by', 'evaluation_lock_time'])
+            
+            return Response({"message": "Lock acquired"}, status=status.HTTP_200_OK)
+            
+        elif request.method == 'DELETE':
+            if application.evaluating_by == current_user:
+                application.evaluating_by = None
+                application.evaluation_lock_time = None
+                application.save(update_fields=['evaluating_by', 'evaluation_lock_time'])
+            return Response({"message": "Lock released"}, status=status.HTTP_200_OK)
+            
+    except Applicant.DoesNotExist:
+        return Response({"error": "Applicant not found"}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

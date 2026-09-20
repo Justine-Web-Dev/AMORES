@@ -177,6 +177,10 @@ class Application(models.Model):
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='New Applicant', verbose_name="Status")
     rejection_reason = models.TextField(blank=True, null=True, verbose_name="Rejection Reason")
     
+    # Evaluation Lock
+    evaluating_by = models.ForeignKey('User', on_delete=models.SET_NULL, null=True, blank=True, related_name='locked_evaluations', verbose_name="Evaluating By")
+    evaluation_lock_time = models.DateTimeField(null=True, blank=True, verbose_name="Evaluation Lock Time")
+    
     # Scheduling
     scheduled_date = models.DateField(null=True, blank=True, verbose_name="Scheduled Date")
     scheduled_time = models.TimeField(null=True, blank=True, verbose_name="Scheduled Time")

@@ -217,6 +217,7 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
     is_qualified_evaluated = serializers.SerializerMethodField()
     is_bmi_evaluated = serializers.SerializerMethodField()
     is_pat_evaluated = serializers.SerializerMethodField()
+    locked_by = serializers.SerializerMethodField()
     
     class Meta:
         model = Applicant
@@ -230,7 +231,7 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
             'scheduled_time', 'evaluation_remarks', 'oath_taking_date', 'batch',
             'evaluation_bmi', 'bmi_weight', 'evaluation_pat', 'pat_pushups',
             'evaluation_final_interview', 'criteria_scores',
-            'is_reapplied', 'is_qualified_evaluated', 'is_bmi_evaluated', 'is_pat_evaluated', 'quota_type'
+            'is_reapplied', 'is_qualified_evaluated', 'is_bmi_evaluated', 'is_pat_evaluated', 'quota_type', 'locked_by'
         ]
 
     def get_is_qualified_evaluated(self, obj):
@@ -247,6 +248,14 @@ class ApplicantFullSerializer(serializers.ModelSerializer):
 
     def get_is_reapplied(self, obj):
         return getattr(obj, 'is_reapplied', False)
+
+    def get_locked_by(self, obj):
+        app = self._get_app(obj)
+        if app and app.evaluating_by and app.evaluation_lock_time:
+            from django.utils import timezone
+            if (timezone.now() - app.evaluation_lock_time).total_seconds() < 15 * 60:
+                return app.evaluating_by.name
+        return None
 
     def get_middle_initial(self, obj):
         if obj.middle_name:

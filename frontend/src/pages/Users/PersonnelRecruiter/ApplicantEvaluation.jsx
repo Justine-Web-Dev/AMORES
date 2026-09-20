@@ -358,6 +358,37 @@ function ApplicantEvaluation({ isInterviewer = false }) {
     }
   };
 
+  const handleEvaluateClick = async (applicant) => {
+    try {
+      await api.post(`users/applications/${applicant.id}/lock/`);
+      setEvaluatingApplicant(applicant);
+      setOpen(null);
+    } catch (err) {
+      if (err.response && err.response.status === 409) {
+        setScheduleMessageConfig({
+          isOpen: true,
+          type: "error",
+          message: `Applicant is currently being evaluated by ${err.response.data.locked_by}.`
+        });
+      } else {
+        console.warn("Lock API failed, proceeding anyway to avoid blocking flow.", err);
+        setEvaluatingApplicant(applicant);
+        setOpen(null);
+      }
+    }
+  };
+
+  const handleCloseEvaluate = async () => {
+    if (evaluatingApplicant) {
+      try {
+        await api.delete(`users/applications/${evaluatingApplicant.id}/lock/`);
+      } catch (err) {
+        console.warn("Unlock API failed.", err);
+      }
+    }
+    setEvaluatingApplicant(null);
+  };
+
   const handleBulkSaveSchedule = async () => {
     if (!scheduleDate) {
       setScheduleMessageConfig({
@@ -1126,11 +1157,18 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                       </div>
                     </td>
                     <td>
-                      <span
-                        className={`status-label px-2 py-1 rounded-full text-xs font-semibold ${statusColors[applicant.status] || "bg-gray-100 text-gray-600"}`}
-                      >
-                        {applicant.status}
-                      </span>
+                      <div className="flex flex-col items-center justify-center gap-1.5">
+                        <span
+                          className={`status-label px-2 py-1 rounded-full text-xs font-semibold ${statusColors[applicant.status] || "bg-gray-100 text-gray-600"}`}
+                        >
+                          {applicant.status}
+                        </span>
+                        {(applicant.locked_by || evaluatingApplicant?.id === applicant.id) && (
+                          <span className="px-2.5 py-1 text-[10px] font-semibold rounded-full bg-blue-100 text-blue-700 animate-pulse border border-blue-200" title={applicant.locked_by ? `Evaluating by ${applicant.locked_by}` : "Currently evaluating"}>
+                            Evaluating...
+                          </span>
+                        )}
+                      </div>
                     </td>
                     {/* {statusFilter !== "New Applicant" && (
                       <td className="text-center text-xs whitespace-nowrap text-gray-500">
@@ -1246,10 +1284,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                                     View Details
                                   </button>
                                   <button
-                                    onClick={() => {
-                                      setEvaluatingApplicant(applicant);
-                                      setOpen(null);
-                                    }}
+                                    onClick={() => handleEvaluateClick(applicant)}
                                     className="text-left cursor-pointer view-details-btn-action"
                                   >
                                     Evaluate
@@ -1365,7 +1400,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                 </span>
               </h3>
               <button
-                onClick={() => setEvaluatingApplicant(null)}
+                onClick={handleCloseEvaluate}
                 className="text-gray-400 hover:text-gray-600 text-2xl font-bold cursor-pointer"
               >
                 &times;
@@ -1378,10 +1413,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                 applicantData={evaluatingApplicant}
                 currentStatus={evaluatingApplicant.status}
                 currentRejectionReason={evaluatingApplicant.rejection_reason}
-                onUpdate={() => {
-                  setEvaluatingApplicant(null);
-                  fetchInfo(true);
-                }}
+                onUpdate={handleCloseEvaluate}
               />
             </div>
           </div>
