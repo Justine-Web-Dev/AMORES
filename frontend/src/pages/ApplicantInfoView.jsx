@@ -55,7 +55,7 @@ function ApplicantInfoView({ data }) {
           </div>
           <div className="info-item">
             <label>Permanent Address</label>
-            <p>{data.address || "N/A"}</p>
+            <p>{data.address?.full_address || "N/A"}</p>
           </div>
           <div className="info-item">
             <label>Height</label>
