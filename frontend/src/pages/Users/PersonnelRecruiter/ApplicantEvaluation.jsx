@@ -329,11 +329,11 @@ function ApplicantEvaluation({ isInterviewer = false }) {
   }, [applicantInfo]);
 
   const handleAssignSchedule = async (applicant) => {
-    if (!scheduleDate) {
+    if (!scheduleDate || !scheduleTime) {
       setScheduleMessageConfig({
         isOpen: true,
         type: "error",
-        message: "Please select a date first.",
+        message: "Please select both a date and a time for scheduling.",
       });
       return;
     }
@@ -417,11 +417,11 @@ function ApplicantEvaluation({ isInterviewer = false }) {
   };
 
   const handleBulkSaveSchedule = async () => {
-    if (!scheduleDate) {
+    if (!scheduleDate || !scheduleTime) {
       setScheduleMessageConfig({
         isOpen: true,
         type: "error",
-        message: "Please select a date first.",
+        message: "Please select both a date and a time for scheduling.",
       });
       return;
     }
@@ -997,11 +997,11 @@ function ApplicantEvaluation({ isInterviewer = false }) {
               {!isSelectionMode ? (
                 <button
                   onClick={() => {
-                    if (!scheduleDate) {
+                    if (!scheduleDate || !scheduleTime) {
                       setScheduleMessageConfig({
                         isOpen: true,
                         type: "error",
-                        message: "Please select a date first.",
+                        message: "Please select both a date and a time for scheduling.",
                       });
                       return;
                     }
