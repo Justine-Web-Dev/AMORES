@@ -25,6 +25,8 @@ function InterviewDashboard() {
     fiCommunication: "",
   });
 
+  const [draftScores, setDraftScores] = useState({});
+
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
     type: "success",
@@ -157,17 +159,30 @@ function InterviewDashboard() {
 
   const handleStartInterview = (applicant) => {
     setSelectedApplicant(applicant);
-    const initialScores = {};
-    if (applicant.criteria_scores) {
-      applicant.criteria_scores.forEach(scoreObj => {
-        initialScores[scoreObj.criterion] = scoreObj.score;
-      });
+    if (draftScores[applicant.id]) {
+      setScores(draftScores[applicant.id]);
+    } else {
+      const initialScores = {};
+      if (applicant.criteria_scores) {
+        applicant.criteria_scores.forEach(scoreObj => {
+          initialScores[scoreObj.criterion] = scoreObj.score;
+        });
+      }
+      setScores(initialScores);
     }
-    setScores(initialScores);
   };
 
   const handleScoreChange = (key, val) => {
     setScores((prev) => ({ ...prev, [key]: val }));
+    if (selectedApplicant) {
+      setDraftScores((prev) => ({
+        ...prev,
+        [selectedApplicant.id]: {
+          ...(prev[selectedApplicant.id] || scores),
+          [key]: val,
+        }
+      }));
+    }
   };
 
   const getFiComputedScore = () => {
@@ -218,6 +233,11 @@ function InterviewDashboard() {
       );
 
       setSelectedApplicant(null);
+      setDraftScores(prev => {
+        const newDrafts = { ...prev };
+        delete newDrafts[selectedApplicant.id];
+        return newDrafts;
+      });
       setModalConfig({
         isOpen: true,
         type: "success",

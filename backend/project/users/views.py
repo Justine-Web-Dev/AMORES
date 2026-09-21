@@ -1114,6 +1114,9 @@ def update_applicant_status(request, pk):
                     'reason': application.rejection_reason or 'No reason provided.'
                 }
             )
+        else:
+            from .models import FailedApplicant
+            FailedApplicant.objects.filter(application=application).delete()
         
         # Email Notification if schedule is updated
         schedule_updated = False

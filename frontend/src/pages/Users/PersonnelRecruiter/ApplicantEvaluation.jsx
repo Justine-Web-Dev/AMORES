@@ -27,9 +27,14 @@ function ApplicantEvaluation({ isInterviewer = false }) {
   const pageRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState("");
   const location = useLocation();
-  const [statusFilter, setStatusFilter] = useState(
-    location.state?.tab ? location.state.tab : (isInterviewer ? "Final Interview" : "All"),
-  );
+  const [statusFilter, setStatusFilter] = useState(() => {
+    const saved = sessionStorage.getItem("applicantEvalTab");
+    return saved || (location.state?.tab ? location.state.tab : (isInterviewer ? "Final Interview" : "All"));
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem("applicantEvalTab", statusFilter);
+  }, [statusFilter]);
   const [sortBy, setSortBy] = useState("default");
   const [selectionLimit, setSelectionLimit] = useState("300");
   const [provinceFilter, setProvinceFilter] = useState("All");
@@ -61,6 +66,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
   const [medicalApplicantToConfirm, setMedicalApplicantToConfirm] = useState(null);
   const [medicalIsPassed, setMedicalIsPassed] = useState(true);
   const scrollRef = useRef(null);
+  const [updatingRecommendationId, setUpdatingRecommendationId] = useState(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
 
@@ -378,6 +384,26 @@ function ApplicantEvaluation({ isInterviewer = false }) {
     }
   };
 
+  const handleActionLock = async (applicant, onSuccess) => {
+    try {
+      await api.post(`users/applications/${applicant.id}/lock/`);
+      onSuccess();
+      setOpen(null);
+    } catch (err) {
+      if (err.response && err.response.status === 409) {
+        setScheduleMessageConfig({
+          isOpen: true,
+          type: "error",
+          message: `Applicant is currently being processed by ${err.response.data.locked_by}.`
+        });
+      } else {
+        console.warn("Lock API failed, proceeding anyway.", err);
+        onSuccess();
+        setOpen(null);
+      }
+    }
+  };
+
   const handleCloseEvaluate = async () => {
     if (evaluatingApplicant) {
       try {
@@ -387,6 +413,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
       }
     }
     setEvaluatingApplicant(null);
+    fetchInfo(true);
   };
 
   const handleBulkSaveSchedule = async () => {
@@ -471,6 +498,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
   };
 
   const handleUpdateRecommendation = async (applicant, isRecommended) => {
+    setUpdatingRecommendationId(applicant.id);
     try {
       const dataToSend = {};
       
@@ -523,6 +551,9 @@ function ApplicantEvaluation({ isInterviewer = false }) {
         type: "error",
         message: "Failed to update recommendation. Please try again.",
       });
+    } finally {
+      setUpdatingRecommendationId(null);
+      api.delete(`users/applications/${applicant.id}/lock/`).catch(()=>{});
     }
   };
 
@@ -1163,9 +1194,18 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                         >
                           {applicant.status}
                         </span>
-                        {(applicant.locked_by || evaluatingApplicant?.id === applicant.id) && (
-                          <span className="px-2.5 py-1 text-[10px] font-semibold rounded-full bg-blue-100 text-blue-700 animate-pulse border border-blue-200" title={applicant.locked_by ? `Evaluating by ${applicant.locked_by}` : "Currently evaluating"}>
-                            Evaluating...
+                        {(applicant.locked_by || evaluatingApplicant?.id === applicant.id || applicantToConfirm?.id === applicant.id || applicantToNotReco?.id === applicant.id || medicalApplicantToConfirm?.id === applicant.id) && (
+                          <span className="px-2.5 py-1 text-[10px] font-semibold rounded-full bg-blue-100 text-blue-700 animate-pulse border border-blue-200" title={applicant.locked_by ? `Processed by ${applicant.locked_by}` : "Currently processing"}>
+                            {(statusFilter === "Physical Agility Test" || statusFilter === "Neuro Examination") 
+                              ? "Recommending..." 
+                              : statusFilter === "Medical" 
+                              ? "Evaluating Medical..." 
+                              : "Evaluating..."}
+                          </span>
+                        )}
+                        {updatingRecommendationId === applicant.id && (
+                          <span className="px-2.5 py-1 text-[10px] font-semibold rounded-full bg-indigo-100 text-indigo-700 animate-pulse border border-indigo-200" title="Updating status">
+                            Recommending...
                           </span>
                         )}
                       </div>
@@ -1230,21 +1270,19 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                               {(statusFilter === "Physical Agility Test" && isEvaluated(applicant)) || statusFilter === "Neuro Examination" ? (
                                 <>
                                   <button
-                                    onClick={() => {
+                                    onClick={() => handleActionLock(applicant, () => {
                                       setApplicantToConfirm(applicant);
                                       setConfirmModalOpen(true);
-                                      setOpen(null);
-                                    }}
+                                    })}
                                     className="text-left px-2 py-1 cursor-pointer view-details-btn-action text-[#2C2D86] hover:bg-[#2C2D86]/10"
                                   >
                                     Recommended
                                   </button>
                                   <button
-                                    onClick={() => {
+                                    onClick={() => handleActionLock(applicant, () => {
                                       setApplicantToNotReco(applicant);
                                       setConfirmNotRecoModalOpen(true);
-                                      setOpen(null);
-                                    }}
+                                    })}
                                     className="text-left px-2 py-1 cursor-pointer view-details-btn-action not-recommended-btn text-red-600 whitespace-nowrap"
                                   >
                                     Not Recommended
@@ -1253,23 +1291,21 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                               ) : statusFilter === "Medical" ? (
                                 <>
                                   <button
-                                    onClick={() => {
+                                    onClick={() => handleActionLock(applicant, () => {
                                       setMedicalApplicantToConfirm(applicant);
                                       setMedicalIsPassed(true);
                                       setConfirmMedicalModal(true);
-                                      setOpen(null);
-                                    }}
+                                    })}
                                     className="text-left px-2 py-1 cursor-pointer view-details-btn-action text-[#2C2D86] hover:bg-[#2C2D86]/10"
                                   >
                                     Passed
                                   </button>
                                   <button
-                                    onClick={() => {
+                                    onClick={() => handleActionLock(applicant, () => {
                                       setMedicalApplicantToConfirm(applicant);
                                       setMedicalIsPassed(false);
                                       setConfirmMedicalModal(true);
-                                      setOpen(null);
-                                    }}
+                                    })}
                                     className="text-left px-2 py-1 cursor-pointer view-details-btn-action not-recommended-btn text-red-600 whitespace-nowrap"
                                   >
                                     Failed
@@ -1447,7 +1483,17 @@ function ApplicantEvaluation({ isInterviewer = false }) {
         </button>
       </div>
 
-      {confirmModalOpen && <ConfirmRecoModal setConfirmModalOpen={setConfirmModalOpen} applicantToConfirm={applicantToConfirm} handleUpdateRecommendation={handleUpdateRecommendation} />}
+      {confirmModalOpen && <ConfirmRecoModal 
+        setConfirmModalOpen={(isOpen) => {
+          setConfirmModalOpen(isOpen);
+          if (!isOpen && applicantToConfirm) {
+            api.delete(`users/applications/${applicantToConfirm.id}/lock/`).catch(()=>{});
+            setApplicantToConfirm(null);
+          }
+        }} 
+        applicantToConfirm={applicantToConfirm} 
+        handleUpdateRecommendation={handleUpdateRecommendation} 
+      />}
 
       {confirmNotRecoModalOpen && (
         <div>
@@ -1461,7 +1507,11 @@ function ApplicantEvaluation({ isInterviewer = false }) {
               </p>
               <div className="flex justify-end gap-3 pt-2">
                 <button
-                  onClick={() => setConfirmNotRecoModalOpen(false)}
+                  onClick={() => {
+                    setConfirmNotRecoModalOpen(false);
+                    api.delete(`users/applications/${applicantToNotReco.id}/lock/`).catch(()=>{});
+                    setApplicantToNotReco(null);
+                  }}
                   className="px-5 py-2.5 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 active:scale-95 transition-all cursor-pointer"
                 >
                   Cancel
@@ -1483,7 +1533,13 @@ function ApplicantEvaluation({ isInterviewer = false }) {
 
       {confirmMedicalModal && (
         <ConfirmMedicalModal
-          setConfirmMedicalModal={setConfirmMedicalModal}
+          setConfirmMedicalModal={(isOpen) => {
+            setConfirmMedicalModal(isOpen);
+            if (!isOpen && medicalApplicantToConfirm) {
+              api.delete(`users/applications/${medicalApplicantToConfirm.id}/lock/`).catch(()=>{});
+              setMedicalApplicantToConfirm(null);
+            }
+          }}
           applicantToConfirm={medicalApplicantToConfirm}
           isPassed={medicalIsPassed}
           handleUpdateRecommendation={handleUpdateRecommendation}

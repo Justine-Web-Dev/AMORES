@@ -273,14 +273,15 @@ function StatusManagement({
   const getFiComputedScore = () => {
     let total = 0;
     let hasAny = false;
-    criteriaList.forEach(c => {
+    const interviewCriteria = criteriaList.filter(c => c.category === 'Interview');
+    interviewCriteria.forEach(c => {
       if (scores[c.id] !== undefined && scores[c.id] !== "") {
         total += parseFloat(scores[c.id]) || 0;
         hasAny = true;
       }
     });
     if (!hasAny) return finalInterviewScore;
-    return Math.min(total, criteriaList.reduce((acc, c) => acc + c.max_score, 0));
+    return Math.min(total, interviewCriteria.reduce((acc, c) => acc + c.max_score, 0));
   };
 
   const handleUpdate = async () => {
@@ -677,14 +678,14 @@ function StatusManagement({
             )}
             <div className="border border-gray-200 rounded-lg p-5 text-sm bg-white shadow-sm">
               <CriteriaForm
-                criteriaList={criteriaList}
+                criteriaList={criteriaList.filter(c => c.category === 'Interview')}
                 values={scores}
                 onChange={(key, val) => {
                   setScores(prev => ({ ...prev, [key]: val }));
                 }}
                 isInterviewer={isInterviewer}
                 totalScore={getFiComputedScore()}
-                maxTotal={criteriaList.reduce((acc, c) => acc + c.max_score, 0)}
+                maxTotal={criteriaList.filter(c => c.category === 'Interview').reduce((acc, c) => acc + c.max_score, 0)}
               />
             </div>
           </div>
@@ -718,11 +719,14 @@ function StatusManagement({
           return false;
         })();
 
+        const isAlreadyEvaluatedStage = isEvaluated && (currentStatus === "Qualified" || currentStatus === "Body Mass Index" || currentStatus === "Physical Agility Test");
+
         return (
           <button
             onClick={handleUpdate}
             disabled={
               isUpdating ||
+              isAlreadyEvaluatedStage ||
               currentStatus === "Failed" ||
               (selectedStatus === "Body Mass Index" &&
                 (!bmiHeight || !bmiWeight)) ||
@@ -730,30 +734,29 @@ function StatusManagement({
                 (patPushups === "" || patSitups === "" || patRun === "")) ||
               (selectedStatus === "Neuro Examination" && !psychologicalResult) ||
               (selectedStatus === "Drug Test" && !drugResult) ||
+              selectedStatus === "Complete Background Investigation" ||
+              (selectedStatus === "Final Interview" && !isInterviewer) ||
               (selectedStatus === "Final Interview" &&
-                (fiPatriotism === "" ||
-                  fiIntegrity === "" ||
-                  fiAwareness === "" ||
-                  fiCommunication === ""))
+                criteriaList.filter(c => c.category === 'Interview').some(c => scores[c.id] === undefined || scores[c.id] === ""))
             }
             className={`rounded-[4px] text-white font-semibold save-changes-btn mt-6 h-11 transition-all w-full ${
               isUpdating ||
+              isAlreadyEvaluatedStage ||
               currentStatus === "Failed" ||
               (selectedStatus === "Body Mass Index" &&
                 (!bmiHeight || !bmiWeight)) ||
               (selectedStatus === "Physical Agility Test" &&
                 (patPushups === "" || patSitups === "" || patRun === "")) ||
               (selectedStatus === "Drug Test" && !drugResult) ||
+              selectedStatus === "Complete Background Investigation" ||
+              (selectedStatus === "Final Interview" && !isInterviewer) ||
               (selectedStatus === "Final Interview" &&
-                (fiPatriotism === "" ||
-                  fiIntegrity === "" ||
-                  fiAwareness === "" ||
-                  fiCommunication === ""))
+                criteriaList.filter(c => c.category === 'Interview').some(c => scores[c.id] === undefined || scores[c.id] === ""))
                 ? "bg-gray-400 cursor-not-allowed"
                 : "cursor-pointer bg-[#2C2D86] hover:bg-[#1e1f5e] shadow-md hover:shadow-lg active:scale-[0.98]"
             }`}
           >
-            {isUpdating ? "Evaluating..." : isEvaluated ? "Update Evaluation" : "Evaluate"}
+            {isUpdating ? "Evaluating..." : isAlreadyEvaluatedStage ? "Evaluated" : isEvaluated ? "Update Evaluation" : "Evaluate"}
           </button>
         );
       })()}
