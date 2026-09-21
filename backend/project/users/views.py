@@ -890,7 +890,6 @@ def update_applicant_status(request, pk):
         print(f"[DEBUG] manage_evaluation_lock called for pk: {pk}, active_application: {application}")
         if not application:
             return Response({"error": "No active application found"}, status=status.HTTP_404_NOT_FOUND)
-        
         evaluation, _ = Evaluation.objects.get_or_create(application=application)
         
         new_status = request.data.get('status')
@@ -1067,6 +1066,7 @@ def update_applicant_status(request, pk):
                     new_status = 'Failed'
 
         if application.status == 'Final Interview':
+            from .models import EvaluationScore
             fi_scores = EvaluationScore.objects.filter(
                 evaluation=evaluation, 
                 criterion__category='Interview'
