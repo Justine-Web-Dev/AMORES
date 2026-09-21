@@ -172,6 +172,21 @@ def _prepare_postgresql_restore_script(backup_path):
         'auth_group',
     ]
 
+    from django.apps import apps
+    
+    # Dynamically gather all tables for our apps so we don't miss any new models
+    target_apps = ('users', 'admin', 'sessions', 'contenttypes', 'auth')
+    for model in apps.get_models():
+        if model._meta.app_label in target_apps:
+            if model._meta.db_table not in truncate_tables:
+                truncate_tables.append(model._meta.db_table)
+            for field in model._meta.local_many_to_many:
+                if hasattr(field, 'm2m_db_table') and callable(field.m2m_db_table):
+                    m2m_table = field.m2m_db_table()
+                    if m2m_table and m2m_table not in truncate_tables:
+                        truncate_tables.append(m2m_table)
+
+
     # Filter out problematic statements that cause permission errors
     lines = backup_sql.split('\n')
     filtered_lines = []
