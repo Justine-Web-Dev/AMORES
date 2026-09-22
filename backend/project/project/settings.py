@@ -44,6 +44,8 @@ if render_host := os.getenv("RENDER_EXTERNAL_HOSTNAME"):
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -60,6 +62,14 @@ INSTALLED_APPS = [
 
     'anymail',
 ]
+
+ASGI_APPLICATION = 'project.asgi.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",

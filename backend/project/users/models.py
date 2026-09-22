@@ -404,6 +404,7 @@ class SystemNotification(models.Model):
     NOTIFICATION_TYPES = [
         ('NEW_APPLICANT', 'New Applicant'),
         ('EVALUATION', 'Evaluation'),
+        ('SCHEDULED', 'Scheduled'),
     ]
     message = models.TextField(verbose_name="Message")
     notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES, verbose_name="Notification Type")
@@ -414,3 +415,26 @@ class SystemNotification(models.Model):
 
     def __str__(self):
         return f"{self.get_notification_type_display()} - {self.message[:20]}"
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
+@receiver(post_save, sender=SystemNotification)
+def broadcast_notification(sender, instance, created, **kwargs):
+    if created:
+        channel_layer = get_channel_layer()
+        if channel_layer:
+            async_to_sync(channel_layer.group_send)(
+                'notifications_group',
+                {
+                    'type': 'notification_message',
+                    'notification': {
+                        'id': instance.id,
+                        'message': instance.message,
+                        'notification_type': instance.notification_type,
+                        'created_at': instance.created_at.isoformat()
+                    }
+                }
+            )

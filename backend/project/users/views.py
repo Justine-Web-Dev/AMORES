@@ -1103,8 +1103,11 @@ def update_applicant_status(request, pk):
         app_fields = ['scheduled_date', 'scheduled_time', 'evaluation_remarks', 'oath_taking_date']
         for field in app_fields:
             if field in request.data:
-                setattr(application, field, request.data.get(field))
+                val = request.data.get(field)
+                if val == "": val = None
+                setattr(application, field, val)
         application.save()
+        application.refresh_from_db()
         
         # Create FailedApplicant record if failed
         if application.status == 'Failed':
@@ -1155,12 +1158,14 @@ def update_applicant_status(request, pk):
         notif_msg = ""
         if schedule_updated:
             notif_msg = f"Scheduled applicant {applicant.first_name} {applicant.last_name} for {application.status}."
+            notif_type = 'SCHEDULED'
         else:
             notif_msg = f"Evaluated applicant {applicant.first_name} {applicant.last_name}. Stage: {application.status}"
+            notif_type = 'EVALUATION'
             
         SystemNotification.objects.create(
             message=notif_msg,
-            notification_type='EVALUATION'
+            notification_type=notif_type
         )
 
         return Response({

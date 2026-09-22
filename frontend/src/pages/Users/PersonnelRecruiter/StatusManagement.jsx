@@ -473,8 +473,8 @@ function StatusManagement({
         type: "success",
         message:
           "The applicant status and information have been updated successfully.",
+        savedStatus: statusToSave,
       });
-      onUpdate(statusToSave);
     } catch (err) {
       console.error("Update failed:", err);
       setModalConfig({
@@ -763,7 +763,12 @@ function StatusManagement({
 
       <MessageModal
         isOpen={modalConfig.isOpen}
-        onClose={() => setModalConfig({ ...modalConfig, isOpen: false })}
+        onClose={() => {
+          setModalConfig({ ...modalConfig, isOpen: false });
+          if (modalConfig.type === "success" && modalConfig.savedStatus) {
+            onUpdate(modalConfig.savedStatus);
+          }
+        }}
         type={modalConfig.type}
         title={
           modalConfig.type === "success" ? "Update Successful" : "Update Failed"

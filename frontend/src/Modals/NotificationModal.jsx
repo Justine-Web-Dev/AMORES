@@ -10,8 +10,18 @@ function NotificationModal({ isOpen, onClose }) {
     if (isOpen) {
       fetchNotifications();
     }
+    
+    const handleRefresh = () => {
+      if (isOpen) {
+        fetchNotifications();
+      }
+    };
+    
+    window.addEventListener('notifications:refresh', handleRefresh);
+    return () => {
+      window.removeEventListener('notifications:refresh', handleRefresh);
+    };
   }, [isOpen]);
-
   const fetchNotifications = async () => {
     setLoading(true);
     try {
@@ -76,9 +86,11 @@ function NotificationModal({ isOpen, onClose }) {
                   <span className={`text-[10px] uppercase font-bold tracking-widest px-2.5 py-1 rounded-full ${
                     notif.notification_type === 'NEW_APPLICANT' 
                       ? 'bg-blue-50 text-blue-600' 
+                      : notif.notification_type === 'SCHEDULED'
+                      ? 'bg-emerald-50 text-emerald-600'
                       : 'bg-indigo-50 text-indigo-600'
                   }`}>
-                    {notif.notification_type === 'NEW_APPLICANT' ? 'New Applicant' : 'Evaluation Update'}
+                    {notif.notification_type === 'NEW_APPLICANT' ? 'New Applicant' : notif.notification_type === 'SCHEDULED' ? 'Scheduled' : 'Evaluation Update'}
                   </span>
                   <span className='text-[11px] font-medium text-gray-400'>
                     {new Date(notif.created_at).toLocaleDateString()} at {new Date(notif.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
