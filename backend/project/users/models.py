@@ -399,3 +399,18 @@ class ApplicationDraft(models.Model):
 
     def __str__(self):
         return f"Draft {self.draft_code}"
+
+class SystemNotification(models.Model):
+    NOTIFICATION_TYPES = [
+        ('NEW_APPLICANT', 'New Applicant'),
+        ('EVALUATION', 'Evaluation'),
+    ]
+    message = models.TextField(verbose_name="Message")
+    notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES, verbose_name="Notification Type")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.get_notification_type_display()} - {self.message[:20]}"

@@ -144,7 +144,6 @@ def _database_from_url(database_url):
         'CONN_HEALTH_CHECKS': True,
     }
 
-
 def _database_config():
     database_url = os.getenv("DATABASE_URL")
     if database_url:
@@ -195,7 +194,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Manila'
 
 USE_I18N = True
 

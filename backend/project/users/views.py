@@ -785,6 +785,12 @@ def register_applicant_form(request):
        action_msg = "updated/re-applied" if existing_applicant else "registered"
        create_audit_log(None, 'APPLICANT_REGISTRATION', f"Applicant '{applicant.first_name} {applicant.last_name}' ({application.tracking_code}) {action_msg}.", performer_name='System')
        
+       from .models import SystemNotification
+       SystemNotification.objects.create(
+           message=f"New applicant {action_msg}: {applicant.first_name} {applicant.last_name}",
+           notification_type='NEW_APPLICANT'
+       )
+       
        send_application_received_email(
            name=f"{applicant.first_name} {applicant.last_name}",
            email=applicant.email,
@@ -1144,11 +1150,24 @@ def update_applicant_status(request, pk):
         performer = User.objects.filter(email=performer_email).first()
         create_audit_log(performer, 'STATUS_UPDATE', f"Applicant '{applicant.first_name} {applicant.last_name}' status updated to '{application.status}'", performer_name=performer_email if not performer else None)
 
+        from .models import SystemNotification
+        
+        notif_msg = ""
+        if schedule_updated:
+            notif_msg = f"Scheduled applicant {applicant.first_name} {applicant.last_name} for {application.status}."
+        else:
+            notif_msg = f"Evaluated applicant {applicant.first_name} {applicant.last_name}. Stage: {application.status}"
+            
+        SystemNotification.objects.create(
+            message=notif_msg,
+            notification_type='EVALUATION'
+        )
+
         return Response({
             "message": "Status updated successfully",
             "new_status": application.status
         }, status=status.HTTP_200_OK)
-        
+
     except Applicant.DoesNotExist:
         return Response({"error": "Applicant not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -1290,15 +1309,39 @@ def scan_document(request, doc_id):
             mime_type = 'image/jpeg' # Default fallback
             
         # Read image bytes
-        image_bytes = document.file.read()
+        try:
+            image_bytes = document.file.read()
+        except Exception as read_err:
+            if "401" in str(read_err) or "Unauthorized" in str(read_err):
+                import requests
+                # Cloudinary often returns 401 if the extension is missing on public URLs
+                url = document.file.url
+                if not url.endswith(('.jpg', '.png', '.jpeg', '.pdf', '.webp')):
+                    url += '.jpg'
+                if url.startswith('//'):
+                    url = 'https:' + url
+                res = requests.get(url)
+                res.raise_for_status()
+                image_bytes = res.content
+            else:
+                raise read_err
         
+        # Pass the applicant's full name for verification
+        applicant_name = f"{document.applicant.first_name} {document.applicant.last_name}"
+        if document.applicant.middle_name:
+            applicant_name = f"{document.applicant.first_name} {document.applicant.middle_name} {document.applicant.last_name}"
+
         # Call Gemini OCR Service
-        result = verify_document(image_bytes, mime_type, document.get_document_type_display())
+        result = verify_document(image_bytes, mime_type, document.get_document_type_display(), applicant_name)
         
         # Update document
         document.ocr_text = result.get('extracted_text', '')
         document.ai_verified = result.get('is_valid', False)
-        document.ai_remarks = result.get('rejection_reason', '')
+        
+        remarks = result.get('rejection_reason', '')
+        if remarks and len(remarks) > 250:
+            remarks = remarks[:247] + "..."
+        document.ai_remarks = remarks
         document.save()
         
         serializer = ApplicantDocumentSerializer(document, context={'request': request})
@@ -1814,3 +1857,12 @@ def manage_evaluation_lock(request, pk):
         return Response({"error": "Applicant not found"}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+from rest_framework import generics
+from .serializers import SystemNotificationSerializer
+from .models import SystemNotification
+
+class NotificationListView(generics.ListAPIView):
+    queryset = SystemNotification.objects.all().order_by('-created_at')[:50]
+    serializer_class = SystemNotificationSerializer
+    permission_classes = [AllowAny]

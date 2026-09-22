@@ -10,7 +10,9 @@ import {
   RiDraftLine 
 } from 'react-icons/ri'
 import { HiOutlineDocumentReport } from 'react-icons/hi'
-import { FiMoon, FiSun, FiShield } from 'react-icons/fi'
+import { FiMoon, FiSun, FiShield, FiBell } from 'react-icons/fi'
+import NotificationModal from '../../Modals/NotificationModal'
+import ToastContainer from './ToastContainer'
 import './Header.css'
 import logoAcc from '../../assets/RRSU1 logo.png'
 import { api } from '../../../api/api'
@@ -20,6 +22,8 @@ function Header() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [showAccountOptions, setShowAccountOptions] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [hasUnread, setHasUnread] = useState(true); // Default to true or implement actual check
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -33,6 +37,12 @@ function Header() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
+  }, []);
+
+  useEffect(() => {
+    const handleRead = () => setHasUnread(false);
+    window.addEventListener('notifications:read', handleRead);
+    return () => window.removeEventListener('notifications:read', handleRead);
   }, []);
 
   // Initialize dark mode from local storage
@@ -189,14 +199,27 @@ function Header() {
           </div>
         )}
 
-        {/* Theme Toggle */}
-        <button 
-          onClick={() => setIsDarkMode(!isDarkMode)}
-          className="hidden sm:flex p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors border-r border-gray-100 pr-2 mr-2"
-          title="Toggle Theme"
-        >
-          {isDarkMode ? <FiSun size={18} /> : <FiMoon size={18} />}
-        </button>
+        {/* Theme Toggle & Notifications */}
+        <div className="hidden sm:flex items-center border-r border-gray-100 pr-4 mr-2 gap-2">
+          <button 
+            onClick={() => setShowNotifications(true)}
+            className="relative p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+            title="Notifications"
+          >
+            <FiBell size={18} />
+            {hasUnread && (
+              <span className="absolute top-1.5 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+            )}
+          </button>
+          
+          <button 
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
+            title="Toggle Theme"
+          >
+            {isDarkMode ? <FiSun size={18} /> : <FiMoon size={18} />}
+          </button>
+        </div>
 
         <div className="text-right hidden md:block border-r pr-5 border-gray-100">
           <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">{getTimeGreeting()}</p>
@@ -255,6 +278,12 @@ function Header() {
           )}
         </div>
       </div>
+
+      <NotificationModal 
+        isOpen={showNotifications} 
+        onClose={() => setShowNotifications(false)} 
+      />
+      <ToastContainer />
     </header>
   )
 }

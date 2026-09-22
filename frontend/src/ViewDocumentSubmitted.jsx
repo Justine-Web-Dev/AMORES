@@ -51,6 +51,7 @@ const SECTIONS = [
 ]
 
 const DocCard = ({ doc, label, onScan }) => {
+  const [scanning, setScanning] = useState(false);
   let imgUrl = doc.file_url || doc.file;
   if (imgUrl && !imgUrl.startsWith('http')) {
     const baseUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
@@ -58,8 +59,14 @@ const DocCard = ({ doc, label, onScan }) => {
     imgUrl = imgUrl.startsWith('/') ? `${cleanBaseUrl}${imgUrl}` : `${cleanBaseUrl}/${imgUrl}`;
   }
 
+  const handleScanClick = async () => {
+    setScanning(true);
+    await onScan(doc.id);
+    setScanning(false);
+  };
+
   return (
-    <div className="border rounded-lg shadow-sm bg-white overflow-hidden image-docs-container">
+    <div className="border rounded-lg shadow-sm bg-white overflow-hidden image-docs-container flex flex-col">
       <a href={imgUrl} target="_blank" rel="noopener noreferrer">
         <img
           src={imgUrl}
@@ -68,14 +75,21 @@ const DocCard = ({ doc, label, onScan }) => {
           referrerPolicy="no-referrer"
         />
       </a>
-      <div className="p-3">
-        <p className="text-xs font-semibold text-gray-800 uppercase tracking-wide">
-          {label || DOC_LABELS[doc.document_type] || doc.document_type}
-        </p>
+      <div className="p-3 flex-1 flex flex-col">
+        <div className="flex justify-between items-start">
+          <p className="text-xs font-semibold text-gray-800 uppercase tracking-wide pr-2">
+            {label || DOC_LABELS[doc.document_type] || doc.document_type}
+          </p>
+          {doc.ocr_text && (
+            <span className={`whitespace-nowrap px-1.5 py-0.5 rounded text-[9px] font-bold ${doc.ai_verified ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+              {doc.ai_verified ? 'VALID' : 'AI FLAGGED'}
+            </span>
+          )}
+        </div>
         <p className="text-[10px] mt-1 text-gray-400">
           Uploaded: {new Date(doc.uploaded_at).toLocaleDateString()}
         </p>
-        <p className="text-[10px] mt-0.5 text-gray-500 font-medium">
+        <p className="text-[10px] mt-0.5 text-gray-500 font-medium mb-3">
           Expires: <span className="text-orange-500 font-bold">
             {doc.expiration_date 
               ? new Date(doc.expiration_date).toLocaleDateString()
@@ -83,13 +97,21 @@ const DocCard = ({ doc, label, onScan }) => {
           </span>
         </p>
 
-
+        <div className="mt-auto pt-2 border-t border-gray-100">
+            <button 
+                onClick={handleScanClick} 
+                disabled={scanning}
+                className="w-full py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded transition-colors disabled:opacity-50 cursor-pointer"
+            >
+                {scanning ? 'Scanning...' : (doc.ocr_text ? 'Rescan Document' : 'Scan with AI')}
+            </button>
+        </div>
       </div>
     </div>
   )
 }
 
-function ViewDocumentSubmitted({ applicantId }) {
+function ViewDocumentSubmitted({ applicantId, onUpdate, onAiFlagged }) {
   const [documents, setDocuments] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -114,6 +136,12 @@ function ViewDocumentSubmitted({ applicantId }) {
     try {
       const response = await api.post(`users/scan-document/${docId}/`)
       setDocuments(docs => docs.map(d => d.id === docId ? response.data : d))
+      
+      if (!response.data.ai_verified && response.data.ai_remarks && onAiFlagged) {
+        onAiFlagged(response.data.document_type, response.data.ai_remarks)
+      } else if (onUpdate) {
+        onUpdate()
+      }
     } catch (err) {
       console.error("Error scanning document:", err)
       alert("Failed to scan document: " + (err.response?.data?.error || err.message))
@@ -184,7 +212,7 @@ function ViewDocumentSubmitted({ applicantId }) {
                   const label = isLegacy
                     ? (section.fallbackLabels?.[index] || DOC_LABELS[doc.document_type])
                     : undefined
-                  return <DocCard key={doc.id || index} doc={doc} label={label} onScan={handleScan} />
+                  return <DocCard key={doc.id || index} doc={doc} label={label} onScan={handleScan} onUpdate={onUpdate} />
                 })}
               </div>
             </div>

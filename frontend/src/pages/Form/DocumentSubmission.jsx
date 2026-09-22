@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { HiArrowNarrowLeft, HiOutlineCloudUpload, HiX } from "react-icons/hi";
 import { api } from "../../../api/api";
 import ApplicationLocked from "../../Modals/ApplicationLocked";
+import ConfirmDocs from "../../Modals/ConfirmDocs";
+import ErrorModal from "../../Modals/ErrorModal";
 // --- CONFIGURATION SCHEMA ---
 const DOC_SECTIONS = [
   {
@@ -289,8 +291,10 @@ export default function DocumentSubmission({ isApplicationOpen }) {
     return defaults;
   });
 
-  const [error, setError] = useState("");
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
   // Restore cache if state is empty
   useEffect(() => {
@@ -392,9 +396,14 @@ export default function DocumentSubmission({ isApplicationOpen }) {
     return requiredSatisfied && eligibilitySatisfied;
   }, [documents, activeDocConfigs]);
 
-  const handleSubmit = async (e) => {
+  const handleOpenConfirmModal = (e) => {
     e.preventDefault();
-    setError("");
+    setIsConfirmModalOpen(true);
+  };
+
+  const submitApplication = async () => {
+    setIsConfirmModalOpen(false);
+    setErrorMessage("");
     setLoading(true);
 
     try {
@@ -448,12 +457,48 @@ export default function DocumentSubmission({ isApplicationOpen }) {
         relative: "path",
       });
     } catch (err) {
-      const errData = err?.response?.data;
-      setError(
-        typeof errData === "object"
-          ? JSON.stringify(errData)
-          : errData || "Submission failed.",
-      );
+      let errData = err?.response?.data;
+      let msg = "Submission failed.";
+
+      if (typeof errData === "string") {
+        try {
+          errData = JSON.parse(errData);
+        } catch (e) {
+          // Ignore parse errors
+        }
+      }
+      
+      if (typeof errData === "object" && errData !== null) {
+        if (errData.error) {
+          msg = errData.error;
+        } else if (errData.detail) {
+          msg = errData.detail;
+        } else {
+          const messages = [];
+          Object.values(errData).forEach(val => {
+            if (Array.isArray(val)) {
+              messages.push(...val);
+            } else if (typeof val === "string") {
+              messages.push(val);
+            }
+          });
+          if (messages.length > 0) {
+            msg = messages.join(" ");
+          } else {
+            msg = "Please fill out the form completely before submitting.";
+          }
+        }
+      } else if (errData && typeof errData === "string") {
+        msg = errData;
+      }
+      
+      // Replace the specific backend string as you originally requested
+      if (msg === "Email, Contact number, Pag-IBIG number, and PhilHealth ID are required.") {
+        msg = "Please fill out the form completely before submitting.";
+      }
+      
+      setErrorMessage(msg);
+      setErrorModalOpen(true);
     } finally {
       setLoading(false);
     }
@@ -489,13 +534,7 @@ export default function DocumentSubmission({ isApplicationOpen }) {
           </div>
         </div>
 
-        {error && (
-          <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-md text-xs text-center font-medium">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-8">
+        <form onSubmit={handleOpenConfirmModal} className="space-y-8">
           {activeDocSections.map((section, idx) => (
             <div key={idx} className="space-y-4">
               <div>
@@ -543,6 +582,16 @@ export default function DocumentSubmission({ isApplicationOpen }) {
           </div>
         </form>
       </div>
+      <ConfirmDocs 
+        isOpen={isConfirmModalOpen} 
+        onConfirm={submitApplication} 
+        onCancel={() => setIsConfirmModalOpen(false)} 
+      />
+      <ErrorModal
+        isOpen={errorModalOpen}
+        errorMessage={errorMessage}
+        onClose={() => setErrorModalOpen(false)}
+      />
     </div>
   );
 }

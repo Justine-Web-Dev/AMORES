@@ -41,7 +41,6 @@ function PatRow({ event, value, passed, onChange, onBlur, disabled, isLast }) {
           value={value ?? ''}
           onChange={onChange}
           onBlur={onBlur}
-          disabled={disabled}
           placeholder={event.placeholder}
           className={`w-full p-2 border border-gray-300 rounded text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all ${
             disabled ? 'bg-gray-100 cursor-not-allowed' : ''
@@ -124,7 +123,7 @@ export default function PatForm({
   handlePatRunBlur,
   patRunPassed,
 }) {
-  const isDisabled = !schDate || !schTime
+  const isDisabled = !schDate
 
   const rowsData = {
     pushups: {
@@ -173,11 +172,7 @@ export default function PatForm({
         PAT Detailed Scores
       </label>
 
-      {isDisabled && (
-        <div className="mb-3 text-xs font-semibold text-rose-500 bg-rose-50 p-2 rounded border border-rose-200">
-          Please set a schedule date and time first before evaluating the applicant.
-        </div>
-      )}
+
 
       <div className="border border-gray-200 rounded-lg overflow-hidden text-sm">
         <div className="grid grid-cols-[3fr_2fr_3fr] gap-4 bg-gray-50 p-3 font-semibold text-gray-600 border-b border-gray-200">

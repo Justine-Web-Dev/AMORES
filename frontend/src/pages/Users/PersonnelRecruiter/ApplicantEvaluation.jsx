@@ -1196,8 +1196,14 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                         </span>
                         {(applicant.locked_by || evaluatingApplicant?.id === applicant.id || applicantToConfirm?.id === applicant.id || applicantToNotReco?.id === applicant.id || medicalApplicantToConfirm?.id === applicant.id) && (
                           <span className="px-2.5 py-1 text-[10px] font-semibold rounded-full bg-blue-100 text-blue-700 animate-pulse border border-blue-200" title={applicant.locked_by ? `Processed by ${applicant.locked_by}` : "Currently processing"}>
-                            {(statusFilter === "Physical Agility Test" || statusFilter === "Neuro Examination") 
-                              ? "Recommending..." 
+                            {evaluatingApplicant?.id === applicant.id
+                              ? "Evaluating..."
+                              : (applicantToConfirm?.id === applicant.id || applicantToNotReco?.id === applicant.id)
+                              ? "Recommending..."
+                              : statusFilter === "Physical Agility Test"
+                              ? (isEvaluated(applicant) ? "Recommending..." : "Evaluating...")
+                              : statusFilter === "Neuro Examination"
+                              ? "Recommending..."
                               : statusFilter === "Medical" 
                               ? "Evaluating Medical..." 
                               : "Evaluating..."}

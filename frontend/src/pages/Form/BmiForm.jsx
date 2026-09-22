@@ -60,7 +60,7 @@ export default function BmiForm({
   schDate,
   schTime,
 }) {
-  const isDisabled = !schDate || !schTime
+  const isDisabled = !schDate;
 
   const resultColorClass =
     bmiVal === null
@@ -78,7 +78,6 @@ export default function BmiForm({
           value={bmiHeight}
           onChange={(e) => setBmiHeight(e.target.value)}
           onBlur={handleBmiBlur}
-          disabled={isDisabled}
         />
 
         <FormInput
@@ -87,7 +86,6 @@ export default function BmiForm({
           value={bmiWeight}
           onChange={(e) => setBmiWeight(e.target.value)}
           onBlur={handleBmiBlur}
-          disabled={isDisabled}
         />
 
         <div className="flex-1">

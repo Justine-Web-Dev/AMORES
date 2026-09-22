@@ -13,6 +13,8 @@ function ViewDetails() {
   const {id} = useParams()
   const [applicant,setApplicant] = useState(null)
   const [loading,setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [aiFlaggedReason, setAiFlaggedReason] = useState("");
   const navigate = useNavigate()
 
     const statusColors = {
@@ -62,6 +64,25 @@ function ViewDetails() {
     if (loading) return <div className="border-4 h-[40px] w-[40px] rounded-full border-gray-100 border-t-[#2C2D86] animate-spin m-auto "></div>
     if (!applicant) return <div className="p-10 text-center">Applicant not found.</div>
 
+  const handleAiFlagged = (docType, remarks) => {
+    setAiFlaggedReason(prev => {
+      let current = prev || "";
+      
+      if (!prev && applicant.rejection_reason && applicant.rejection_reason.includes("Automated Screening Failed:")) {
+          current = applicant.rejection_reason;
+      }
+
+      if (!current.includes("Automated Screening Failed:")) {
+        current = "Automated Screening Failed:\n";
+      }
+      // Avoid duplicate entries for the same document
+      if (!current.includes(`• ${docType}:`)) {
+        return current + `• ${docType}: ${remarks}\n`;
+      }
+      return current;
+    });
+  };
+
   return (
     <div className=' ViewDetails'>
       <div className='module-content mx-auto'>
@@ -105,15 +126,15 @@ function ViewDetails() {
           </div> 
         </div>
         <ApplicantInfoView data={applicant}/>
-        <ViewDocumentSubmitted applicantId={id}/>
+        <ViewDocumentSubmitted applicantId={id} onUpdate={fetchApplicantDetails} onAiFlagged={handleAiFlagged} />
 
         {applicant.status === "New Applicant" && (
           <div className="mt-4 bg-white rounded-[12px]">
             <StatusManagement
               applicantId={applicant.id}
               applicantData={applicant}
-              currentStatus={applicant.status}
-              currentRejectionReason={applicant.rejection_reason}
+              currentStatus={aiFlaggedReason ? "Failed" : applicant.status}
+              currentRejectionReason={aiFlaggedReason || applicant.rejection_reason}
               onUpdate={fetchApplicantDetails}
             />
           </div>

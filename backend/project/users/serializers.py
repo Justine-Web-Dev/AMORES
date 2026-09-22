@@ -1,5 +1,10 @@
 from rest_framework import serializers
-from .models import User, Applicant, Application, Evaluation, ApplicantDocument, SystemSettings, AuditLog, Role, Permission, RolePermission, EvaluationCriteria, EvaluationScore, EvaluationBMI, EvaluationPAT, EvaluationFinalInterview, FailedApplicant, Address
+from .models import User, Applicant, Application, Evaluation, ApplicantDocument, SystemSettings, AuditLog, Role, Permission, RolePermission, EvaluationCriteria, EvaluationScore, EvaluationBMI, EvaluationPAT, EvaluationFinalInterview, FailedApplicant, Address, SystemNotification
+
+class SystemNotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SystemNotification
+        fields = '__all__'
 from django.utils.dateparse import parse_datetime
 from django.contrib.auth.hashers import make_password, identify_hasher
 
