@@ -55,6 +55,8 @@ select:focus {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
 @keyframes slideInRight {
   from {
     opacity: 0;
