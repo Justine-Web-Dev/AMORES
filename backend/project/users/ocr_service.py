@@ -1,22 +1,22 @@
 import os
 import json
 import time
-from google import genai
-from google.genai import types
+import google.generativeai as genai
 from django.conf import settings
 
 # Initialize Gemini API if key is available
 GEMINI_API_KEY = getattr(settings, 'GEMINI_API_KEY', os.getenv('OCR_API_KEY'))
 if GEMINI_API_KEY:
-    client = genai.Client(api_key=GEMINI_API_KEY)
+    genai.configure(api_key=GEMINI_API_KEY)
+    model = genai.GenerativeModel('gemini-1.5-flash')
 else:
-    client = None
+    model = None
 
 def verify_document(image_bytes, mime_type, expected_document_type, applicant_name=""):
     """
     Uses Gemini AI to verify a document based on expected type and applicant's name.
     """
-    if not client:
+    if not model:
         return {
             "is_valid": True,
             "extracted_text": "AI Verification Bypassed (No API Key). Document marked as valid.",
@@ -44,13 +44,13 @@ def verify_document(image_bytes, mime_type, expected_document_type, applicant_na
         response = None
         for attempt in range(3):
             try:
-                response = client.models.generate_content(
-                    model='gemini-3.6-flash',
-                    contents=[
-                        prompt,
-                        types.Part.from_bytes(data=image_bytes, mime_type=mime_type)
-                    ]
-                )
+                response = model.generate_content([
+                    prompt,
+                    {
+                        "mime_type": mime_type,
+                        "data": image_bytes
+                    }
+                ])
                 break
             except Exception as e:
                 if '503' in str(e) and attempt < 2:
