@@ -8,7 +8,7 @@ from django.conf import settings
 GEMINI_API_KEY = getattr(settings, 'GEMINI_API_KEY', os.getenv('OCR_API_KEY'))
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-3.8-flash')
 else:
     model = None
 
