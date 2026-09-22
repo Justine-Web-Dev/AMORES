@@ -41,7 +41,7 @@ def verify_document(image_bytes, mime_type, expected_document_type, applicant_na
         """
         
         response = client.models.generate_content(
-            model='gemini-3.6-flash',
+            model='gemini-1.5-flash',
             contents=[
                 prompt,
                 types.Part.from_bytes(data=image_bytes, mime_type=mime_type)
