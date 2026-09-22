@@ -41,4 +41,4 @@ django-anymail[resend]
 psutil
 channels==4.3.2
 daphne==4.2.3
-google-generativeai
+google-genai
