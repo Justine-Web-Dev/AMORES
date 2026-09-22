@@ -1,5 +1,6 @@
 import os
 import json
+import time
 from google import genai
 from google.genai import types
 from django.conf import settings
@@ -40,13 +41,25 @@ def verify_document(image_bytes, mime_type, expected_document_type, applicant_na
         Return ONLY valid JSON without markdown formatting.
         """
         
-        response = client.models.generate_content(
-            model='gemini-3.6-flash',
-            contents=[
-                prompt,
-                types.Part.from_bytes(data=image_bytes, mime_type=mime_type)
-            ]
-        )
+        response = None
+        for attempt in range(3):
+            try:
+                response = client.models.generate_content(
+                    model='gemini-3.6-flash',
+                    contents=[
+                        prompt,
+                        types.Part.from_bytes(data=image_bytes, mime_type=mime_type)
+                    ]
+                )
+                break
+            except Exception as e:
+                if '503' in str(e) and attempt < 2:
+                    print(f"API overloaded, retrying in 3 seconds... (Attempt {attempt+1}/3)")
+                    time.sleep(3)
+                    continue
+                else:
+                    raise e
+                    
         text = response.text
         
         # Clean up possible markdown code blocks from response
