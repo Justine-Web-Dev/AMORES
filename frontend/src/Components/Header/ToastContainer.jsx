@@ -26,7 +26,12 @@ function ToastContainer() {
     initFetch();
 
     const connectWebSocket = () => {
-      const wsBaseURL = api.defaults.baseURL.replace('http', 'ws').replace('/api', '');
+      let wsBaseURL = api.defaults.baseURL.replace(/\/api\/?$/, '');
+      if (wsBaseURL.startsWith('https://')) {
+        wsBaseURL = wsBaseURL.replace('https://', 'wss://');
+      } else if (wsBaseURL.startsWith('http://')) {
+        wsBaseURL = wsBaseURL.replace('http://', 'ws://');
+      }
       ws = new WebSocket(`${wsBaseURL}/ws/notifications/`);
 
       ws.onmessage = (event) => {
