@@ -218,7 +218,7 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
                   </div>
                   <div>
                     <h4 className="text-2xl md:text-3xl lg:text-xl xl:text-2xl 2xl:text-3xl font-black tracking-tight text-[#EB612A]">
-                      16 Regional*
+                      Region I
                     </h4>
                     <p className="text-xs text-gray-200 font-medium mt-1">
                       Police Offices actively evaluating documentation channels

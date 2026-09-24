@@ -42,6 +42,7 @@ function PatRow({ event, value, passed, onChange, onBlur, disabled, isLast }) {
           onChange={onChange}
           onBlur={onBlur}
           placeholder={event.placeholder}
+          disabled={disabled}
           className={`w-full p-2 border border-gray-300 rounded text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all ${
             disabled ? 'bg-gray-100 cursor-not-allowed' : ''
           }`}
@@ -66,7 +67,7 @@ function PatRow({ event, value, passed, onChange, onBlur, disabled, isLast }) {
   )
 }
 
-function PatStamp({ allPassed, failedShortNames, failedLabels }) {
+function PatStamp({ allPassed, failedShortNames, failedLabelsWithLimits }) {
   if (allPassed) {
     return (
       <div className="flex justify-center mt-8 mb-4">
@@ -96,7 +97,7 @@ function PatStamp({ allPassed, failedShortNames, failedLabels }) {
         </div>
         <div className="mt-3 text-center max-w-[280px]">
           <p className="text-xs font-semibold text-rose-600 bg-rose-50 px-3 py-2 rounded border border-rose-100 shadow-sm">
-            Failed Physical Agility Test requirements in: {failedLabels.join(', ')}.
+            Failed Physical Agility Test requirements in: {failedLabelsWithLimits.join(', ')}.
           </p>
         </div>
       </div>
@@ -122,8 +123,10 @@ export default function PatForm({
   setPatRunPassed,
   handlePatRunBlur,
   patRunPassed,
+  gender,
 }) {
   const isDisabled = !schDate
+  const isAnyFailed = patPushupsPassed === false || patSitupsPassed === false || patRunPassed === false
 
   const rowsData = {
     pushups: {
@@ -166,6 +169,17 @@ export default function PatForm({
     (event) => rowsData[event.key].passed === false
   )
 
+  const isFemale = gender?.toLowerCase() === 'female'
+  const limits = {
+    pushups: `Min: ${isFemale ? 25 : 35}`,
+    situps: `Min: ${isFemale ? 25 : 35}`,
+    run: `Max: ${isFemale ? '21:00' : '19:00'}`,
+  }
+
+  const failedLabelsWithLimits = failedEvents.map(
+    (event) => `${event.labelName} (${limits[event.key]})`
+  )
+
   return (
     <div className="pt-2">
       <label className="text-xs font-bold text-gray-500 uppercase mb-2 block">
@@ -189,17 +203,17 @@ export default function PatForm({
             passed={rowsData[event.key].passed}
             onChange={rowsData[event.key].onChange}
             onBlur={rowsData[event.key].onBlur}
-            disabled={isDisabled}
+            disabled={isDisabled || (isAnyFailed && rowsData[event.key].passed !== false)}
             isLast={idx === PAT_EVENTS.length - 1}
           />
         ))}
       </div>
 
-      {allEvaluated && (
+      {(allEvaluated || failedEvents.length > 0) && (
         <PatStamp
           allPassed={allPassed}
           failedShortNames={failedEvents.map((e) => e.shortName)}
-          failedLabels={failedEvents.map((e) => e.labelName)}
+          failedLabelsWithLimits={failedLabelsWithLimits}
         />
       )}
     </div>

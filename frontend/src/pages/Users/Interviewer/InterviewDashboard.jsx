@@ -116,7 +116,8 @@ function InterviewDashboard() {
       const formattedApplicants = data
         .filter((app) => app.status === "Final Interview")
         .map((app) => {
-          const isEvaluated = app.evaluation_final_interview != null;
+          const hasScores = app.criteria_scores && app.criteria_scores.some(c => c.criterion_name && (c.criterion_name.includes("Patriotism") || c.criterion_name.includes("Integrity") || c.criterion_name.includes("Awareness") || c.criterion_name.includes("Communication")) && c.score !== null && c.score !== undefined && c.score !== "" && c.score > 0);
+          const isEvaluated = app.evaluation_final_interview != null && app.evaluation_final_interview !== "" && hasScores;
           return {
             ...app,
             trackingId: app.tracking_code || `APP-${app.id}`,

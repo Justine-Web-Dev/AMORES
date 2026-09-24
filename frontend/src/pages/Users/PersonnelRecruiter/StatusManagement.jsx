@@ -206,12 +206,12 @@ function StatusManagement({
       if (h >= 100 && w >= 30) {
         const heightInM = h / 100;
         const bmi = w / (heightInM * heightInM);
-        if (bmi >= 18.5 && bmi <= 25.0) {
+        if (bmi >= 18.5 && bmi <= 26.5) {
           setRejectionReason("");
         } else {
           const category = bmi < 18.5 ? "Underweight" : "Overweight";
           setRejectionReason(
-            `${category}. Calculated BMI is ${bmi.toFixed(1)} (Normal range: 18.5 - 25.0).`,
+            `${category}. Calculated BMI is ${bmi.toFixed(1)} (Normal range: 18.5 - 26.5).`,
           );
         }
       }
@@ -336,14 +336,14 @@ function StatusManagement({
         } else if (currentStatus === "Body Mass Index") {
           const bmiVal = getBmiValue();
           if (bmiVal !== null) {
-            if (bmiVal >= 18.5 && bmiVal <= 25.0) {
+            if (bmiVal >= 18.5 && bmiVal <= 26.5) {
               // Stay in Body Mass Index tab so they can be scheduled for PAT
               statusToSave = "Body Mass Index";
               finalRejectionReason = "";
             } else {
               statusToSave = "Failed";
               const category = bmiVal < 18.5 ? "Underweight" : "Overweight";
-              finalRejectionReason = `${category}. Calculated BMI is ${bmiVal.toFixed(1)} (Normal range: 18.5 - 25.0).`;
+              finalRejectionReason = `${category}. Calculated BMI is ${bmiVal.toFixed(1)} (Normal range: 18.5 - 26.5).`;
             }
           }
         } else if (currentStatus === "Physical Agility Test") {
@@ -395,7 +395,7 @@ function StatusManagement({
 
       const combinedScores = criteriaList.filter(c => c.category === 'Interview').map(c => ({
         criterion_id: c.id,
-        score: parseFloat(scores[c.id]) || 0
+        score: scores[c.id] !== undefined && scores[c.id] !== "" ? parseFloat(scores[c.id]) : null
       }));
 
       const addCriteria = (name, scoreVal, textVal, boolVal) => {
@@ -521,7 +521,7 @@ function StatusManagement({
     return w / (heightInM * heightInM);
   };
   const bmiVal = getBmiValue();
-  const isBmiPassing = bmiVal !== null && bmiVal >= 18.5 && bmiVal <= 25.0;
+  const isBmiPassing = bmiVal !== null && bmiVal >= 18.5 && bmiVal <= 26.5;
 
   return (
     <div className="flex flex-col justify-evenly bg-[#F9FAFB] shadow-sm mt-5 rounded-[12px] status-management">
@@ -610,6 +610,7 @@ function StatusManagement({
             setPatRunPassed={setPatRunPassed}
             handlePatRunBlur={handlePatRunBlur}
             patRunPassed={patRunPassed}
+            gender={applicantData?.gender}
           />
         )}
 
@@ -710,8 +711,10 @@ function StatusManagement({
         const isEvaluated = (() => {
           if (currentStatus === "Qualified")
             return true;
-          if (currentStatus === "Final Interview")
-            return applicantData?.final_interview_score != null;
+          if (currentStatus === "Final Interview") {
+            const hasScores = applicantData?.criteria_scores && applicantData.criteria_scores.some(c => c.criterion_name && (c.criterion_name.includes("Patriotism") || c.criterion_name.includes("Integrity") || c.criterion_name.includes("Awareness") || c.criterion_name.includes("Communication")) && c.score !== null && c.score !== undefined && c.score !== "" && c.score > 0);
+            return applicantData?.evaluation_final_interview != null && applicantData?.evaluation_final_interview !== "" && hasScores;
+          }
           if (currentStatus === "Body Mass Index")
             return applicantData?.bmi_weight != null;
           if (currentStatus === "Physical Agility Test")
@@ -731,6 +734,7 @@ function StatusManagement({
               (selectedStatus === "Body Mass Index" &&
                 (!bmiHeight || !bmiWeight)) ||
               (selectedStatus === "Physical Agility Test" &&
+                !(patPushupsPassed === false || patSitupsPassed === false || patRunPassed === false) &&
                 (patPushups === "" || patSitups === "" || patRun === "")) ||
               (selectedStatus === "Neuro Examination" && !psychologicalResult) ||
               (selectedStatus === "Drug Test" && !drugResult) ||
@@ -746,6 +750,7 @@ function StatusManagement({
               (selectedStatus === "Body Mass Index" &&
                 (!bmiHeight || !bmiWeight)) ||
               (selectedStatus === "Physical Agility Test" &&
+                !(patPushupsPassed === false || patSitupsPassed === false || patRunPassed === false) &&
                 (patPushups === "" || patSitups === "" || patRun === "")) ||
               (selectedStatus === "Drug Test" && !drugResult) ||
               selectedStatus === "Complete Background Investigation" ||

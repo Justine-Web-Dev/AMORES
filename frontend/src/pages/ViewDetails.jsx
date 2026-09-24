@@ -64,23 +64,31 @@ function ViewDetails() {
     if (loading) return <div className="border-4 h-[40px] w-[40px] rounded-full border-gray-100 border-t-[#2C2D86] animate-spin m-auto "></div>
     if (!applicant) return <div className="p-10 text-center">Applicant not found.</div>
 
-  const handleAiFlagged = (docType, remarks) => {
-    setAiFlaggedReason(prev => {
-      let current = prev || "";
-      
-      if (!prev && applicant.rejection_reason && applicant.rejection_reason.includes("Automated Screening Failed:")) {
-          current = applicant.rejection_reason;
-      }
+  const handleAiFlagged = async (docType, remarks) => {
+    let current = aiFlaggedReason || "";
+    
+    if (!aiFlaggedReason && applicant.rejection_reason && applicant.rejection_reason.includes("Automated Screening Failed:")) {
+        current = applicant.rejection_reason;
+    }
 
-      if (!current.includes("Automated Screening Failed:")) {
-        current = "Automated Screening Failed:\n";
+    if (!current.includes("Automated Screening Failed:")) {
+      current = "Automated Screening Failed:\n";
+    }
+
+    // Avoid duplicate entries for the same document
+    if (!current.includes(`• ${docType}:`)) {
+      const newReason = current + `• ${docType}: ${remarks}\n`;
+      setAiFlaggedReason(newReason);
+      
+      // Save to backend immediately so it persists on reload
+      try {
+        await api.put(`users/update_status/${id}/`, {
+          rejection_reason: newReason
+        });
+      } catch (err) {
+        console.error("Failed to save AI flagged reason:", err);
       }
-      // Avoid duplicate entries for the same document
-      if (!current.includes(`• ${docType}:`)) {
-        return current + `• ${docType}: ${remarks}\n`;
-      }
-      return current;
-    });
+    }
   };
 
   return (

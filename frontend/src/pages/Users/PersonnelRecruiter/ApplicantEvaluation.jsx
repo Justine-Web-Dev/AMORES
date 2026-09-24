@@ -436,7 +436,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
 
     const selectableIds = new Set(
       filteredAndSorted
-        .filter((app) => isEvaluated(app))
+        .filter((app) => canSchedule(app))
         .map((app) => app.id),
     );
     const idsToSchedule = selectedIds.filter((id) => selectableIds.has(id));
@@ -480,6 +480,8 @@ function ApplicantEvaluation({ isInterviewer = false }) {
         message: `Scheduled ${idsToSchedule.length} applicant(s) for ${scheduleDate} ${scheduleTime ? `@ ${scheduleTime}` : ""} successfully.`,
       });
       setIsSelectionMode(false);
+      setScheduleDate("");
+      setScheduleTime("");
       if (nextStatus) {
         setStatusFilter(nextStatus);
       }
@@ -560,7 +562,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
   const handleSelectAll = (e) => {
     if (e.target.checked) {
       const selectableApplicants = filteredAndSorted.filter(
-        (app) => isEvaluated(app),
+        (app) => canSchedule(app),
       );
       let limit = selectableApplicants.length;
       if (selectionLimit !== "All") {
@@ -576,7 +578,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
 
   const handleSelectOne = (id) => {
     const applicant = filteredAndSorted.find((app) => app.id === id);
-    if (!applicant || !isEvaluated(applicant)) return;
+    if (!applicant || !canSchedule(applicant)) return;
 
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
@@ -641,12 +643,19 @@ function ApplicantEvaluation({ isInterviewer = false }) {
 
   const isEvaluated = (applicant) => {
     if (statusFilter === "Qualified") return applicant.is_qualified_evaluated === true;
-    if (statusFilter === "Final Interview") return applicant.evaluation_final_interview != null;
+    if (statusFilter === "Final Interview") {
+      const hasScores = applicant.criteria_scores && applicant.criteria_scores.some(c => c.criterion_name && (c.criterion_name.includes("Patriotism") || c.criterion_name.includes("Integrity") || c.criterion_name.includes("Awareness") || c.criterion_name.includes("Communication")) && c.score !== null && c.score !== undefined && c.score !== "" && c.score > 0);
+      return applicant.evaluation_final_interview != null && applicant.evaluation_final_interview !== "" && hasScores;
+    }
     if (statusFilter === "Body Mass Index") return applicant.is_bmi_evaluated === true;
     if (statusFilter === "Physical Agility Test") return applicant.is_pat_evaluated === true;
-    if (statusFilter === "Drug Test") return applicant.drug_test_result != null;
-    if (statusFilter === "Complete Background Investigation") return true;
+    if (statusFilter === "Drug Test") return applicant.drug_test_result != null && applicant.drug_test_result !== "";
+    if (statusFilter === "Complete Background Investigation") return false;
     return false;
+  };
+
+  const canSchedule = (applicant) => {
+    return isEvaluated(applicant) || applicant.status === "Complete Background Investigation";
   };
 
   const filteredAndSorted = useMemo(() => {
@@ -1009,7 +1018,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                     const preselected = filteredAndSorted
                       .filter(
                         (app) =>
-                          isEvaluated(app) &&
+                          canSchedule(app) &&
                           app.scheduled_date === scheduleDate,
                       )
                       .map((app) => app.id);
@@ -1065,17 +1074,17 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                       <input
                         type="checkbox"
                         checked={
-                          filteredAndSorted.some((app) => isEvaluated(app)) &&
+                          filteredAndSorted.some((app) => canSchedule(app)) &&
                           selectedIds.length > 0 &&
                           selectedIds.length ===
                             Math.min(
-                              filteredAndSorted.filter((app) => isEvaluated(app)).length,
+                              filteredAndSorted.filter((app) => canSchedule(app)).length,
                               selectionLimit === "All"
                                 ? Infinity
                                 : parseInt(selectionLimit, 10),
                             )
                         }
-                        disabled={filteredAndSorted.every((app) => !isEvaluated(app))}
+                        disabled={filteredAndSorted.every((app) => !canSchedule(app))}
                         onChange={handleSelectAll}
                         className="w-4 h-4 accent-[#2C2D86] cursor-pointer align-middle disabled:cursor-not-allowed disabled:opacity-40"
                       />
@@ -1160,14 +1169,14 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                         <input
                           type="checkbox"
                           checked={
-                            isEvaluated(applicant) &&
+                            canSchedule(applicant) &&
                             selectedIds.includes(applicant.id)
                           }
-                          disabled={!isEvaluated(applicant)}
+                          disabled={!canSchedule(applicant)}
                           onChange={() => handleSelectOne(applicant.id)}
                           className="w-4 h-4 accent-[#2C2D86] cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
                           title={
-                            isEvaluated(applicant)
+                            canSchedule(applicant)
                               ? "Select for next step"
                               : "Evaluation required before scheduling"
                           }
@@ -1199,11 +1208,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                             {evaluatingApplicant?.id === applicant.id
                               ? "Evaluating..."
                               : (applicantToConfirm?.id === applicant.id || applicantToNotReco?.id === applicant.id)
-                              ? "Recommending..."
-                              : statusFilter === "Physical Agility Test"
-                              ? (isEvaluated(applicant) ? "Recommending..." : "Evaluating...")
-                              : statusFilter === "Neuro Examination"
-                              ? "Recommending..."
+                              ? "Evaluating..."
                               : statusFilter === "Medical" 
                               ? "Evaluating Medical..." 
                               : "Evaluating..."}
@@ -1211,7 +1216,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                         )}
                         {updatingRecommendationId === applicant.id && (
                           <span className="px-2.5 py-1 text-[10px] font-semibold rounded-full bg-indigo-100 text-indigo-700 animate-pulse border border-indigo-200" title="Updating status">
-                            Recommending...
+                            Evaluating...
                           </span>
                         )}
                       </div>
@@ -1435,11 +1440,18 @@ function ApplicantEvaluation({ isInterviewer = false }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-500/20 p-4">
           <div className="bg-white rounded-lg w-full max-w-2xl shadow-2xl border border-gray-100 transform transition-all text-left relative flex flex-col max-h-[90vh]">
             <div className="flex justify-between items-center px-6 py-5 border-b border-gray-200 bg-white rounded-t-lg z-20 shrink-0">
-              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 m-0">
-                <span>Evaluate Applicant:</span>
-                <span className="text-[#2C2D86] font-semibold">
-                  {evaluatingApplicant.firstname} {evaluatingApplicant.lastname}
-                </span>
+              <h3 className="text-lg font-bold text-gray-900 flex flex-col m-0">
+                <div className="flex items-center gap-2">
+                  <span>Evaluate Applicant:</span>
+                  <span className="text-[#2C2D86] font-semibold">
+                    {evaluatingApplicant.firstname} {evaluatingApplicant.lastname}
+                  </span>
+                </div>
+                {evaluatingApplicant.gender && (
+                  <span className="text-sm text-gray-500 font-normal mt-1">
+                    Gender: {evaluatingApplicant.gender}
+                  </span>
+                )}
               </h3>
               <button
                 onClick={handleCloseEvaluate}
