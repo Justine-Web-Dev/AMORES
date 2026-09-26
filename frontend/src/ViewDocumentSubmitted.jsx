@@ -100,10 +100,10 @@ const DocCard = ({ doc, label, onScan }) => {
         <div className="mt-auto pt-2 border-t border-gray-100">
             <button 
                 onClick={handleScanClick} 
-                disabled={scanning}
+                disabled={scanning || !!doc.ocr_text}
                 className="w-full py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded transition-colors disabled:opacity-50 cursor-pointer"
             >
-                {scanning ? 'Scanning...' : (doc.ocr_text ? 'Rescan Document' : 'Scan with AI')}
+                {scanning ? 'Scanning...' : (doc.ocr_text ? 'Scanned' : 'Scan with AI')}
             </button>
         </div>
       </div>
@@ -120,6 +120,15 @@ function ViewDocumentSubmitted({ applicantId, onUpdate, onAiFlagged }) {
       try {
         const response = await api.get(`users/view-applicant-document/${applicantId}`)
         setDocuments(response.data)
+        
+        // Restore AI flagged reasons on load
+        if (onAiFlagged) {
+          response.data.forEach(doc => {
+            if (doc.ocr_text && !doc.ai_verified && doc.ai_remarks) {
+              onAiFlagged(doc.document_type, doc.ai_remarks)
+            }
+          })
+        }
       } catch (err) {
         console.error("Error fetching documents:", err)
       } finally {

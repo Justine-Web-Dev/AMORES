@@ -204,8 +204,8 @@ const LandingPage = ({ isApplicationOpen = false, appDates }) => {
                       2,400+*
                     </h4>
                     <p className="text-xs text-gray-200 font-medium mt-1">
-                      Available regular quotas allocated for qualified
-                      candidates nationwide.
+                      Available quotas allocated for qualified
+                      candidates in region I.
                     </p>
                   </div>
                 </div>

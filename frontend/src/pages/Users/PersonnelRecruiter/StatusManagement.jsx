@@ -123,7 +123,7 @@ function StatusManagement({
         setSelectedStatus("Failed");
         setRejectionReason(formatRejectionReason(rejReason || remarks));
       } else {
-        setSelectedStatus("Qualified");
+        setSelectedStatus("New Applicant");
         setRejectionReason(formatRejectionReason(currentRejectionReason || ""));
       }
     } else {

@@ -46,6 +46,22 @@ function ViewDetails() {
 
     useEffect(()=>{
       fetchApplicantDetails()
+      
+      // Lock the applicant to mark as evaluating
+      if (id) {
+        api.post(`users/applications/${id}/lock/`).catch(err => {
+          console.warn("Failed to lock applicant:", err);
+        });
+      }
+
+      // Unlock on unmount
+      return () => {
+        if (id) {
+          api.delete(`users/applications/${id}/lock/`).catch(err => {
+            console.warn("Failed to unlock applicant:", err);
+          });
+        }
+      };
     },[id]) 
 
     const location = useLocation();
@@ -80,14 +96,6 @@ function ViewDetails() {
       const newReason = current + `• ${docType}: ${remarks}\n`;
       setAiFlaggedReason(newReason);
       
-      // Save to backend immediately so it persists on reload
-      try {
-        await api.put(`users/update_status/${id}/`, {
-          rejection_reason: newReason
-        });
-      } catch (err) {
-        console.error("Failed to save AI flagged reason:", err);
-      }
     }
   };
 
@@ -141,7 +149,7 @@ function ViewDetails() {
             <StatusManagement
               applicantId={applicant.id}
               applicantData={applicant}
-              currentStatus={aiFlaggedReason ? "Failed" : applicant.status}
+              currentStatus={applicant.status}
               currentRejectionReason={aiFlaggedReason || applicant.rejection_reason}
               onUpdate={fetchApplicantDetails}
             />

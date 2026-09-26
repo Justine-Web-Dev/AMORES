@@ -394,7 +394,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
         setScheduleMessageConfig({
           isOpen: true,
           type: "error",
-          message: `Applicant is currently being processed by ${err.response.data.locked_by}.`
+          message: `Applicant is currently being evaluated by ${err.response.data.locked_by}.`
         });
       } else {
         console.warn("Lock API failed, proceeding anyway.", err);
@@ -1325,7 +1325,7 @@ function ApplicantEvaluation({ isInterviewer = false }) {
                               ) : (
                                 <>
                                   <button
-                                    onClick={() => navigate(`../view-details/${applicant.id}`)}
+                                    onClick={() => handleActionLock(applicant, () => navigate(`../view-details/${applicant.id}`))}
                                     className="text-left px-2 py-1 cursor-pointer view-details-btn-action"
                                   >
                                     View Details
